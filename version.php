@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version information for mod_smarturl (Moodle 5.3+ line).
+ * Version information for mod_smarturl (Moodle 4.5 - 5.2 compatibility line).
  *
  * @package    mod_smarturl
  * @copyright  2026 Didactika.org
@@ -26,8 +26,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_smarturl';
-$plugin->version = 2026112600;
-$plugin->requires = 2026100500;
+$plugin->version = 2026112500;
+$plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0.0-m503';
-$plugin->supported = [503, 503];
+$plugin->release = '1.0.0-m405';
+$plugin->supported = [405, 502];

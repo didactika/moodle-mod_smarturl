@@ -1,0 +1,97 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    @template mod_smarturl/resource_view
+}}
+<div class="dd-smarturl-app" id="smu-viewer-{{uniqid}}" data-payload="{{payloadjson}}">
+    <header class="dd-page-header">
+        <div>
+            <a class="dd-page-header-back" href="{{courseurl}}">&larr; {{coursename}}</a>
+            <h2 class="dd-page-header-title">{{name}}</h2>
+            <div class="dd-page-header-meta dd-tags">
+                <span class="dd-tag">{{displaymode}}</span>
+                {{#hasduration}}<span class="dd-tag">{{durationlabel}}</span>{{/hasduration}}
+                {{#hasmanagedby}}<span class="dd-tag dd-tag-primary">{{managedbadge}}: {{managedby}}</span>{{/hasmanagedby}}
+                {{#haslocked}}<span class="dd-tag">{{lockedbadge}} ({{lockedcount}})</span>{{/haslocked}}
+            </div>
+        </div>
+        <div class="dd-page-header-actions">
+            <a class="btn btn-primary" href="{{gourl}}" data-action="track-open">{{strings.openresource}}</a>
+            {{#hasmetadata}}
+            <button type="button" class="btn btn-outline-secondary" data-action="copy-json">{{strings.copyjson}}</button>
+            {{/hasmetadata}}
+        </div>
+    </header>
+
+    {{#intro}}
+    <div class="dd-intro">{{{intro}}}</div>
+    {{/intro}}
+
+    <section class="smu-stage">
+        {{#isembed}}
+        <div class="smu-iframe-wrap">
+            <iframe class="smu-iframe" src="{{resolvedurl}}" title="{{name}}" allowfullscreen loading="lazy"></iframe>
+        </div>
+        {{/isembed}}
+
+        {{^isembed}}
+        <div class="smu-poster-card">
+            {{#hasthumbnail}}
+            <img class="smu-poster-img" src="{{thumbnailurl}}" alt="{{name}}">
+            {{/hasthumbnail}}
+            <div class="smu-poster-overlay">
+                {{#ismodal}}
+                <button type="button" class="btn btn-primary" data-action="open-modal">{{strings.launchiframe}}</button>
+                {{/ismodal}}
+                {{^ismodal}}
+                <a class="btn btn-primary" href="{{gourl}}" data-action="track-open">{{strings.openresource}}</a>
+                {{/ismodal}}
+            </div>
+        </div>
+        {{/isembed}}
+    </section>
+
+    <div class="smu-modal-backdrop" hidden data-region="modal-backdrop">
+        <div class="smu-modal" role="dialog" aria-modal="true" aria-label="{{name}}">
+            <div class="smu-modal-head">
+                <strong>{{name}}</strong>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-action="close-modal">{{strings.closepreview}}</button>
+            </div>
+            <div class="smu-iframe-wrap">
+                <iframe class="smu-iframe" data-region="modal-iframe" title="{{name}}" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <section class="smu-explorer" aria-label="{{strings.metadataheading}}">
+        <div class="smu-explorer-toolbar">
+            <div>
+                <h3 class="smu-section-title">{{strings.metadataheading}} ({{metadatacount}})</h3>
+            </div>
+            <div class="smu-explorer-controls">
+                <input type="search"
+                       class="form-control smu-search"
+                       data-action="search"
+                       aria-label="{{strings.metadatasearch}}"
+                       placeholder="{{strings.metadatasearchplaceholder}}">
+                <div class="dd-segmented" role="group" aria-label="View mode">
+                    <button type="button" class="is-active" data-action="view-mode" data-mode="cards">{{strings.viewcards}}</button>
+                    <button type="button" data-action="view-mode" data-mode="table">{{strings.viewtable}}</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dd-chips smu-chips-row" data-region="group-chips"></div>
+        <div class="smu-results-host" data-region="results-host"></div>
+    </section>
+</div>
+{{#js}}
+require(['mod_smarturl/resource_view'], function(ResourceView) {
+    ResourceView.init('smu-viewer-{{uniqid}}');
+});
+{{/js}}

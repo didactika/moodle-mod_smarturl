@@ -16,20 +16,20 @@
 
 namespace mod_smarturl\output;
 
-use core\output\react_component_renderable;
+use core\output\named_templatable;
 use mod_smarturl\local\metadata\metadata_repository;
 use mod_smarturl\local\policy\policy_manager;
 use mod_smarturl\local\url\url_resolver;
 
 /**
- * Renders the Smart URL viewer and high-volume metadata explorer via React (Moodle 5.3+).
+ * Renders the Smart URL viewer and high-volume metadata explorer via Mustache + AMD (Moodle 4.5 - 5.2).
  *
  * @package    mod_smarturl
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class resource_page implements react_component_renderable, \renderable {
+class resource_page implements named_templatable, \renderable {
     /**
      * Constructor.
      *
@@ -49,46 +49,37 @@ class resource_page implements react_component_renderable, \renderable {
     }
 
     /**
-     * Component name mounted by core/react_autoinit.
+     * Returns the Mustache template name.
      *
+     * @param \renderer_base $renderer Renderer.
      * @return string
      */
-    #[\Override]
-    public function get_react_component_name(): string {
-        return 'mod_smarturl/ResourceView';
+    public function get_template_name(\renderer_base $renderer): string {
+        return 'mod_smarturl/resource_view';
     }
 
     /**
-     * Initial props passed to ResourceView.tsx.
+     * Exports template variables and JSON state payload for Mustache + AMD hydration.
      *
-     * @param \renderer_base $renderer Moodle renderer.
-     * @return \stdClass
+     * @param \renderer_base $output Renderer.
+     * @return array<string, mixed>
      */
-    #[\Override]
-    public function get_react_component_props(\renderer_base $renderer): \stdClass {
+    public function export_for_template(\renderer_base $output): array {
         $resolvedurl = url_resolver::resolve($this->smarturl, $this->course, $this->user, (int)$this->cm->id);
         $policy = policy_manager::get_by_cmid((int)$this->cm->id);
         $metadata = metadata_repository::for_instance((int)$this->smarturl->id, false);
+        $displaymode = (string)$this->smarturl->display_mode;
+        $poster = $this->resolve_poster_url();
+        $locked = policy_manager::locked_fields($policy);
+        $duration = $this->smarturl->duration_seconds !== null ? (int)$this->smarturl->duration_seconds : null;
 
-        return (object)[
+        $payload = [
             'cmid' => (int)$this->cm->id,
-            'courseid' => (int)$this->course->id,
-            'courseurl' => (new \moodle_url('/course/view.php', ['id' => $this->course->id]))->out(false),
-            'coursename' => format_string($this->course->fullname, true, ['context' => \context_course::instance($this->course->id)]),
-            'name' => format_string($this->smarturl->name, true, ['context' => $this->context]),
-            'intro' => format_module_intro('smarturl', $this->smarturl, (int)$this->cm->id),
             'resolvedUrl' => $resolvedurl,
             'goUrl' => (new \moodle_url('/mod/smarturl/go.php', ['id' => $this->cm->id]))->out(false),
-            'displayMode' => (string)$this->smarturl->display_mode,
+            'displayMode' => $displaymode,
             'popupWidth' => (int)($this->smarturl->popup_width ?: 1200),
             'popupHeight' => (int)($this->smarturl->popup_height ?: 800),
-            'aspectRatio' => (string)($this->smarturl->aspect_ratio ?: '16:9'),
-            'thumbnailUrl' => $this->resolve_poster_url(),
-            'durationSeconds' => $this->smarturl->duration_seconds !== null ? (int)$this->smarturl->duration_seconds : null,
-            'policy' => [
-                'managedBy' => $policy->managed_by ?? null,
-                'lockedFields' => policy_manager::locked_fields($policy),
-            ],
             'metadata' => $metadata,
             'strings' => [
                 'openresource' => get_string('openresource', 'smarturl'),
@@ -107,9 +98,42 @@ class resource_page implements react_component_renderable, \renderable {
                 'emptymetadata_hint' => get_string('emptymetadata_hint', 'smarturl'),
                 'showmore' => get_string('showmore', 'smarturl'),
                 'showless' => get_string('showless', 'smarturl'),
-                'managedbadge' => get_string('managedbadge', 'smarturl'),
-                'lockedbadge' => get_string('lockedbadge', 'smarturl'),
             ],
+        ];
+
+        $durationlabel = null;
+        if ($duration !== null && $duration > 0) {
+            $mins = intdiv($duration, 60);
+            $secs = $duration % 60;
+            $durationlabel = $mins > 0 ? "{$mins}m {$secs}s" : "{$secs}s";
+        }
+
+        return [
+            'cmid' => (int)$this->cm->id,
+            'name' => format_string($this->smarturl->name, true, ['context' => $this->context]),
+            'coursename' => format_string($this->course->fullname, true, ['context' => \context_course::instance($this->course->id)]),
+            'courseurl' => (new \moodle_url('/course/view.php', ['id' => $this->course->id]))->out(false),
+            'intro' => format_module_intro('smarturl', $this->smarturl, (int)$this->cm->id),
+            'resolvedurl' => $resolvedurl,
+            'gourl' => $payload['goUrl'],
+            'displaymode' => $displaymode,
+            'isembed' => $displaymode === 'EMBED',
+            'ispopup' => $displaymode === 'POPUP',
+            'ismodal' => $displaymode === 'MODAL',
+            'thumbnailurl' => $poster,
+            'hasthumbnail' => !empty($poster),
+            'durationlabel' => $durationlabel,
+            'hasduration' => $durationlabel !== null,
+            'managedby' => $policy->managed_by ?? '',
+            'hasmanagedby' => !empty($policy->managed_by),
+            'managedbadge' => get_string('managedbadge', 'smarturl'),
+            'lockedcount' => count($locked),
+            'haslocked' => count($locked) > 0,
+            'lockedbadge' => get_string('lockedbadge', 'smarturl'),
+            'hasmetadata' => count($metadata) > 0,
+            'metadatacount' => count($metadata),
+            'strings' => $payload['strings'],
+            'payloadjson' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ];
     }
 
