@@ -59,7 +59,7 @@ final class output_rendering_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('core');
 
         $html = $renderer->render(new resource_page($record, $course, $cm, $context, $user));
-        $this->assertStringContainsString('dd-page-header', $html);
+        $this->assertStringContainsString('smu-resource-bar', $html);
         $this->assertStringContainsString('smu-explorer', $html);
         $this->assertStringContainsString('https://media.example.org/DD-MUSTACHE?u=mstudent', $html);
         $this->assertStringContainsString('Mustache Stage Demo', $html);
@@ -81,5 +81,9 @@ final class output_rendering_test extends \advanced_testcase {
         $this->assertStringContainsString('dd-page-header', $adminhtml);
         $this->assertStringContainsString('dd-segmented', $adminhtml);
         $this->assertStringContainsString('metaTypes', $adminhtml);
+
+        $builderhtml = $renderer->render(new \mod_smarturl\output\form_builder_widget('params', [], [], false, []));
+        $this->assertStringContainsString('smu-form-builder', $builderhtml);
+        $this->assertStringContainsString('smu-builder-params', $builderhtml);
     }
 }

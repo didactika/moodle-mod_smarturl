@@ -73,17 +73,37 @@ class resource_page implements named_templatable, \renderable {
         $locked = policy_manager::locked_fields($policy);
         $duration = $this->smarturl->duration_seconds !== null ? (int)$this->smarturl->duration_seconds : null;
 
+        $displaylabels = [
+            'AUTO' => 'Automatic',
+            'EMBED' => 'Embedded on page',
+            'INLINE_IFRAME' => 'Interactive preview',
+            'MODAL' => 'Preview dialog',
+            'POPUP' => 'Pop-up window',
+            'NEW' => 'New browser tab',
+            'OPEN' => 'Direct redirect',
+            'CARD' => 'Preview card',
+        ];
+
+        $host = parse_url($resolvedurl, PHP_URL_HOST) ?: $resolvedurl;
+        $primarylabel = $displaymode === 'POPUP'
+            ? get_string('launchpopup', 'smarturl')
+            : get_string('openresource', 'smarturl');
+
         $payload = [
             'cmid' => (int)$this->cm->id,
+            'name' => format_string($this->smarturl->name, true, ['context' => $this->context]),
             'resolvedUrl' => $resolvedurl,
             'goUrl' => (new \moodle_url('/mod/smarturl/go.php', ['id' => $this->cm->id]))->out(false),
             'displayMode' => $displaymode,
+            'aspectRatio' => (string)($this->smarturl->aspect_ratio ?: '16:9'),
             'popupWidth' => (int)($this->smarturl->popup_width ?: 1200),
             'popupHeight' => (int)($this->smarturl->popup_height ?: 800),
             'metadata' => $metadata,
             'strings' => [
                 'openresource' => get_string('openresource', 'smarturl'),
                 'launchiframe' => get_string('launchiframe', 'smarturl'),
+                'launchmodal' => get_string('launchmodal', 'smarturl'),
+                'launchpopup' => get_string('launchpopup', 'smarturl'),
                 'closepreview' => get_string('closepreview', 'smarturl'),
                 'metadataheading' => get_string('metadataheading', 'smarturl'),
                 'metadatasearch' => get_string('metadatasearch', 'smarturl'),
@@ -110,16 +130,17 @@ class resource_page implements named_templatable, \renderable {
 
         return [
             'cmid' => (int)$this->cm->id,
-            'name' => format_string($this->smarturl->name, true, ['context' => $this->context]),
-            'coursename' => format_string($this->course->fullname, true, ['context' => \context_course::instance($this->course->id)]),
-            'courseurl' => (new \moodle_url('/course/view.php', ['id' => $this->course->id]))->out(false),
+            'name' => $payload['name'],
             'intro' => format_module_intro('smarturl', $this->smarturl, (int)$this->cm->id),
             'resolvedurl' => $resolvedurl,
+            'hostlabel' => $host,
             'gourl' => $payload['goUrl'],
-            'displaymode' => $displaymode,
+            'displaylabel' => $displaylabels[$displaymode] ?? $displaymode,
+            'primarylabel' => $primarylabel,
             'isembed' => $displaymode === 'EMBED',
-            'ispopup' => $displaymode === 'POPUP',
+            'isinline' => $displaymode === 'INLINE_IFRAME',
             'ismodal' => $displaymode === 'MODAL',
+            'isdirect' => !in_array($displaymode, ['EMBED', 'INLINE_IFRAME', 'MODAL'], true),
             'thumbnailurl' => $poster,
             'hasthumbnail' => !empty($poster),
             'durationlabel' => $durationlabel,

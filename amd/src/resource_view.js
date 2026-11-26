@@ -235,6 +235,15 @@ export const init = (rootId) => {
             }, 1800);
         } else if (action === 'track-open') {
             trackView(Number(payload.cmid));
+        } else if (action === 'launch-inline') {
+            const stage = root.querySelector('.smu-stage');
+            if (stage) {
+                const ratio = String(payload.aspectRatio || '16:9').replace(':', ' / ');
+                stage.innerHTML = `<div class="smu-frame-wrap" style="aspect-ratio: ${esc(ratio)};">` +
+                    `<iframe src="${esc(payload.resolvedUrl)}" title="${esc(payload.name || '')}" allowfullscreen></iframe>` +
+                    `</div>`;
+                trackView(Number(payload.cmid));
+            }
         } else if (action === 'open-modal' && modalBackdrop && modalIframe) {
             modalIframe.src = payload.resolvedUrl;
             modalBackdrop.hidden = false;

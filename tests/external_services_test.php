@@ -21,6 +21,9 @@ use mod_smarturl\external\delete_instances;
 use mod_smarturl\external\get_instances;
 use mod_smarturl\external\get_metadata;
 use mod_smarturl\external\get_overrides;
+use mod_smarturl\external\list_meta_types;
+use mod_smarturl\external\list_param_defs;
+use mod_smarturl\external\set_metadata;
 use mod_smarturl\external\track_view;
 use mod_smarturl\external\update_instances;
 use mod_smarturl\local\policy\policy_manager;
@@ -72,16 +75,30 @@ final class external_services_test extends \advanced_testcase {
         $cmid = $created[0]['cmid'];
         $smarturlid = $created[0]['smarturlid'];
 
-        $listed = get_instances::execute([(int)$course->id]);
-        $this->assertCount(1, $listed);
-        $this->assertEquals('POPUP', $listed[0]['displaymode']);
-        $this->assertCount(3, $listed[0]['metadata']);
+        $listed = get_instances::execute([(int)$course->id], 0, 10);
+        $this->assertSame(1, $listed['total']);
+        $this->assertFalse($listed['hasmore']);
+        $this->assertCount(1, $listed['items']);
+        $this->assertEquals('POPUP', $listed['items'][0]['displaymode']);
+        $this->assertCount(3, $listed['items'][0]['metadata']);
+
+        // Schema catalog endpoints support pagination cleanly.
+        $mtypes = list_meta_types::execute(true, 0, 5);
+        $this->assertGreaterThan(5, $mtypes['total']);
+        $this->assertTrue($mtypes['hasmore']);
+        $this->assertCount(5, $mtypes['items']);
+
+        $pdefs = list_param_defs::execute(true, 0, 5);
+        $this->assertGreaterThan(5, $pdefs['total']);
+        $this->assertTrue($pdefs['hasmore']);
+        $this->assertCount(5, $pdefs['items']);
 
         // Simulate a local course override on custom availability.
         policy_manager::record_local_override($smarturlid, $cmid, (int)$user->id, '{"op":"&","c":[{"type":"date","d":"<","t":1900000000}],"showc":[true]}');
-        $overrides = get_overrides::execute((int)$course->id);
-        $this->assertCount(1, $overrides);
-        $this->assertSame(1, $overrides[0]['localrevision']);
+        $overrides = get_overrides::execute((int)$course->id, 0, 10);
+        $this->assertSame(1, $overrides['total']);
+        $this->assertCount(1, $overrides['items']);
+        $this->assertSame(1, $overrides['items'][0]['localrevision']);
 
         // External update preserves custom availability branch while acknowledging revision.
         $updated = update_instances::execute([[
@@ -90,15 +107,19 @@ final class external_services_test extends \advanced_testcase {
             'managedavailability' => '{"op":"|","c":[{"type":"date","d":">=","t":1750000000}],"show":false}',
         ]]);
         $this->assertSame(1, $updated[0]['ackedrevision']);
-        $this->assertEmpty(get_overrides::execute((int)$course->id));
+        $this->assertSame(0, get_overrides::execute((int)$course->id)['total']);
 
         $avail = json_decode((string)$DB->get_field('course_modules', 'availability', ['id' => $cmid]), true);
         $this->assertSame('&', $avail['op']);
         $this->assertCount(2, $avail['c']);
 
-        // Metadata filtering WS.
-        $meta = get_metadata::execute($cmid, 'Architecture', 'Custom');
+        // Metadata filtering & merge/replace WS.
+        $merged = set_metadata::execute($cmid, [['key' => 'reviewer', 'value' => 'QA Team']], 'merge');
+        $this->assertSame(4, $merged['count']);
+
+        $meta = get_metadata::execute($cmid, 'Architecture', 'Custom', 0, 10);
         $this->assertSame(1, $meta['total']);
+        $this->assertFalse($meta['hasmore']);
         $this->assertSame('custom_topic', $meta['items'][0]['key']);
 
         // Track view completion WS as student.
@@ -109,6 +130,6 @@ final class external_services_test extends \advanced_testcase {
         $this->setAdminUser();
         $deleted = delete_instances::execute([$cmid]);
         $this->assertTrue($deleted[0]['deleted']);
-        $this->assertEmpty(get_instances::execute([(int)$course->id]));
+        $this->assertSame(0, get_instances::execute([(int)$course->id])['total']);
     }
 }

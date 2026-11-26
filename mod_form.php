@@ -27,9 +27,10 @@ use mod_smarturl\local\permissions\admin_permissions;
 use mod_smarturl\local\policy\availability_composer;
 use mod_smarturl\local\policy\policy_manager;
 use mod_smarturl\local\url\url_resolver;
+use mod_smarturl\output\form_builder_widget;
 
 /**
- * Activity settings form for mod_smarturl with native availability, completion, dynamic params, metadata and policy locks.
+ * Activity settings form for mod_smarturl with conditional fields, Didactika row builders, and policy locks.
  *
  * @package    mod_smarturl
  * @copyright  2026 Didactika.org
@@ -44,6 +45,8 @@ class mod_smarturl_mod_form extends moodleform_mod {
      * Defines all standard and Smart URL fields.
      */
     public function definition(): void {
+        global $OUTPUT;
+
         $mform = $this->_form;
 
         if (!empty($this->_cm->id)) {
@@ -75,24 +78,16 @@ class mod_smarturl_mod_form extends moodleform_mod {
 
         $this->standard_intro_elements();
 
-        $mform->addElement('text', 'thumbnail_url', get_string('thumbnailurl', 'smarturl'), ['size' => '80']);
-        $mform->setType('thumbnail_url', PARAM_URL);
-        $mform->addElement('filemanager', 'poster_filemanager', get_string('thumbnailurl', 'smarturl'), null, [
-            'subdirs' => 0,
-            'maxfiles' => 1,
-            'accepted_types' => ['image'],
-        ]);
-
-        // Appearance.
+        // Display & open behaviour.
         $mform->addElement('header', 'appearancehdr', get_string('appearance', 'smarturl'));
         $displayoptions = [
             'AUTO' => get_string('display_auto', 'smarturl'),
-            'INLINE_IFRAME' => get_string('display_inline_iframe', 'smarturl'),
-            'MODAL' => get_string('display_modal', 'smarturl'),
-            'POPUP' => get_string('display_popup', 'smarturl'),
-            'EMBED' => get_string('display_embed', 'smarturl'),
             'NEW' => get_string('display_new', 'smarturl'),
             'OPEN' => get_string('display_open', 'smarturl'),
+            'POPUP' => get_string('display_popup', 'smarturl'),
+            'EMBED' => get_string('display_embed', 'smarturl'),
+            'INLINE_IFRAME' => get_string('display_inline_iframe', 'smarturl'),
+            'MODAL' => get_string('display_modal', 'smarturl'),
             'CARD' => get_string('display_card', 'smarturl'),
         ];
         $mform->addElement('select', 'display_mode', get_string('displaymode', 'smarturl'), $displayoptions);
@@ -109,61 +104,103 @@ class mod_smarturl_mod_form extends moodleform_mod {
         $mform->hideIf('popup_height', 'display_mode', 'neq', 'POPUP');
 
         $mform->addElement('select', 'aspect_ratio', get_string('aspectratio', 'smarturl'), [
-            '16:9' => '16:9',
-            '4:3' => '4:3',
-            '1:1' => '1:1',
-            '21:9' => '21:9',
+            '16:9' => '16:9 (Widescreen)',
+            '4:3' => '4:3 (Classic)',
+            '1:1' => '1:1 (Square)',
+            '21:9' => '21:9 (Ultrawide)',
         ]);
         $mform->setDefault('aspect_ratio', '16:9');
+        foreach (['AUTO', 'NEW', 'OPEN', 'POPUP', 'CARD'] as $nonframe) {
+            $mform->hideIf('aspect_ratio', 'display_mode', 'eq', $nonframe);
+        }
+
+        // Optional preview card & media details (collapsed unless populated or requested).
+        $mform->addElement('header', 'mediahdr', get_string('mediaheader', 'smarturl'));
+        $mform->setExpanded('mediahdr', false);
+
+        $mform->addElement('text', 'thumbnail_url', get_string('thumbnailurl', 'smarturl'), ['size' => '80']);
+        $mform->setType('thumbnail_url', PARAM_URL);
+        $mform->hideIf('thumbnail_url', 'display_mode', 'eq', 'OPEN');
+        $mform->hideIf('thumbnail_url', 'display_mode', 'eq', 'NEW');
+
+        $mform->addElement('filemanager', 'poster_filemanager', get_string('posterimage', 'smarturl'), null, [
+            'subdirs' => 0,
+            'maxfiles' => 1,
+            'accepted_types' => ['image'],
+        ]);
+        $mform->hideIf('poster_filemanager', 'display_mode', 'eq', 'OPEN');
+        $mform->hideIf('poster_filemanager', 'display_mode', 'eq', 'NEW');
 
         $mform->addElement('text', 'duration_seconds', get_string('durationseconds', 'smarturl'), ['size' => '8']);
         $mform->setType('duration_seconds', PARAM_INT);
 
-        // Dynamic URL Parameters.
+        // Dynamic URL Parameters (single-line Didactika builder, starts with 1 row).
         $mform->addElement('header', 'dynamicparamshdr', get_string('dynamicparams', 'smarturl'));
         $mform->addElement('static', 'dynamicparamsinfo', '', get_string('dynamicparams_help', 'smarturl'));
 
-        $paramdefs = param_def_manager::list_all(true);
-        $varoptions = ['' => get_string('param_choose', 'smarturl')];
-        foreach ($paramdefs as $def) {
-            $varoptions[$def->shortname] = "{$def->name} ({$def->shortname})";
-        }
-        $varoptions['__static__'] = get_string('param_staticvalue', 'smarturl');
+        $paramdefs = array_values(array_map(static fn($d) => [
+            'shortname' => (string)$d->shortname,
+            'name' => (string)$d->name,
+            'source_type' => (string)$d->source_type,
+            'default_query_param' => (string)($d->default_query_param ?? ''),
+        ], param_def_manager::list_all(true)));
 
         $existingparams = !empty($this->current->parameters_json)
             ? url_resolver::decode_bindings((string)$this->current->parameters_json)
             : [];
-        $paramrepeats = max(3, count($existingparams) + 2);
-        $this->repeat_elements([
-            $mform->createElement('text', 'param_name', get_string('param_queryname', 'smarturl'), ['size' => '20', 'placeholder' => 'query_param']),
-            $mform->createElement('select', 'param_var', get_string('param_source', 'smarturl'), $varoptions),
-            $mform->createElement('text', 'param_static', get_string('param_staticvalue', 'smarturl'), ['size' => '20', 'placeholder' => 'literal value']),
-        ], $paramrepeats, [
-            'param_name' => ['type' => PARAM_ALPHANUMEXT],
-            'param_static' => ['type' => PARAM_RAW],
-        ], 'param_repeats', 'param_add', 2, get_string('param_addmore', 'smarturl'), true);
 
-        // Structured Metadata.
+        $mform->addElement('hidden', 'parameters_json', '');
+        $mform->setType('parameters_json', PARAM_RAW);
+
+        $ctx = $this->form_context();
+        $paramslocked = !policy_manager::can_edit_field('externalurl', $this->policy, $ctx, $this->userid());
+        $paramswidget = new form_builder_widget(
+            'params',
+            $existingparams,
+            $paramdefs,
+            $paramslocked,
+            [
+                'inserttokens' => get_string('param_insert_tokens', 'smarturl'),
+                'paramqueryname' => get_string('param_queryname', 'smarturl'),
+                'paramchoose' => get_string('param_choose', 'smarturl'),
+                'paramstatic' => get_string('param_staticvalue', 'smarturl'),
+                'addrow' => get_string('param_addmore', 'smarturl'),
+                'removerow' => get_string('param_remove', 'smarturl'),
+                'previewlabel' => get_string('param_preview', 'smarturl'),
+            ]
+        );
+        $mform->addElement('html', html_writer::div($OUTPUT->render($paramswidget), 'mod-smarturl my-2'));
+
+        // Structured Metadata (single-line Didactika builder, starts with 1 row).
         $mform->addElement('header', 'metadatahdr', get_string('metadatasection', 'smarturl'));
         $mform->addElement('static', 'metadatainfo', '', get_string('metadatasection_help', 'smarturl'));
 
-        $metatypes = metadata_type_manager::list_all(true);
-        $metakeyoptions = ['' => get_string('choose', 'moodle')];
-        foreach ($metatypes as $mt) {
-            $metakeyoptions[$mt->shortname] = "[{$mt->group_name}] {$mt->name}";
-        }
-        $metakeyoptions['__custom__'] = get_string('meta_customkey', 'smarturl');
+        $metatypes = array_values(array_map(static fn($mt) => [
+            'shortname' => (string)$mt->shortname,
+            'name' => (string)$mt->name,
+            'group' => (string)$mt->group_name,
+            'datatype' => (string)$mt->datatype,
+        ], metadata_type_manager::list_all(true)));
 
         $existingmeta = !empty($this->current->id) ? metadata_repository::for_instance((int)$this->current->id, true) : [];
-        $metarepeats = max(4, count($existingmeta) + 2);
-        $this->repeat_elements([
-            $mform->createElement('select', 'meta_key', get_string('meta_key', 'smarturl'), $metakeyoptions),
-            $mform->createElement('text', 'meta_customkey', get_string('meta_customkey', 'smarturl'), ['size' => '20', 'placeholder' => 'custom_key']),
-            $mform->createElement('text', 'meta_val', get_string('meta_value', 'smarturl'), ['size' => '45', 'placeholder' => 'Value']),
-        ], $metarepeats, [
-            'meta_customkey' => ['type' => PARAM_ALPHANUMEXT],
-            'meta_val' => ['type' => PARAM_RAW],
-        ], 'meta_repeats', 'meta_add', 2, get_string('meta_addmore', 'smarturl'), true);
+
+        $mform->addElement('hidden', 'metadata_json', '');
+        $mform->setType('metadata_json', PARAM_RAW);
+
+        $metalocked = !policy_manager::can_edit_field('metadata', $this->policy, $ctx, $this->userid());
+        $metawidget = new form_builder_widget(
+            'metadata',
+            $existingmeta,
+            $metatypes,
+            $metalocked,
+            [
+                'choose' => get_string('choose', 'moodle'),
+                'customkey' => get_string('meta_customkey', 'smarturl'),
+                'addrow' => get_string('meta_addmore', 'smarturl'),
+                'removerow' => get_string('param_remove', 'smarturl'),
+            ]
+        );
+        $mform->addElement('html', html_writer::div($OUTPUT->render($metawidget), 'mod-smarturl my-2'));
 
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -177,7 +214,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
     public function add_completion_rules(): array {
         $mform = $this->_form;
         $suffix = $this->get_suffix();
-        $context = $this->context ?? \context_course::instance((int)$this->current->course);
+        $context = $this->form_context();
         $locked = !policy_manager::can_edit_field('completion', $this->policy, $context, $this->userid());
 
         $elements = [];
@@ -206,7 +243,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
     }
 
     /**
-     * Preprocesses existing parameter bindings, metadata rows, poster files, and custom availability.
+     * Preprocesses draft poster area, dynamic parameters JSON, metadata JSON, and custom availability.
      *
      * @param array $defaultvalues Default form values.
      */
@@ -214,12 +251,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
         parent::data_preprocessing($defaultvalues);
 
         if (!empty($defaultvalues['parameters_json'])) {
-            $bindings = url_resolver::decode_bindings((string)$defaultvalues['parameters_json']);
-            foreach ($bindings as $idx => $binding) {
-                $defaultvalues["param_name[{$idx}]"] = $binding['param'];
-                $defaultvalues["param_var[{$idx}]"] = $binding['mode'] === 'static' ? '__static__' : $binding['var'];
-                $defaultvalues["param_static[{$idx}]"] = $binding['value'];
-            }
+            $defaultvalues['parameters_json'] = (string)$defaultvalues['parameters_json'];
         }
 
         if (!empty($defaultvalues['id'])) {
@@ -228,20 +260,12 @@ class mod_smarturl_mod_form extends moodleform_mod {
             $defaultvalues['poster_filemanager'] = $draftitemid;
 
             $entries = metadata_repository::for_instance((int)$defaultvalues['id'], true);
-            $defined = metadata_type_manager::list_all(true);
-            $known = array_flip(array_map(static fn($mt) => $mt->shortname, $defined));
-            foreach ($entries as $idx => $entry) {
-                if (isset($known[$entry['key']])) {
-                    $defaultvalues["meta_key[{$idx}]"] = $entry['key'];
-                } else {
-                    $defaultvalues["meta_key[{$idx}]"] = '__custom__';
-                    $defaultvalues["meta_customkey[{$idx}]"] = $entry['key'];
-                }
-                $defaultvalues["meta_val[{$idx}]"] = $entry['value'];
-            }
+            $defaultvalues['metadata_json'] = json_encode(array_map(static fn($e) => [
+                'key' => $e['key'],
+                'value' => $e['value'],
+            ], $entries), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
-        // Preserve external managed availability transparently when editing local restrictions.
         if (!empty($this->_cm->id)) {
             $policy = policy_manager::get_by_cmid((int)$this->_cm->id);
             if ($policy && !empty($policy->managed_availability_json) && !admin_permissions::allows('mod/smarturl:overrideavailability', $this->context)) {
@@ -251,19 +275,17 @@ class mod_smarturl_mod_form extends moodleform_mod {
     }
 
     /**
-     * Enforces granular capabilities and external policy field locks after data loading.
+     * Enforces granular capabilities, administrator restrictions, and external policy field locks after data load.
      */
     public function definition_after_data(): void {
         parent::definition_after_data();
 
-        if (empty($this->_cm->id)) {
-            return;
-        }
         $mform = $this->_form;
-        $policy = policy_manager::get_by_cmid((int)$this->_cm->id);
+        $ctx = $this->form_context();
+        $policy = !empty($this->_cm->id) ? policy_manager::get_by_cmid((int)$this->_cm->id) : null;
         $uid = $this->userid();
 
-        if (!policy_manager::can_edit_field('general', $policy, $this->context, $uid)) {
+        if (!policy_manager::can_edit_field('general', $policy, $ctx, $uid)) {
             foreach (['name', 'introeditor', 'showdescription', 'thumbnail_url', 'poster_filemanager'] as $el) {
                 if ($mform->elementExists($el)) {
                     $mform->hardFreeze($el);
@@ -271,15 +293,15 @@ class mod_smarturl_mod_form extends moodleform_mod {
             }
         }
 
-        if (!policy_manager::can_edit_field('externalurl', $policy, $this->context, $uid)) {
-            foreach (['externalurl', 'param_add'] as $el) {
+        if (!policy_manager::can_edit_field('externalurl', $policy, $ctx, $uid)) {
+            foreach (['externalurl', 'parameters_json'] as $el) {
                 if ($mform->elementExists($el)) {
                     $mform->hardFreeze($el);
                 }
             }
         }
 
-        if (!policy_manager::can_edit_field('display', $policy, $this->context, $uid)) {
+        if (!policy_manager::can_edit_field('display', $policy, $ctx, $uid)) {
             foreach (['display_mode', 'popup_width', 'popup_height', 'aspect_ratio', 'duration_seconds'] as $el) {
                 if ($mform->elementExists($el)) {
                     $mform->hardFreeze($el);
@@ -287,7 +309,13 @@ class mod_smarturl_mod_form extends moodleform_mod {
             }
         }
 
-        if (!policy_manager::can_edit_field('completion', $policy, $this->context, $uid)) {
+        if (!policy_manager::can_edit_field('metadata', $policy, $ctx, $uid)) {
+            if ($mform->elementExists('metadata_json')) {
+                $mform->hardFreeze('metadata_json');
+            }
+        }
+
+        if (!policy_manager::can_edit_field('completion', $policy, $ctx, $uid)) {
             foreach (['completion', 'completionview', 'completionexpected', 'completionusegrade'] as $el) {
                 $name = $el . $this->get_suffix();
                 if ($mform->elementExists($name)) {
@@ -298,13 +326,11 @@ class mod_smarturl_mod_form extends moodleform_mod {
             }
         }
 
-        if (!policy_manager::can_edit_field('availability', $policy, $this->context, $uid)) {
+        if (!policy_manager::can_edit_field('availability', $policy, $ctx, $uid)) {
             if ($mform->elementExists('availabilityconditionsjson')) {
                 $mform->hardFreeze('availabilityconditionsjson');
             }
         }
-
-        // Flatten repeat_elements arrays cleanly into scalar helper fields? Handled via indexed request keys on save.
     }
 
     /**
@@ -329,24 +355,18 @@ class mod_smarturl_mod_form extends moodleform_mod {
     }
 
     /**
-     * Normalizes repeat_elements array values into scalar properties expected by smarturl_add/update_instance.
+     * Resolves module context when editing or course context when creating.
      *
-     * @return object|null
+     * @return \context
      */
-    public function get_data() {
-        $data = parent::get_data();
-        if (!$data) {
-            return $data;
+    private function form_context(): \context {
+        if (!empty($this->context)) {
+            return $this->context;
         }
-        foreach (['param_name', 'param_var', 'param_static', 'meta_key', 'meta_customkey', 'meta_val'] as $prefix) {
-            if (!empty($data->$prefix) && is_array($data->$prefix)) {
-                foreach ($data->$prefix as $idx => $val) {
-                    $prop = "{$prefix}_{$idx}";
-                    $data->$prop = $val;
-                }
-            }
+        if (!empty($this->_cm->id)) {
+            return \context_module::instance((int)$this->_cm->id);
         }
-        return $data;
+        return \context_course::instance((int)($this->current->course ?? $this->_course->id));
     }
 
     /**

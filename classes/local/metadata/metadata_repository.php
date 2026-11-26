@@ -96,41 +96,49 @@ final class metadata_repository {
             return [];
         }
 
-        [$insql, $params] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
-        $sql = "SELECT v.id, v.smarturlid, v.typeid, v.custom_key, v.value_text, v.sortorder,
-                       t.shortname, t.name AS typename, t.group_name, t.datatype, t.icon,
-                       t.display_priority, t.searchable, t.filterable, t.enabled
-                  FROM {smarturl_meta_value} v
-             LEFT JOIN {smarturl_meta_type} t ON t.id = v.typeid
-                 WHERE v.smarturlid $insql
-              ORDER BY v.smarturlid ASC, COALESCE(t.sortorder, 99999) ASC, v.sortorder ASC, v.id ASC";
+        $types = $DB->get_records('smarturl_meta_type');
+        $values = $DB->get_records_list('smarturl_meta_value', 'smarturlid', $ids, 'smarturlid ASC, sortorder ASC, id ASC');
 
         $grouped = [];
         foreach ($ids as $id) {
             $grouped[$id] = [];
         }
 
-        foreach ($DB->get_records_sql($sql, $params) as $row) {
-            if ($row->typeid !== null && empty($row->enabled)) {
+        $temp = [];
+        foreach ($values as $v) {
+            $type = $v->typeid !== null ? ($types[(int)$v->typeid] ?? null) : null;
+            if ($v->typeid !== null && (!$type || empty($type->enabled))) {
                 continue;
             }
-            $priority = $row->typeid !== null ? (string)$row->display_priority : 'SECONDARY';
+            $priority = $type ? (string)$type->display_priority : 'SECONDARY';
             if (!$includehidden && $priority === 'HIDDEN') {
                 continue;
             }
-            $key = $row->typeid !== null ? (string)$row->shortname : (string)$row->custom_key;
-            $grouped[(int)$row->smarturlid][] = [
-                'id' => (int)$row->id,
-                'key' => $key,
-                'label' => $row->typeid !== null ? (string)$row->typename : self::humanize_key($key),
-                'group' => $row->typeid !== null ? (string)$row->group_name : 'Custom',
-                'datatype' => $row->typeid !== null ? (string)$row->datatype : 'TEXT',
-                'priority' => $priority,
-                'icon' => $row->icon ?: null,
-                'searchable' => $row->typeid !== null ? (bool)$row->searchable : true,
-                'filterable' => $row->typeid !== null ? (bool)$row->filterable : true,
-                'value' => (string)$row->value_text,
+            $key = $type ? (string)$type->shortname : (string)$v->custom_key;
+            $temp[(int)$v->smarturlid][] = [
+                'order' => $type ? (int)$type->sortorder : 99999,
+                'roworder' => (int)$v->sortorder,
+                'rowid' => (int)$v->id,
+                'entry' => [
+                    'id' => (int)$v->id,
+                    'key' => $key,
+                    'label' => $type ? (string)$type->name : self::humanize_key($key),
+                    'group' => $type ? (string)$type->group_name : 'Custom',
+                    'datatype' => $type ? (string)$type->datatype : 'TEXT',
+                    'priority' => $priority,
+                    'icon' => ($type && !empty($type->icon)) ? $type->icon : null,
+                    'searchable' => $type ? (bool)$type->searchable : true,
+                    'filterable' => $type ? (bool)$type->filterable : true,
+                    'value' => (string)$v->value_text,
+                ],
             ];
+        }
+
+        foreach ($temp as $sid => $entries) {
+            usort($entries, static fn($a, $b) => ($a['order'] <=> $b['order'])
+                ?: ($a['roworder'] <=> $b['roworder'])
+                ?: ($a['rowid'] <=> $b['rowid']));
+            $grouped[$sid] = array_map(static fn($e) => $e['entry'], $entries);
         }
 
         return $grouped;
