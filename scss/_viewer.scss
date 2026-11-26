@@ -1,0 +1,108 @@
+// This file is part of Moodle - https://moodle.org/
+// Moodle is free software under the GNU General Public License, version 3 or later.
+
+// Resource viewer stage & high-volume metadata explorer.
+.mod-smarturl {
+    .smu-stage {
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--dd-hairline);
+        border-radius: var(--dd-radius-lg);
+        background: var(--dd-surface);
+        overflow: hidden;
+    }
+
+    .smu-facade {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 15rem;
+        background: var(--dd-surface-2);
+        background-size: cover;
+        background-position: center;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .smu-frame-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    }
+
+    .smu-meta-toolbar {
+        display: grid;
+        gap: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .smu-meta-toprow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .smu-meta-search {
+        flex: 1 1 18rem;
+        max-width: 28rem;
+    }
+
+    .smu-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+        gap: 1rem;
+    }
+
+    .smu-card {
+        border: 1px solid var(--dd-hairline);
+        border-radius: var(--dd-radius-lg);
+        background: var(--dd-surface);
+        padding: 1rem 1.25rem;
+        box-shadow: var(--dd-shadow-sm);
+
+        h3 {
+            margin: 0 0 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dd-ink);
+        }
+    }
+
+    .smu-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1060;
+        display: grid;
+        place-items: center;
+        padding: 1.5rem;
+        background: rgb(15 23 42 / 65%);
+    }
+
+    .smu-modal {
+        width: 100%;
+        max-width: 72rem;
+        max-height: 90vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        border-radius: var(--dd-radius-lg);
+        background: var(--dd-surface);
+        box-shadow: var(--dd-shadow-lg);
+        overflow: hidden;
+    }
+
+    .smu-modal-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--dd-hairline);
+    }
+}

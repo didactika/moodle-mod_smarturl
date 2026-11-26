@@ -1,0 +1,26 @@
+{
+  "ResourceView": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "AdminConfig": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/common/PageHeader": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/viewer/MetadataExplorer": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/viewer/MetadataValue": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/viewer/PlayerStage": {
+    "eject": "risky",
+    "wrap": "risky"
+  }
+}

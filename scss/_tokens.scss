@@ -1,0 +1,52 @@
+// This file is part of Moodle - https://moodle.org/
+// Moodle is free software under the GNU General Public License, version 3 or later.
+
+// Derived Didactika Design System tokens inherited cleanly from active Moodle theme.
+.mod-smarturl {
+    --dd-primary: var(--bs-primary, var(--primary, #0f766e));
+    --dd-secondary: var(--bs-secondary, var(--secondary, #475569));
+    --dd-success: var(--bs-success, var(--success, #15803d));
+    --dd-info: var(--bs-info, var(--info, #0e7490));
+    --dd-warning: var(--bs-warning, var(--warning, #b45309));
+    --dd-danger: var(--bs-danger, var(--danger, #b91c1c));
+
+    --dd-ink: var(--bs-body-color, #0f172a);
+    --dd-muted: var(--bs-secondary-color, #566579);
+    --dd-line: #7f8da3;
+    --dd-line-hover: #5a6980;
+    --dd-hairline: var(--bs-border-color, #d3dae5);
+    --dd-surface: var(--bs-body-bg, #fff);
+    --dd-surface-2: var(--bs-secondary-bg, #f1f4f8);
+    --dd-surface-3: var(--bs-tertiary-bg, #e6ebf2);
+
+    --dd-ring: color-mix(in srgb, var(--dd-primary) 30%, transparent);
+    --dd-primary-soft: color-mix(in srgb, var(--dd-primary) 10%, var(--dd-surface));
+    --dd-primary-soft-2: color-mix(in srgb, var(--dd-primary) 18%, var(--dd-surface));
+    --dd-primary-ink: color-mix(in srgb, var(--dd-primary) 78%, var(--dd-ink));
+    --dd-success-soft: color-mix(in srgb, var(--dd-success) 12%, var(--dd-surface));
+    --dd-success-ink: color-mix(in srgb, var(--dd-success) 75%, var(--dd-ink));
+    --dd-info-soft: color-mix(in srgb, var(--dd-info) 12%, var(--dd-surface));
+    --dd-info-ink: color-mix(in srgb, var(--dd-info) 75%, var(--dd-ink));
+
+    --dd-radius-sm: 0.5rem;
+    --dd-radius: 0.625rem;
+    --dd-radius-lg: 0.75rem;
+    --dd-ease: 140ms cubic-bezier(0.2, 0, 0, 1);
+    --dd-shadow-sm: 0 1px 2px rgb(15 23 42 / 6%), 0 1px 3px rgb(15 23 42 / 8%);
+    --dd-shadow-lg: 0 28px 64px -18px rgb(15 23 42 / 40%), 0 4px 12px rgb(15 23 42 / 10%);
+
+    color: var(--dd-ink);
+    line-height: 1.55;
+}
+
+[data-bs-theme="dark"] .mod-smarturl {
+    --dd-ink: #e6eaf0;
+    --dd-muted: #9aa7b8;
+    --dd-line: #6f7c8f;
+    --dd-line-hover: #9aa7b8;
+    --dd-hairline: #3a424d;
+    --dd-surface: #1e2125;
+    --dd-surface-2: #2a2f36;
+    --dd-surface-3: #343a43;
+    --dd-primary-ink: color-mix(in srgb, var(--dd-primary) 55%, var(--dd-ink));
+}

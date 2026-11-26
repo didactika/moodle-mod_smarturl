@@ -1,0 +1,8 @@
+{
+  "subplugintypes": {
+    "smarturlcomp": "completion/rule"
+  },
+  "plugintypes": {
+    "smarturlcomp": "mod/smarturl/completion/rule"
+  }
+}
