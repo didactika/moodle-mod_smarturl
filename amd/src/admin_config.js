@@ -36,6 +36,10 @@ export const init = id => {
         type: 'param_def',
     };
 
+    const pageSize = 20;
+    meta.page = 0;
+    params.page = 0;
+
     const showError = err => {
         error.textContent = err?.message || strings.savefailed;
         error.hidden = false;
@@ -87,8 +91,16 @@ export const init = id => {
         const query = search.value.trim().toLocaleLowerCase();
         const records = config.records.filter(row => [row.name, row.shortname].some(value =>
             value.toLocaleLowerCase().includes(query)));
+        config.page = Math.min(config.page, Math.max(0, Math.ceil(records.length / pageSize) - 1));
+        const start = config.page * pageSize;
+        const pager = config.form.closest('section').querySelector('[data-pager]');
+        pager.hidden = records.length <= pageSize;
+        pager.querySelector('[data-range]').textContent = (start + 1) + '–' + Math.min(start + pageSize, records.length)
+            + ' / ' + records.length;
+        pager.querySelector('[data-prev]').disabled = !config.page;
+        pager.querySelector('[data-next]').disabled = start + pageSize >= records.length;
         config.table.replaceChildren();
-        records.forEach(record => {
+        records.slice(start, start + pageSize).forEach(record => {
             const row = config.table.insertRow();
             config.keys.forEach(key => {
                 const cell = row.insertCell();
@@ -170,6 +182,8 @@ export const init = id => {
         source.value = selectSource.value;
     });
     search.addEventListener('input', () => {
+        meta.page = 0;
+        params.page = 0;
         render(meta);
         render(params);
     });
@@ -195,6 +209,15 @@ export const init = id => {
     });
 
     [meta, params].forEach(config => {
+        const pager = config.form.closest('section').querySelector('[data-pager]');
+        pager.querySelector('[data-prev]').addEventListener('click', () => {
+            config.page--;
+            render(config);
+        });
+        pager.querySelector('[data-next]').addEventListener('click', () => {
+            config.page++;
+            render(config);
+        });
         save(config);
         render(config);
     });

@@ -21,6 +21,8 @@
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+import Ajax from 'core/ajax';
+
 
 
 const COLLAPSE_THRESHOLD = 18;
@@ -92,6 +94,13 @@ export const init = (rootId) => {
     const resultsHost = root.querySelector('[data-region="results-host"]');
     const modalBackdrop = root.querySelector('[data-region="modal-backdrop"]');
     const modalIframe = root.querySelector('[data-region="modal-player"]');
+    const track = () => Ajax.call([{methodname: 'mod_smarturl_track_view',
+        args: {cmid: Number(payload.cmid), fromviewer: true}}])[0].catch(() => null);
+    let opener = null;
+    modalBackdrop?.addEventListener('close', () => {
+        modalIframe.replaceChildren();
+        opener?.focus();
+    });
 
 
     const groupsMap = {};
@@ -223,18 +232,19 @@ export const init = (rootId) => {
             window.setTimeout(() => {
                 actionEl.textContent = strings.copyjson || 'Copy JSON';
             }, 1800);
-        } else if (action === 'track-open') {
         } else if (action === 'launch-inline') {
             const stage = root.querySelector('.smu-stage');
             if (stage) {
                 stage.innerHTML = '<div class="smu-player">' + (payload.playerHtml || '') + '</div>';
-                }
+                track();
+            }
         } else if (action === 'open-modal' && modalBackdrop && modalIframe) {
             modalIframe.innerHTML = payload.playerHtml || '';
-            modalBackdrop.hidden = false;
+            opener = actionEl;
+            modalBackdrop.showModal();
+            track();
         } else if (action === 'close-modal' && modalBackdrop && modalIframe) {
-            modalBackdrop.hidden = true;
-            modalIframe.innerHTML = '';
+            modalBackdrop.close();
         }
     });
 

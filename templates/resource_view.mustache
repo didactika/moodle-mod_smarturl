@@ -16,7 +16,7 @@
             {{#haslocked}}<span class="dd-tag">{{lockedbadge}}: {{lockedcount}}</span>{{/haslocked}}
         </div>
         {{#isembed}}
-        <a class="btn btn-outline-secondary btn-sm" href="{{gourl}}" target="_blank" rel="noopener noreferrer" data-action="track-open">{{strings.openresource}}</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{strings.openresource}}</a>
         {{/isembed}}
     </div>
 
@@ -36,7 +36,7 @@
                     <button type="button" class="btn btn-primary" data-action="launch-inline">{{strings.launchiframe}}</button>
                     {{/isinline}}
                     {{#isdirect}}
-                    <a class="btn btn-primary" href="{{gourl}}" target="_blank" rel="noopener noreferrer" data-action="track-open">{{primarylabel}}</a>
+                    <a class="btn btn-primary" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{primarylabel}}</a>
                     {{/isdirect}}
                 </div>
             </div>
@@ -44,12 +44,12 @@
         {{/isembed}}
     </section>
 
-    <div class="smu-modal-backdrop" hidden data-region="modal-backdrop">
-        <div class="smu-modal" role="dialog" aria-modal="true" aria-label="{{name}}">
+    <dialog class="smu-player-dialog" data-region="modal-backdrop" aria-label="{{name}}">
+        <div class="card">
             <div class="smu-modal-bar">
                 <span class="fw-semibold">{{name}}</span>
                 <div>
-                    <a class="btn btn-sm btn-outline-secondary" href="{{gourl}}" target="_blank" rel="noopener noreferrer" data-action="track-open">{{strings.openresource}}</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{strings.openresource}}</a>
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-action="close-modal">{{strings.closepreview}}</button>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                 <div class="smu-player" data-region="modal-player"></div>
             </div>
         </div>
-    </div>
+    </dialog>
 
     {{#intro}}
     <section class="card card-body smu-description">
