@@ -35,5 +35,13 @@ $PAGE->set_heading(get_string('adminconfigtitle', 'smarturl'));
 $page = new \mod_smarturl\output\admin_config_page();
 
 echo $OUTPUT->header();
+echo html_writer::div(
+    html_writer::link(
+        new moodle_url('/mod/smarturl/categories.php'),
+        get_string('categories', 'smarturl'),
+        ['class' => 'btn btn-outline-secondary']
+    ),
+    'd-flex justify-content-end mb-3',
+);
 echo html_writer::div($OUTPUT->render($page), 'mod-smarturl');
 echo $OUTPUT->footer();

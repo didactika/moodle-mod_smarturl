@@ -15,28 +15,15 @@ import PlayerStage from './components/viewer/PlayerStage';
 import {formatDuration} from './lib/metadata';
 import type {ResourceViewProps} from './types';
 
-const DISPLAY_LABELS: Record<string, string> = {
-    AUTO: 'Automatic',
-    EMBED: 'Embedded on page',
-    INLINE_IFRAME: 'Interactive preview',
-    MODAL: 'Preview dialog',
-    POPUP: 'Pop-up window',
-    NEW: 'New browser tab',
-    OPEN: 'Direct redirect',
-    CARD: 'Preview card',
-};
-
 const ResourceView = (props: ResourceViewProps) => {
     const [modalOpen, setModalOpen] = useState(false);
     const hasDuration = typeof props.durationSeconds === 'number' && props.durationSeconds > 0;
     const isEmbedStage = props.displayMode === 'EMBED';
-    const modeLabel = DISPLAY_LABELS[props.displayMode] ?? props.displayMode;
 
     return (
         <div className="smu-resource-shell">
             <div className="smu-resource-bar">
                 <div className="dd-tags">
-                    <span className="dd-tag">{modeLabel}</span>
                     {hasDuration && (
                         <span className="dd-tag">{formatDuration(props.durationSeconds)}</span>
                     )}
@@ -69,6 +56,13 @@ const ResourceView = (props: ResourceViewProps) => {
                 onOpenModal={() => setModalOpen(true)}
                 onCloseModal={() => setModalOpen(false)}
             />
+
+            {props.intro && (
+                <section className="card card-body smu-description">
+                    <h2 className="h5">{props.strings.description}</h2>
+                    <div className="description" dangerouslySetInnerHTML={{__html: props.intro}}/>
+                </section>
+            )}
 
             {props.metadata.length > 0 && (
                 <MetadataExplorer entries={props.metadata} strings={props.strings}/>

@@ -1,7 +1,45 @@
 {
+  "AdminConfig": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "AppearancePreview": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "components": [
     "ResourceView.tsx",
     "AdminConfig.tsx",
-    "FormBuilder.tsx"
-  ]
+    "FormBuilder.tsx",
+    "AppearancePreview.tsx",
+    "CoursePreview.tsx"
+  ],
+  "components/common/PageHeader": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/viewer/MetadataExplorer": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/viewer/MetadataValue": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/viewer/PlayerStage": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "CoursePreview": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "FormBuilder": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "ResourceView": {
+    "eject": "risky",
+    "wrap": "risky"
+  }
 }

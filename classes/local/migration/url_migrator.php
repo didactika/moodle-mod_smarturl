@@ -53,7 +53,7 @@ final class url_migrator {
 
         if (!$hasfilter && empty($options['allurls'])) {
             throw new \invalid_parameter_exception(
-                'At least one selector (--courseid, --categoryid, --cmids, --idnumber-prefix, --url-pattern) or --all-urls is required.'
+                'Specify --courseid, --categoryid, --cmids, --idnumber-prefix, --url-pattern or --all-urls.'
             );
         }
 
@@ -69,9 +69,21 @@ final class url_migrator {
             $params['courseid'] = (int)$options['courseid'];
         }
         if (!empty($options['categoryid'])) {
-            $courseids = $DB->get_fieldset_select('course', 'id', 'category = :categoryid', ['categoryid' => (int)$options['categoryid']]);
+            $courseids = $DB->get_fieldset_select(
+                'course',
+                'id',
+                'category = :categoryid',
+                ['categoryid' => (int)$options['categoryid']],
+            );
             if (empty($courseids)) {
-                return ['dryrun' => $dryrun, 'matched' => 0, 'migrated' => 0, 'completions' => 0, 'rewired' => 0, 'items' => []];
+                return [
+                    'dryrun' => $dryrun,
+                    'matched' => 0,
+                    'migrated' => 0,
+                    'completions' => 0,
+                    'rewired' => 0,
+                    'items' => [],
+                ];
             }
             [$cinsql, $cinparams] = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED, 'catc');
             $clauses[] = "course $cinsql";
@@ -80,7 +92,14 @@ final class url_migrator {
         if (!empty($options['cmids'])) {
             $cmids = array_values(array_filter(array_map('intval', (array)$options['cmids']), static fn($id) => $id > 0));
             if (empty($cmids)) {
-                return ['dryrun' => $dryrun, 'matched' => 0, 'migrated' => 0, 'completions' => 0, 'rewired' => 0, 'items' => []];
+                return [
+                    'dryrun' => $dryrun,
+                    'matched' => 0,
+                    'migrated' => 0,
+                    'completions' => 0,
+                    'rewired' => 0,
+                    'items' => [],
+                ];
             }
             [$insql, $inparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED, 'cm');
             $clauses[] = "id $insql";
@@ -374,7 +393,16 @@ final class url_migrator {
                 'filepath' => $file->get_filepath(),
                 'filename' => $file->get_filename(),
             ];
-            if (!$fs->file_exists($record['contextid'], $record['component'], $record['filearea'], 0, $record['filepath'], $record['filename'])) {
+            if (
+                !$fs->file_exists(
+                    $record['contextid'],
+                    $record['component'],
+                    $record['filearea'],
+                    0,
+                    $record['filepath'],
+                    $record['filename'],
+                )
+            ) {
                 $fs->create_file_from_storedfile($record, $file);
             }
         }
@@ -421,7 +449,12 @@ final class url_migrator {
             };
             $walker($tree);
             if ($changed) {
-                $DB->set_field('course_modules', 'availability', json_encode($tree, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ['id' => $mod->id]);
+                $DB->set_field(
+                    'course_modules',
+                    'availability',
+                    json_encode($tree, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    ['id' => $mod->id],
+                );
                 $rewired++;
             }
         }

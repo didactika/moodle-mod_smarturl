@@ -35,10 +35,27 @@ final class metadata_repository {
         global $DB;
 
         $typesbykey = [];
-        foreach ($DB->get_records('smarturl_meta_type') as $type) {
+        $types = $DB->get_records('smarturl_meta_type');
+        foreach ($types as $type) {
             $typesbykey[strtolower($type->shortname)] = $type;
         }
 
+        $transaction = $DB->start_delegated_transaction();
+        $categories = $DB->get_records('smarturl_meta_category');
+        $existing = $DB->get_records('smarturl_meta_value', ['smarturlid' => $smarturlid]);
+        $protectedkeys = [];
+        $replaceids = [];
+        $previousvalues = [];
+        foreach ($existing as $row) {
+            $type = $types[$row->typeid] ?? null;
+            $previousvalues[strtolower($type->shortname ?? $row->custom_key)][$row->value_text] = true;
+            $categorydisabled = !empty($type->categoryid) && empty($categories[$type->categoryid]->enabled);
+            if ($row->archived || ($type && (!$type->enabled || $categorydisabled))) {
+                $protectedkeys[strtolower($type->shortname ?? $row->custom_key)] = true;
+            } else {
+                $replaceids[] = $row->id;
+            }
+        }
         $now = time();
         $rows = [];
         $order = 1;
@@ -49,7 +66,13 @@ final class metadata_repository {
                 continue;
             }
             $normkey = strtolower($rawkey);
+            if (isset($protectedkeys[$normkey])) {
+                continue;
+            }
             $type = $typesbykey[$normkey] ?? null;
+            if ($type && !isset($previousvalues[$normkey][$value])) {
+                $value = field_types::normalise($type->datatype, $value);
+            }
 
             $rows[] = (object)[
                 'smarturlid' => $smarturlid,
@@ -61,8 +84,9 @@ final class metadata_repository {
             ];
         }
 
-        $transaction = $DB->start_delegated_transaction();
-        $DB->delete_records('smarturl_meta_value', ['smarturlid' => $smarturlid]);
+        if ($replaceids) {
+            $DB->delete_records_list('smarturl_meta_value', 'id', $replaceids);
+        }
         if (!empty($rows)) {
             $DB->insert_records('smarturl_meta_value', $rows);
         }
@@ -97,6 +121,7 @@ final class metadata_repository {
         }
 
         $types = $DB->get_records('smarturl_meta_type');
+        $categories = $DB->get_records('smarturl_meta_category');
         $values = $DB->get_records_list('smarturl_meta_value', 'smarturlid', $ids, 'smarturlid ASC, sortorder ASC, id ASC');
 
         $grouped = [];
@@ -107,7 +132,10 @@ final class metadata_repository {
         $temp = [];
         foreach ($values as $v) {
             $type = $v->typeid !== null ? ($types[(int)$v->typeid] ?? null) : null;
-            if ($v->typeid !== null && (!$type || empty($type->enabled))) {
+            if (
+                $v->archived || ($v->typeid !== null && (!$type || empty($type->enabled)
+                    || $type->categoryid !== null && empty($categories[$type->categoryid]->enabled)))
+            ) {
                 continue;
             }
             $priority = $type ? (string)$type->display_priority : 'SECONDARY';

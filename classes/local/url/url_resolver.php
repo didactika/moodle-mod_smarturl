@@ -49,10 +49,24 @@ final class url_resolver {
      * @param int $cmid Course module ID.
      * @return string Resolved URL.
      */
-    public static function preview(string $template, array $bindings, \stdClass $course, \stdClass $user, int $cmid = 0): string {
+    public static function preview(
+        string $template,
+        array $bindings,
+        \stdClass $course,
+        \stdClass $user,
+        int $cmid = 0,
+    ): string {
         global $DB;
 
-        $defs = $DB->get_records('smarturl_param_def', ['enabled' => 1], 'sortorder ASC, id ASC');
+        preg_match_all('/\{\{([a-z0-9_.-]+)\}\}/i', $template, $matches);
+        $keys = $matches[1];
+        foreach ($bindings as $binding) {
+            if (($binding['mode'] ?? 'def') !== 'static' && !empty($binding['var'])) {
+                $keys[] = $binding['var'];
+            }
+        }
+        $keys = array_values(array_unique(array_map('strtolower', $keys)));
+        $defs = $keys ? $DB->get_records_list('smarturl_param_def', 'shortname', $keys, 'sortorder ASC, id ASC') : [];
         $values = self::compute_values($defs, $course, $user, $cmid);
 
         // Preserve URL fragment while substituting tokens and appending query parameters.
@@ -96,6 +110,26 @@ final class url_resolver {
 
         $sep = str_contains($resolved, '?') ? (str_ends_with($resolved, '?') || str_ends_with($resolved, '&') ? '' : '&') : '?';
         return $resolved . $sep . implode('&', $querypairs) . $fragment;
+    }
+
+    /**
+     * Resolves a draft using synthetic values for Moodle variables.
+     *
+     * @param string $template Submitted URL.
+     * @param array $bindings Submitted query bindings.
+     * @return string
+     */
+    public static function preview_sample(string $template, array $bindings): string {
+        $sample = preg_replace('/\{\{[a-z0-9_.-]+\}\}/i', 'sample-value', $template) ?? $template;
+        foreach ($bindings as &$binding) {
+            if (($binding['mode'] ?? 'def') !== 'static') {
+                $binding['mode'] = 'static';
+                $binding['value'] = 'sample-value';
+            }
+        }
+        unset($binding);
+        global $SITE;
+        return self::preview($sample, $bindings, $SITE, (object)['id' => 0]);
     }
 
     /**

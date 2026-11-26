@@ -102,9 +102,9 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
                             </button>
                         </div>
 
-                        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={copyJson}>
-                            {copied ? (strings.copied ?? 'Copied') : (strings.copyjson ?? 'Copy JSON')}
-                        </button>
+                        {strings.copyjson && <button type="button" className="btn btn-outline-secondary btn-sm" onClick={copyJson}>
+                            {copied ? (strings.copied ?? 'Copied') : strings.copyjson}
+                        </button>}
                     </div>
                 </div>
 
@@ -133,60 +133,21 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
                 </div>
 
                 {groupFacets.length > 0 && (
-                    <div className="dd-chips" role="group" aria-label="Metadata groups">
-                        <button
-                            type="button"
-                            className="dd-chip"
-                            aria-pressed={activeGroup === ''}
-                            onClick={() => setActiveGroup('')}
-                        >
-                            {strings.allgroups ?? 'All'}
-                            <span className="dd-chip-count">{queryMatched.length}</span>
-                        </button>
-                        {groupFacets.map((facet) => (
-                            <button
-                                key={facet.name}
-                                type="button"
-                                className="dd-chip"
-                                aria-pressed={activeGroup === facet.name}
-                                onClick={() => setActiveGroup((prev) => (prev === facet.name ? '' : facet.name))}
-                            >
-                                {facet.name}
-                                <span className="dd-chip-count">{facet.count}</span>
-                            </button>
-                        ))}
+                    <div className="d-flex flex-wrap align-items-center gap-2">
+                        <select className="form-select w-auto" aria-label={strings.groupname} value={activeGroup}
+                            onChange={event => setActiveGroup(event.target.value)}>
+                            <option value="">{strings.allgroups}</option>
+                            {activeGroup && !groupFacets.some(facet => facet.name === activeGroup)
+                                && <option value={activeGroup}>{activeGroup} (0)</option>}
+                            {groupFacets.map(facet => <option key={facet.name} value={facet.name}>
+                                {facet.name} ({facet.count})
+                            </option>)}
+                        </select>
+                        {(searchText || activeGroup) && <button type="button" className="btn btn-outline-secondary btn-sm"
+                            onClick={clearAll}>{strings.clearfilters}</button>}
                     </div>
                 )}
 
-                {(debouncedQuery || activeGroup) && (
-                    <div className="dd-chips" aria-label="Applied filters">
-                        {debouncedQuery && (
-                            <span className="dd-chip dd-chip-applied">
-                                &ldquo;{debouncedQuery}&rdquo;
-                                <button
-                                    type="button"
-                                    className="dd-chip-remove"
-                                    aria-label="Clear search"
-                                    onClick={() => setSearchText('')}
-                                />
-                            </span>
-                        )}
-                        {activeGroup && (
-                            <span className="dd-chip dd-chip-applied">
-                                {activeGroup}
-                                <button
-                                    type="button"
-                                    className="dd-chip-remove"
-                                    aria-label={`Remove ${activeGroup}`}
-                                    onClick={() => setActiveGroup('')}
-                                />
-                            </span>
-                        )}
-                        <button type="button" className="btn btn-link btn-sm" onClick={clearAll}>
-                            {strings.clearfilters ?? 'Clear all'}
-                        </button>
-                    </div>
-                )}
             </div>
 
             {visibleEntries.length === 0 ? (
@@ -220,11 +181,12 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
             ) : (
                 <div className="table-responsive smu-card">
                     <table className="table table-hover align-middle mb-0">
+                        <caption className="visually-hidden">{strings.metadataheading}</caption>
                         <thead>
                             <tr>
-                                <th>Group</th>
-                                <th>Attribute</th>
-                                <th>Value</th>
+                                <th scope="col">{strings.groupname}</th>
+                                <th scope="col">{strings.metadatatypes}</th>
+                                <th scope="col">{strings.metavalue}</th>
                             </tr>
                         </thead>
                         <tbody>

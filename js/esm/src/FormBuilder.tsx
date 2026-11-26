@@ -262,7 +262,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                                         onChange={(e) => updateRow(row.id, {key: e.target.value})}
                                     />
                                     <select
-                                        className="form-control smu-builder-select"
+                                        className="form-select smu-builder-select"
                                         value={row.varName}
                                         disabled={locked}
                                         onChange={(e) => {
@@ -296,7 +296,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                             ) : (
                                 <>
                                     <select
-                                        className="form-control smu-builder-select"
+                                        className="form-select smu-builder-select"
                                         value={row.key}
                                         disabled={locked}
                                         onChange={(e) => updateRow(row.id, {key: e.target.value})}
@@ -323,14 +323,22 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                                             onChange={(e) => updateRow(row.id, {customKey: e.target.value})}
                                         />
                                     )}
-                                    <input
-                                        type="text"
-                                        className="form-control smu-builder-input smu-builder-val"
-                                        placeholder={placeholderForDatatype(metaDef?.datatype)}
-                                        value={row.value}
-                                        disabled={locked}
-                                        onChange={(e) => updateRow(row.id, {value: e.target.value})}
-                                    />
+                                    {metaDef?.datatype === 'BOOLEAN' ? (
+                                        <select className="form-select smu-builder-select" aria-label={strings.metavalue}
+                                            disabled={locked} value={row.value} onChange={e => updateRow(row.id, {value: e.target.value})}>
+                                            <option value="">{strings.metavalue}</option>
+                                            <option value="1">{strings.yes}</option>
+                                            <option value="0">{strings.no}</option>
+                                        </select>
+                                    ) : metaDef?.datatype === 'MULTILINE' ? (
+                                        <textarea className="form-control smu-builder-val" aria-label={strings.metavalue}
+                                            disabled={locked} value={row.value} onChange={e => updateRow(row.id, {value: e.target.value})}/>
+                                    ) : (
+                                        <input type={metaDef?.datatype === 'DATE' ? 'date' : metaDef?.datatype === 'NUMBER' ? 'number' : 'text'}
+                                            step="any" className="form-control smu-builder-input smu-builder-val"
+                                            aria-label={strings.metavalue} placeholder={strings.metavalue} value={row.value}
+                                            disabled={locked} onChange={e => updateRow(row.id, {value: e.target.value})}/>
+                                    )}
                                 </>
                             )}
 

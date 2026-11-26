@@ -38,7 +38,7 @@ const PageHeader = ({breadcrumb, title, subtitle, iconLabel = 'URL', actions}: P
         )}
         <div className="dd-page-header-row">
             <div className="dd-page-header-main">
-                <span className="dd-tile dd-tile-lg" aria-hidden="true">{iconLabel}</span>
+                {iconLabel && <span className="dd-tile dd-tile-lg" aria-hidden="true">{iconLabel}</span>}
                 <div>
                     <h1 className="dd-page-title">{title}</h1>
                     {subtitle && <div className="dd-page-subtitle">{subtitle}</div>}

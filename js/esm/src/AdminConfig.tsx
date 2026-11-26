@@ -19,13 +19,23 @@ const AdminConfig = (props: AdminConfigProps) => {
     const [metaTypes, setMetaTypes] = useState<MetadataTypeRecord[]>(props.metaTypes);
     const [paramDefs, setParamDefs] = useState<ParamDefRecord[]>(props.paramDefs);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [query, setQuery] = useState('');
+    const [pendingDelete, setPendingDelete] = useState<{id: number; name: string; tab: 'meta' | 'params'} | null>(null);
+    const [page, setPage] = useState(0);
+    const perPage = 20;
+    const matches = <T extends {name: string; shortname: string}>(items: T[]) => items.filter(item =>
+        [item.name, item.shortname].some(value => value.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())));
+    const filteredFields = matches(metaTypes);
+    const filteredVariables = matches(paramDefs);
+    const count = tab === 'meta' ? filteredFields.length : filteredVariables.length;
+    const offset = Math.min(page * perPage, Math.max(0, Math.floor((count - 1) / perPage) * perPage));
 
     // Metadata type form state.
     const [mtForm, setMtForm] = useState({
         id: 0,
         shortname: '',
         name: '',
-        group_name: 'General',
+        categoryid: props.categories[0]?.id ?? 0,
         datatype: 'TEXT',
         display_priority: 'SECONDARY',
         searchable: true,
@@ -60,7 +70,7 @@ const AdminConfig = (props: AdminConfigProps) => {
                 id: 0,
                 shortname: '',
                 name: '',
-                group_name: 'General',
+                categoryid: props.categories[0]?.id ?? 0,
                 datatype: 'TEXT',
                 display_priority: 'SECONDARY',
                 searchable: true,
@@ -78,7 +88,7 @@ const AdminConfig = (props: AdminConfigProps) => {
         api.deleteMetaType(id).then(() => {
             setMetaTypes((prev) => prev.filter((item) => item.id !== id));
             return null;
-        }, () => null);
+        }, () => { setErrorMsg(props.strings.savefailed); return null; });
     };
 
     const submitParamDef = (e: React.FormEvent) => {
@@ -109,7 +119,7 @@ const AdminConfig = (props: AdminConfigProps) => {
         api.deleteParamDef(id).then(() => {
             setParamDefs((prev) => prev.filter((item) => item.id !== id));
             return null;
-        }, () => null);
+        }, () => { setErrorMsg(props.strings.savefailed); return null; });
     };
 
     const runPreview = () => {
@@ -125,31 +135,50 @@ const AdminConfig = (props: AdminConfigProps) => {
         api.previewUrl(testTemplate, 1, bindings).then((res) => {
             setTestResult(res.resolved);
             return null;
-        }, () => null);
+        }, () => { setErrorMsg(props.strings.savefailed); return null; });
     };
 
     return (
         <div className="smu-admin-layout">
+            {pendingDelete && <div className="alert alert-warning" role="alert">
+                <p>{props.strings.confirmdelete.replace('{$a}', pendingDelete.name)}</p>
+                <button className="btn btn-danger me-2" type="button" onClick={() => {
+                    if (pendingDelete.tab === 'meta') { removeMetaType(pendingDelete.id); } else { removeParamDef(pendingDelete.id); }
+                    setPendingDelete(null);
+                }}>{props.strings.delete}</button>
+                <button className="btn btn-outline-secondary" type="button" onClick={() => setPendingDelete(null)}>
+                    {props.strings.cancel}
+                </button>
+            </div>}
             <PageHeader
                 title={props.title}
                 subtitle={props.subtitle}
-                iconLabel="CFG"
+                iconLabel=""
                 actions={(
                     <a href={props.settingsUrl} className="btn btn-outline-secondary">
-                        Plugin settings
+                        {props.strings.settings}
                     </a>
                 )}
             />
 
             {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
 
-            <div className="dd-segmented" role="tablist">
-                <button type="button" aria-pressed={tab === 'meta'} onClick={() => setTab('meta')}>
+            <div className="nav nav-tabs" role="group">
+                <button type="button" aria-pressed={tab === 'meta'} className={tab === 'meta' ? 'nav-link active' : 'nav-link'} onClick={() => { setTab('meta'); setPage(0); }}>
                     {props.strings.metadatatypes ?? 'Metadata types'} ({metaTypes.length})
                 </button>
-                <button type="button" aria-pressed={tab === 'params'} onClick={() => setTab('params')}>
+                <button type="button" aria-pressed={tab === 'params'} className={tab === 'params' ? 'nav-link active' : 'nav-link'} onClick={() => { setTab('params'); setPage(0); }}>
                     {props.strings.paramdefs ?? 'Dynamic URL parameters'} ({paramDefs.length})
                 </button>
+            </div>
+
+            <div className="table-toolbar d-flex flex-wrap gap-2" role="search">
+                <input className="form-control w-auto" type="search" value={query} aria-label={props.strings.search}
+                    placeholder={props.strings.search} onChange={event => { setQuery(event.target.value); setPage(0); }}/>
+                <button className="btn btn-outline-secondary" type="button" onClick={() => { setQuery(''); setPage(0); }}>
+                    {props.strings.clearfilters}
+                </button>
+                <span className="align-self-center text-muted" role="status">{count || props.strings.emptyresults}</span>
             </div>
 
             {tab === 'meta' ? (
@@ -168,7 +197,7 @@ const AdminConfig = (props: AdminConfigProps) => {
                                 />
                             </div>
                             <div>
-                                <label className="form-label">Name</label>
+                                <label className="form-label">{props.strings.name}</label>
                                 <input
                                     className="form-control"
                                     required
@@ -179,12 +208,12 @@ const AdminConfig = (props: AdminConfigProps) => {
                             </div>
                             <div>
                                 <label className="form-label">{props.strings.groupname ?? 'Group'}</label>
-                                <input
-                                    className="form-control"
-                                    value={mtForm.group_name}
-                                    onChange={(e) => setMtForm({...mtForm, group_name: e.currentTarget.value})}
-                                    placeholder="Academic"
-                                />
+                                <select className="form-select" value={mtForm.categoryid}
+                                    onChange={event => setMtForm({...mtForm, categoryid: Number(event.target.value)})}>
+                                    <option value={0}>{props.strings.groupname}</option>
+                                    {props.categories.map(category =>
+                                        <option key={category.id} value={category.id}>{category.name}</option>)}
+                                </select>
                             </div>
                             <div>
                                 <label className="form-label">{props.strings.datatype ?? 'Data type'}</label>
@@ -232,20 +261,21 @@ const AdminConfig = (props: AdminConfigProps) => {
                         </div>
                     </form>
 
-                    <div className="smu-card table-responsive">
+                    <div className="card table-responsive" data-region="tablewrap">
                         <table className="table table-hover align-middle mb-0">
+                            <caption className="visually-hidden">{props.strings.metadatatypes}</caption>
                             <thead>
                                 <tr>
-                                    <th>{props.strings.shortname ?? 'Shortname'}</th>
-                                    <th>Name</th>
-                                    <th>{props.strings.groupname ?? 'Group'}</th>
-                                    <th>{props.strings.datatype ?? 'Data type'}</th>
-                                    <th>{props.strings.priority ?? 'Priority'}</th>
-                                    <th/>
+                                    <th scope="col">{props.strings.shortname ?? 'Shortname'}</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">{props.strings.groupname ?? 'Group'}</th>
+                                    <th scope="col">{props.strings.datatype ?? 'Data type'}</th>
+                                    <th scope="col">{props.strings.priority ?? 'Priority'}</th>
+                                    <th scope="col" aria-label={props.strings.edit}/>
                                 </tr>
                             </thead>
                             <tbody>
-                                {metaTypes.map((mt) => (
+                                {filteredFields.slice(offset, offset + perPage).map((mt) => (
                                     <tr key={mt.id}>
                                         <td><code>{mt.shortname}</code></td>
                                         <td>{mt.name}</td>
@@ -260,7 +290,7 @@ const AdminConfig = (props: AdminConfigProps) => {
                                                     id: mt.id,
                                                     shortname: mt.shortname,
                                                     name: mt.name,
-                                                    group_name: mt.group_name,
+                                                    categoryid: mt.categoryid ?? 0,
                                                     datatype: mt.datatype,
                                                     display_priority: mt.display_priority,
                                                     searchable: Boolean(mt.searchable),
@@ -273,7 +303,7 @@ const AdminConfig = (props: AdminConfigProps) => {
                                             <button
                                                 type="button"
                                                 className="btn btn-outline-danger btn-sm"
-                                                onClick={() => removeMetaType(mt.id)}
+                                                onClick={() => setPendingDelete({...mt, tab: 'meta'})}
                                             >
                                                 {props.strings.delete ?? 'Delete'}
                                             </button>
@@ -314,7 +344,7 @@ const AdminConfig = (props: AdminConfigProps) => {
                                 <select
                                     className="form-select"
                                     value={pdForm.source_type}
-                                    onChange={(e) => setPdForm({...pdForm, source_type: e.currentTarget.value})}
+                                    onChange={(e) => setPdForm({...pdForm, source_type: e.currentTarget.value, source_key: ''})}
                                 >
                                     {props.sourceTypes.map((st) => <option key={st} value={st}>{st}</option>)}
                                 </select>
@@ -363,20 +393,20 @@ const AdminConfig = (props: AdminConfigProps) => {
                         )}
                     </div>
 
-                    <div className="smu-card table-responsive">
+                    <div className="card table-responsive" data-region="tablewrap">
                         <table className="table table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>{props.strings.shortname ?? 'Shortname'}</th>
-                                    <th>Name</th>
-                                    <th>{props.strings.sourcetype ?? 'Source type'}</th>
-                                    <th>{props.strings.sourcekey ?? 'Source key'}</th>
-                                    <th>{props.strings.defaultqueryparam ?? 'Query param'}</th>
-                                    <th/>
+                                    <th scope="col">{props.strings.shortname ?? 'Shortname'}</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">{props.strings.sourcetype ?? 'Source type'}</th>
+                                    <th scope="col">{props.strings.sourcekey ?? 'Source key'}</th>
+                                    <th scope="col">{props.strings.defaultqueryparam ?? 'Query param'}</th>
+                                    <th scope="col" aria-label={props.strings.edit}/>
                                 </tr>
                             </thead>
                             <tbody>
-                                {paramDefs.map((pd) => (
+                                {filteredVariables.slice(offset, offset + perPage).map((pd) => (
                                     <tr key={pd.id}>
                                         <td><code>{`{{${pd.shortname}}}`}</code></td>
                                         <td>{pd.name}</td>
@@ -402,7 +432,7 @@ const AdminConfig = (props: AdminConfigProps) => {
                                             <button
                                                 type="button"
                                                 className="btn btn-outline-danger btn-sm"
-                                                onClick={() => removeParamDef(pd.id)}
+                                                onClick={() => setPendingDelete({...pd, tab: 'params'})}
                                             >
                                                 {props.strings.delete ?? 'Delete'}
                                             </button>
@@ -414,6 +444,13 @@ const AdminConfig = (props: AdminConfigProps) => {
                     </div>
                 </div>
             )}
+            {count > perPage && <div className="table-foot d-flex justify-content-end align-items-center gap-2">
+                <span role="status">{offset + 1}–{Math.min(offset + perPage, count)} / {count}</span>
+                <button className="btn btn-outline-secondary" type="button" disabled={!offset}
+                    onClick={() => setPage(Math.floor(offset / perPage) - 1)} aria-label={props.strings.previous}>‹</button>
+                <button className="btn btn-outline-secondary" type="button" disabled={offset + perPage >= count}
+                    onClick={() => setPage(Math.floor(offset / perPage) + 1)} aria-label={props.strings.next}>›</button>
+            </div>}
         </div>
     );
 };

@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_smarturl\local\metadata\metadata_repository;
 
 /**
@@ -70,7 +68,11 @@ class restore_smarturl_activity_structure_step extends restore_activity_structur
     protected function process_metavalue($data): void {
         $data = (object)$data;
         if (!empty($data->key) && isset($data->value_text)) {
-            $this->metadatabuffer[] = ['key' => (string)$data->key, 'value' => (string)$data->value_text];
+            $this->metadatabuffer[] = [
+                'key' => (string)$data->key,
+                'value' => (string)$data->value_text,
+                'archived' => (int)($data->archived ?? 0),
+            ];
         }
     }
 
@@ -91,10 +93,25 @@ class restore_smarturl_activity_structure_step extends restore_activity_structur
 
         $this->add_related_files('mod_smarturl', 'intro', null);
         $this->add_related_files('mod_smarturl', 'poster', null);
+        $this->add_related_files('mod_smarturl', 'translation', null);
 
         $smarturlid = (int)$this->get_new_parentid('smarturl');
         if ($smarturlid > 0 && !empty($this->metadatabuffer)) {
-            metadata_repository::replace_for_instance($smarturlid, $this->metadatabuffer);
+            metadata_repository::replace_for_instance($smarturlid, array_filter(
+                $this->metadatabuffer,
+                static fn($entry) => !$entry['archived']
+            ));
+            foreach ($this->metadatabuffer as $entry) {
+                if ($entry['archived']) {
+                    $DB->insert_record('smarturl_meta_value', (object)[
+                        'smarturlid' => $smarturlid,
+                        'custom_key' => $entry['key'],
+                        'value_text' => $entry['value'],
+                        'archived' => 1,
+                        'timemodified' => time(),
+                    ]);
+                }
+            }
         }
 
         if ($smarturlid > 0 && $this->policybuffer !== null) {

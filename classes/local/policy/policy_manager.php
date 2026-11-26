@@ -16,8 +16,6 @@
 
 namespace mod_smarturl\local\policy;
 
-use mod_smarturl\local\permissions\admin_permissions;
-
 /**
  * Evaluates and updates external field-lock policies and local override watermarks.
  *
@@ -90,11 +88,11 @@ final class policy_manager {
             'metadata' => 'mod/smarturl:editmetadata',
         ];
         $cap = $capmap[$field] ?? null;
-        if ($cap && !admin_permissions::allows($cap, $context, $userid)) {
+        if ($cap && !has_capability($cap, $context, $userid)) {
             return false;
         }
         if ($policy !== null && in_array($field, self::locked_fields($policy), true)) {
-            return admin_permissions::allows('mod/smarturl:bypasspolicy', $context, $userid);
+            return has_capability('mod/smarturl:bypasspolicy', $context, $userid);
         }
         return true;
     }
@@ -117,7 +115,7 @@ final class policy_manager {
                 self::LOCKABLE_FIELDS,
                 array_map('strtolower', array_map('strval', $input['lockedfields']))
             ));
-        } elseif ($existing) {
+        } else if ($existing) {
             $locked = self::locked_fields($existing);
         }
 

@@ -13,7 +13,7 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
  */
 import { fetchOne } from "@moodle/lms/core/ajax";
 const call = /* @__PURE__ */ __name((methodname, args) => fetchOne({ methodname, args }), "call");
-const trackView = /* @__PURE__ */ __name((cmid) => call("mod_smarturl_track_view", { cmid }), "trackView");
+const trackView = /* @__PURE__ */ __name((cmid, fromviewer = true) => call("mod_smarturl_track_view", { cmid, fromviewer }), "trackView");
 const saveMetaType = /* @__PURE__ */ __name((payload) => call("mod_smarturl_save_meta_type", payload), "saveMetaType");
 const deleteMetaType = /* @__PURE__ */ __name((id) => call("mod_smarturl_delete_meta_type", { id }), "deleteMetaType");
 const saveParamDef = /* @__PURE__ */ __name((payload) => call("mod_smarturl_save_param_def", payload), "saveParamDef");

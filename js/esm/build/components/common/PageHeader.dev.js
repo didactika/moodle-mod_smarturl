@@ -42,10 +42,10 @@ const PageHeader = /* @__PURE__ */ __name(({ breadcrumb, title, subtitle, iconLa
   }),
   /* @__PURE__ */ jsxDEV("div", { className: "dd-page-header-row", children: [
     /* @__PURE__ */ jsxDEV("div", { className: "dd-page-header-main", children: [
-      /* @__PURE__ */ jsxDEV("span", { className: "dd-tile dd-tile-lg", "aria-hidden": "true", children: iconLabel }, void 0, false, {
+      iconLabel && /* @__PURE__ */ jsxDEV("span", { className: "dd-tile dd-tile-lg", "aria-hidden": "true", children: iconLabel }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/common/PageHeader.tsx",
         lineNumber: 41,
-        columnNumber: 17
+        columnNumber: 31
       }),
       /* @__PURE__ */ jsxDEV("div", { children: [
         /* @__PURE__ */ jsxDEV("h1", { className: "dd-page-title", children: title }, void 0, false, {

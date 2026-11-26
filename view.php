@@ -26,6 +26,10 @@
 require('../../config.php');
 require_once(__DIR__ . '/lib.php');
 
+use mod_smarturl\local\activity_content;
+use mod_smarturl\local\presentation;
+use mod_smarturl\local\viewer_data;
+
 $id = optional_param('id', 0, PARAM_INT);
 $s = optional_param('s', 0, PARAM_INT);
 
@@ -43,21 +47,32 @@ require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/smarturl:view', $context);
 
+$auxiliary = optional_param('aux', false, PARAM_BOOL);
+$forceview = optional_param('forceview', false, PARAM_BOOL);
+$profile = presentation::for_instance($smarturl);
+$target = viewer_data::target($smarturl, $course, $USER, (int)$cm->id, $profile);
+if (
+    !$auxiliary && !$forceview && ($profile['launch'] === 'EXTERNAL'
+        || ($profile['launch'] === 'AUTO' && $target['kind'] === 'link'))
+) {
+    redirect(new moodle_url('/mod/smarturl/go.php', ['id' => $cm->id]));
+}
 smarturl_view($smarturl, $course, $cm, $context);
 
-$forceview = optional_param('forceview', 0, PARAM_BOOL);
-$isautoopen = ($smarturl->display_mode === 'AUTO' && !smarturl_is_embeddable_url((string)$smarturl->externalurl));
-if (!$forceview && ($smarturl->display_mode === 'OPEN' || $isautoopen)) {
-    $target = \mod_smarturl\local\url\url_resolver::resolve($smarturl, $course, $USER, (int)$cm->id);
-    redirect(new moodle_url($target));
+$PAGE->set_url('/mod/smarturl/view.php', ['id' => $cm->id] + ($auxiliary ? ['aux' => 1] : []));
+if ($auxiliary) {
+    $PAGE->set_pagelayout('popup');
 }
-
-$PAGE->set_url('/mod/smarturl/view.php', ['id' => $cm->id]);
-$PAGE->set_title($course->shortname . ': ' . format_string($smarturl->name));
-$PAGE->set_heading(format_string($course->fullname));
+$name = format_string(activity_content::title($smarturl), true, ['context' => $context]);
+$PAGE->set_title($name);
+$PAGE->set_heading($auxiliary ? $name : format_string($course->fullname));
 
 $page = new \mod_smarturl\output\resource_page($smarturl, $course, $cm, $context, $USER);
+$body = $OUTPUT->render($page);
 
 echo $OUTPUT->header();
-echo html_writer::div($OUTPUT->render($page), 'mod-smarturl');
+if ($auxiliary) {
+    echo $OUTPUT->heading($name);
+}
+echo html_writer::div($body, 'mod-smarturl' . ($auxiliary ? ' smu-auxiliary-viewer' : ''));
 echo $OUTPUT->footer();

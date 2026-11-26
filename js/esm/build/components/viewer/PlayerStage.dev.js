@@ -1,6 +1,6 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
+import { jsxDEV } from "react/jsx-dev-runtime";
 /**
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
@@ -12,192 +12,140 @@ import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trackView } from "../../services/api";
 const PlayerStage = /* @__PURE__ */ __name(({ props, modalOpen, onCloseModal, onOpenModal }) => {
-  const [inlineMounted, setInlineMounted] = useState(props.displayMode === "EMBED");
-  const [tracked, setTracked] = useState(false);
-  const notifyView = /* @__PURE__ */ __name(() => {
-    if (tracked) {
-      return;
+  const [mounted, setMounted] = useState(props.displayMode === "EMBED");
+  const dialog = useRef(null);
+  const trigger = useRef(null);
+  const modal = props.displayMode === "MODAL";
+  const canPreview = props.playerHtml && (modal || props.displayMode === "INLINE_IFRAME");
+  useEffect(() => {
+    if (!modalOpen || !dialog.current) {
+      return void 0;
     }
-    setTracked(true);
-    trackView(props.cmid).catch(() => null);
-  }, "notifyView");
-  const launchPrimary = /* @__PURE__ */ __name(() => {
-    notifyView();
-    if (props.displayMode === "POPUP") {
-      window.open(
-        props.resolvedUrl,
-        `smarturl_${props.cmid}`,
-        `width=${props.popupWidth},height=${props.popupHeight},scrollbars=yes,resizable=yes`
-      );
-      return;
-    }
-    if (props.displayMode === "NEW" || props.displayMode === "OPEN" || props.displayMode === "CARD" || props.displayMode === "AUTO") {
-      window.open(props.resolvedUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-    if (props.displayMode === "MODAL") {
-      onOpenModal();
-      return;
-    }
-    setInlineMounted(true);
-  }, "launchPrimary");
-  const primaryLabel = (() => {
-    if (props.displayMode === "INLINE_IFRAME") {
-      return props.strings.launchiframe ?? "Load preview here";
-    }
-    if (props.displayMode === "MODAL") {
-      return props.strings.launchmodal ?? "Open preview";
-    }
-    if (props.displayMode === "POPUP") {
-      return props.strings.launchpopup ?? "Open pop-up window";
-    }
-    return props.strings.openresource ?? "Open in new tab";
-  })();
-  const hostLabel = (() => {
-    try {
-      return new URL(props.resolvedUrl).hostname;
-    } catch {
-      return props.resolvedUrl;
-    }
-  })();
-  return /* @__PURE__ */ jsxDEV(Fragment, { children: [
-    /* @__PURE__ */ jsxDEV("div", { className: "smu-stage", children: inlineMounted ? /* @__PURE__ */ jsxDEV("div", { className: "smu-frame-wrap", style: { aspectRatio: props.aspectRatio.replace(":", " / ") }, children: /* @__PURE__ */ jsxDEV(
-      "iframe",
-      {
-        src: props.resolvedUrl,
-        title: props.name,
-        allowFullScreen: true,
-        loading: "lazy"
-      },
-      void 0,
-      false,
-      {
-        fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 82,
-        columnNumber: 25
-      }
-    ) }, void 0, false, {
+    const node = dialog.current;
+    node.showModal();
+    return () => {
+      node.close();
+      trigger.current?.focus();
+    };
+  }, [modalOpen]);
+  const player = /* @__PURE__ */ jsxDEV(
+    "div",
+    {
+      className: "smu-player",
+      style: { "--smu-player-ratio": props.aspectRatio.replace(":", " / ") },
+      dangerouslySetInnerHTML: { __html: props.playerHtml }
+    },
+    void 0,
+    false,
+    {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-      lineNumber: 81,
-      columnNumber: 21
-    }) : /* @__PURE__ */ jsxDEV(
-      "div",
-      {
-        className: `smu-facade${props.thumbnailUrl ? " has-poster" : ""}`,
-        style: props.thumbnailUrl ? { backgroundImage: `linear-gradient(rgb(15 23 42 / 58%), rgb(15 23 42 / 72%)), url(${props.thumbnailUrl})` } : void 0,
-        children: /* @__PURE__ */ jsxDEV("div", { className: "smu-facade-inner", children: [
-          /* @__PURE__ */ jsxDEV("span", { className: "smu-host-pill", children: hostLabel }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-            lineNumber: 95,
-            columnNumber: 29
-          }),
-          props.intro && /* @__PURE__ */ jsxDEV(
-            "div",
-            {
-              className: "smu-facade-intro",
-              dangerouslySetInnerHTML: { __html: props.intro }
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-              lineNumber: 97,
-              columnNumber: 33
-            }
-          ),
-          /* @__PURE__ */ jsxDEV("div", { className: "smu-facade-actions", children: /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: launchPrimary, children: primaryLabel }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-            lineNumber: 104,
-            columnNumber: 33
-          }) }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-            lineNumber: 103,
-            columnNumber: 29
-          })
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-          lineNumber: 94,
-          columnNumber: 25
-        })
-      },
-      void 0,
-      false,
-      {
+      lineNumber: 42,
+      columnNumber: 20
+    }
+  );
+  const external = /* @__PURE__ */ jsxDEV("a", { href: props.goUrl, target: "_blank", rel: "noopener noreferrer", className: "btn btn-outline-secondary", children: props.strings.openresource }, void 0, false, {
+    fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+    lineNumber: 46,
+    columnNumber: 22
+  });
+  return /* @__PURE__ */ jsxDEV("section", { className: "smu-stage", children: [
+    mounted && props.playerHtml ? player : /* @__PURE__ */ jsxDEV("div", { className: "card", children: [
+      props.thumbnailUrl && /* @__PURE__ */ jsxDEV("img", { src: props.thumbnailUrl, alt: "", className: "smu-viewer-cover" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 90,
-        columnNumber: 21
-      }
-    ) }, void 0, false, {
-      fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-      lineNumber: 79,
-      columnNumber: 13
-    }),
-    modalOpen && /* @__PURE__ */ jsxDEV("div", { className: "smu-modal-backdrop", role: "dialog", "aria-modal": "true", "aria-label": props.name, children: /* @__PURE__ */ jsxDEV("div", { className: "smu-modal", children: [
-      /* @__PURE__ */ jsxDEV("div", { className: "smu-modal-bar", children: [
-        /* @__PURE__ */ jsxDEV("span", { className: "fw-semibold", children: props.name }, void 0, false, {
-          fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-          lineNumber: 117,
-          columnNumber: 29
-        }),
-        /* @__PURE__ */ jsxDEV("div", { className: "d-flex align-items-center gap-2", children: [
-          /* @__PURE__ */ jsxDEV(
-            "a",
-            {
-              href: props.goUrl,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              className: "btn btn-outline-secondary btn-sm",
-              onClick: notifyView,
-              children: props.strings.openresource ?? "Open in new tab"
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-              lineNumber: 119,
-              columnNumber: 33
-            }
-          ),
-          /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary btn-sm", onClick: onCloseModal, children: props.strings.closepreview ?? "Close" }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-            lineNumber: 128,
-            columnNumber: 33
-          })
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-          lineNumber: 118,
-          columnNumber: 29
-        })
-      ] }, void 0, true, {
-        fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 116,
-        columnNumber: 25
+        lineNumber: 53,
+        columnNumber: 40
       }),
-      /* @__PURE__ */ jsxDEV("div", { className: "smu-frame-wrap", children: /* @__PURE__ */ jsxDEV("iframe", { src: props.resolvedUrl, title: props.name, allowFullScreen: true }, void 0, false, {
+      /* @__PURE__ */ jsxDEV("div", { className: "card-body d-flex flex-wrap gap-2", children: canPreview ? /* @__PURE__ */ jsxDEV(
+        "button",
+        {
+          ref: trigger,
+          type: "button",
+          className: "btn btn-primary",
+          onClick: () => {
+            void trackView(props.cmid).catch(() => void 0);
+            if (modal) {
+              onOpenModal();
+            } else {
+              setMounted(true);
+            }
+          },
+          children: modal ? props.strings.launchmodal : props.strings.launchiframe
+        },
+        void 0,
+        false,
+        {
+          fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+          lineNumber: 56,
+          columnNumber: 25
+        }
+      ) : external }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 134,
-        columnNumber: 29
-      }) }, void 0, false, {
-        fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 133,
-        columnNumber: 25
+        lineNumber: 54,
+        columnNumber: 17
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-      lineNumber: 115,
-      columnNumber: 21
-    }) }, void 0, false, {
-      fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-      lineNumber: 114,
-      columnNumber: 17
-    })
+      lineNumber: 52,
+      columnNumber: 13
+    }),
+    modalOpen && /* @__PURE__ */ jsxDEV(
+      "dialog",
+      {
+        ref: dialog,
+        className: "smu-player-dialog",
+        "aria-label": props.name,
+        onCancel: (event) => {
+          event.preventDefault();
+          onCloseModal();
+        },
+        children: /* @__PURE__ */ jsxDEV("div", { className: "card", children: [
+          /* @__PURE__ */ jsxDEV("header", { className: "card-header d-flex align-items-center justify-content-between gap-2", children: [
+            /* @__PURE__ */ jsxDEV("strong", { children: props.name }, void 0, false, {
+              fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+              lineNumber: 80,
+              columnNumber: 25
+            }),
+            /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn-close", "aria-label": props.strings.closepreview, onClick: onCloseModal }, void 0, false, {
+              fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+              lineNumber: 81,
+              columnNumber: 25
+            })
+          ] }, void 0, true, {
+            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+            lineNumber: 79,
+            columnNumber: 21
+          }),
+          /* @__PURE__ */ jsxDEV("div", { className: "card-body", children: player }, void 0, false, {
+            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+            lineNumber: 83,
+            columnNumber: 21
+          }),
+          /* @__PURE__ */ jsxDEV("footer", { className: "card-footer", children: external }, void 0, false, {
+            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+            lineNumber: 84,
+            columnNumber: 21
+          })
+        ] }, void 0, true, {
+          fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+          lineNumber: 78,
+          columnNumber: 17
+        })
+      },
+      void 0,
+      false,
+      {
+        fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+        lineNumber: 73,
+        columnNumber: 13
+      }
+    )
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-    lineNumber: 78,
-    columnNumber: 9
+    lineNumber: 50,
+    columnNumber: 12
   });
 }, "PlayerStage");
 var PlayerStage_default = PlayerStage;

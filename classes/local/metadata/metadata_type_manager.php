@@ -40,8 +40,13 @@ final class metadata_type_manager {
     public static function list_all(bool $enabledonly = false): array {
         global $DB;
 
-        $conditions = $enabledonly ? ['enabled' => 1] : null;
-        return array_values($DB->get_records('smarturl_meta_type', $conditions, 'sortorder ASC, id ASC'));
+        $fields = array_values($DB->get_records('smarturl_meta_type', [], 'sortorder ASC, id ASC'));
+        if (!$enabledonly) {
+            return $fields;
+        }
+        $categories = $DB->get_records('smarturl_meta_category');
+        return array_values(array_filter($fields, static fn($field) => $field->enabled
+            && ($field->categoryid === null || !empty($categories[$field->categoryid]->enabled))));
     }
 
     /**
@@ -60,7 +65,7 @@ final class metadata_type_manager {
         }
 
         $datatype = strtoupper((string)($data['datatype'] ?? 'TEXT'));
-        if (!in_array($datatype, self::DATATYPES, true)) {
+        if (!in_array($datatype, array_merge(self::DATATYPES, array_keys(field_types::extensions())), true)) {
             $datatype = 'TEXT';
         }
 
@@ -74,12 +79,16 @@ final class metadata_type_manager {
             throw new \invalid_parameter_exception("Duplicate metadata type shortname '$shortname'.");
         }
 
+        $category = !empty($data['categoryid'])
+            ? $DB->get_record('smarturl_meta_category', ['id' => (int)$data['categoryid']], '*', MUST_EXIST)
+            : category_manager::for_name((string)($data['group_name'] ?? 'General'));
         $now = time();
         $record = (object)[
             'shortname' => $shortname,
             'name' => trim((string)($data['name'] ?? $shortname)),
             'description' => isset($data['description']) ? trim((string)$data['description']) : null,
-            'group_name' => trim((string)($data['group_name'] ?? 'General')) ?: 'General',
+            'group_name' => $category->name,
+            'categoryid' => $category->id,
             'datatype' => $datatype,
             'icon' => !empty($data['icon']) ? trim((string)$data['icon']) : null,
             'display_priority' => $priority,
@@ -116,8 +125,20 @@ final class metadata_type_manager {
         if (!$type) {
             return;
         }
-        $DB->set_field_select('smarturl_meta_value', 'custom_key', $type->shortname, 'typeid = :typeid AND custom_key IS NULL', ['typeid' => $id]);
+        $transaction = $DB->start_delegated_transaction();
+        $category = $type->categoryid ? $DB->get_record('smarturl_meta_category', ['id' => $type->categoryid]) : null;
+        if (!$type->enabled || $type->display_priority === 'HIDDEN' || ($category && !$category->enabled)) {
+            $DB->set_field('smarturl_meta_value', 'archived', 1, ['typeid' => $id]);
+        }
+        $DB->set_field_select(
+            'smarturl_meta_value',
+            'custom_key',
+            $type->shortname,
+            'typeid = :typeid AND custom_key IS NULL',
+            ['typeid' => $id],
+        );
         $DB->set_field('smarturl_meta_value', 'typeid', null, ['typeid' => $id]);
         $DB->delete_records('smarturl_meta_type', ['id' => $id]);
+        $transaction->allow_commit();
     }
 }

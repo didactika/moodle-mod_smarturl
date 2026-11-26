@@ -48,9 +48,9 @@ final class policy_and_availability_test extends \advanced_testcase {
     }
 
     /**
-     * Tests field lock enforcement and site-admin restriction flags.
+     * Tests field lock enforcement and site administrator access.
      */
-    public function test_policy_locks_and_admin_restrictions(): void {
+    public function test_policy_locks_and_admin_access(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -71,15 +71,7 @@ final class policy_and_availability_test extends \advanced_testcase {
         $this->assertFalse(policy_manager::can_edit_field('completion', $policy, $context, (int)$teacher->id));
         $this->assertTrue(policy_manager::can_edit_field('general', $policy, $context, (int)$teacher->id));
 
-        // Admin unrestricted by default unless lockadmins = 1.
-        set_config('lockadmins', 1, 'mod_smarturl');
-        set_config('adminperm_bypasspolicy', 0, 'mod_smarturl');
-        set_config('adminperm_editgeneral', 0, 'mod_smarturl');
-
-        $this->assertFalse(policy_manager::can_edit_field('externalurl', $policy, $context, (int)$admin->id));
-        $this->assertFalse(policy_manager::can_edit_field('general', $policy, $context, (int)$admin->id));
-
-        set_config('adminperm_editgeneral', 1, 'mod_smarturl');
+        $this->assertTrue(policy_manager::can_edit_field('externalurl', $policy, $context, (int)$admin->id));
         $this->assertTrue(policy_manager::can_edit_field('general', $policy, $context, (int)$admin->id));
 
         // Recording local override increments local_revision.

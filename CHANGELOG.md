@@ -11,3 +11,9 @@ All notable changes to this project will be documented in this file.
 - Didactika Design System UI in React + TypeScript (`ResourceView` and `AdminConfig`) built for Moodle 5.3 ESM.
 - Extensible completion architecture via `smarturlcomp_*` subplugins and PSR-14 hooks.
 - Full external REST Web Services, backup/restore, Privacy API, PHPUnit tests, and selective event-emitting `cli/migrate_from_url.php`.
+
+- Add independent course and viewer presentations, including a compact external tab and window.
+- Render audio, documents, images, websites, and normalised YouTube links.
+- Add categories, draft previews, translated content, site defaults, and file type icon controls.
+- Support independent player and metadata type extensions.
+- Consolidate editor reads and batch resource writes while preserving existing integration calls.

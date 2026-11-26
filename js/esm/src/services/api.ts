@@ -14,8 +14,8 @@ import type {MetadataTypeRecord, ParamDefRecord} from '../types';
 
 const call = <T>(methodname: string, args: Record<string, unknown>): Promise<T> => fetchOne<T>({methodname, args});
 
-export const trackView = (cmid: number): Promise<{cmid: number; tracked: boolean}> =>
-    call('mod_smarturl_track_view', {cmid});
+export const trackView = (cmid: number, fromviewer = true): Promise<{cmid: number; tracked: boolean}> =>
+    call('mod_smarturl_track_view', {cmid, fromviewer});
 
 export const saveMetaType = (payload: Record<string, unknown>): Promise<MetadataTypeRecord> =>
     call('mod_smarturl_save_meta_type', payload);

@@ -47,14 +47,22 @@ if (empty($smarturls)) {
 }
 
 $table = new html_table();
-$table->attributes['class'] = 'generaltable mod_index';
-$table->head = [get_string('sectionname', 'format_' . $course->format), get_string('name'), get_string('displaymode', 'smarturl')];
+$table->attributes['class'] = 'table generaltable table-hover mb-0';
+$table->caption = get_string('modulenameplural', 'smarturl');
+$table->captionhide = true;
+$table->head = [
+    get_string('sectionname', 'format_' . $course->format),
+    get_string('name'),
+    get_string('displaymode', 'smarturl'),
+];
 foreach ($smarturls as $item) {
     $link = html_writer::link(
         new moodle_url('/mod/smarturl/view.php', ['id' => $item->coursemodule]),
-        format_string($item->name)
+        format_string(\mod_smarturl\local\activity_content::title($item))
     );
-    $table->data[] = [get_section_name($course, $item->section), $link, s($item->display_mode)];
+    $profile = \mod_smarturl\local\presentation::for_instance($item);
+    $table->data[] = [get_section_name($course, $item->section), $link,
+        get_string('launch_' . strtolower($profile['launch']), 'smarturl')];
 }
-echo html_writer::table($table);
+echo html_writer::div(html_writer::table($table), 'table-responsive card', ['data-region' => 'tablewrap']);
 echo $OUTPUT->footer();

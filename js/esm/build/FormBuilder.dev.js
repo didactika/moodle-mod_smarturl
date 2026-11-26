@@ -238,7 +238,7 @@ const FormBuilder = /* @__PURE__ */ __name(({ kind, initialRows, catalog, locked
           /* @__PURE__ */ jsxDEV(
             "select",
             {
-              className: "form-control smu-builder-select",
+              className: "form-select smu-builder-select",
               value: row.varName,
               disabled: locked,
               onChange: (e) => {
@@ -306,7 +306,7 @@ const FormBuilder = /* @__PURE__ */ __name(({ kind, initialRows, catalog, locked
           /* @__PURE__ */ jsxDEV(
             "select",
             {
-              className: "form-control smu-builder-select",
+              className: "form-select smu-builder-select",
               value: row.key,
               disabled: locked,
               onChange: (e) => updateRow(row.id, { key: e.target.value }),
@@ -358,12 +358,63 @@ const FormBuilder = /* @__PURE__ */ __name(({ kind, initialRows, catalog, locked
               columnNumber: 41
             }
           ),
-          /* @__PURE__ */ jsxDEV(
+          metaDef?.datatype === "BOOLEAN" ? /* @__PURE__ */ jsxDEV(
+            "select",
+            {
+              className: "form-select smu-builder-select",
+              "aria-label": strings.metavalue,
+              disabled: locked,
+              value: row.value,
+              onChange: (e) => updateRow(row.id, { value: e.target.value }),
+              children: [
+                /* @__PURE__ */ jsxDEV("option", { value: "", children: strings.metavalue }, void 0, false, {
+                  fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
+                  lineNumber: 329,
+                  columnNumber: 45
+                }),
+                /* @__PURE__ */ jsxDEV("option", { value: "1", children: strings.yes }, void 0, false, {
+                  fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
+                  lineNumber: 330,
+                  columnNumber: 45
+                }),
+                /* @__PURE__ */ jsxDEV("option", { value: "0", children: strings.no }, void 0, false, {
+                  fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
+                  lineNumber: 331,
+                  columnNumber: 45
+                })
+              ]
+            },
+            void 0,
+            true,
+            {
+              fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
+              lineNumber: 327,
+              columnNumber: 41
+            }
+          ) : metaDef?.datatype === "MULTILINE" ? /* @__PURE__ */ jsxDEV(
+            "textarea",
+            {
+              className: "form-control smu-builder-val",
+              "aria-label": strings.metavalue,
+              disabled: locked,
+              value: row.value,
+              onChange: (e) => updateRow(row.id, { value: e.target.value })
+            },
+            void 0,
+            false,
+            {
+              fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
+              lineNumber: 334,
+              columnNumber: 41
+            }
+          ) : /* @__PURE__ */ jsxDEV(
             "input",
             {
-              type: "text",
+              type: metaDef?.datatype === "DATE" ? "date" : metaDef?.datatype === "NUMBER" ? "number" : "text",
+              step: "any",
               className: "form-control smu-builder-input smu-builder-val",
-              placeholder: placeholderForDatatype(metaDef?.datatype),
+              "aria-label": strings.metavalue,
+              placeholder: strings.metavalue,
               value: row.value,
               disabled: locked,
               onChange: (e) => updateRow(row.id, { value: e.target.value })
@@ -372,8 +423,8 @@ const FormBuilder = /* @__PURE__ */ __name(({ kind, initialRows, catalog, locked
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
-              lineNumber: 326,
-              columnNumber: 37
+              lineNumber: 337,
+              columnNumber: 41
             }
           )
         ] }, void 0, true, {
@@ -397,7 +448,7 @@ const FormBuilder = /* @__PURE__ */ __name(({ kind, initialRows, catalog, locked
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
-              lineNumber: 338,
+              lineNumber: 346,
               columnNumber: 33
             }
           ),
@@ -416,13 +467,13 @@ const FormBuilder = /* @__PURE__ */ __name(({ kind, initialRows, catalog, locked
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
-              lineNumber: 348,
+              lineNumber: 356,
               columnNumber: 33
             }
           )
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
-          lineNumber: 337,
+          lineNumber: 345,
           columnNumber: 29
         })
       ] }, row.id, true, {
@@ -438,17 +489,17 @@ const FormBuilder = /* @__PURE__ */ __name(({ kind, initialRows, catalog, locked
     kind === "params" && previewUrl && /* @__PURE__ */ jsxDEV("div", { className: "smu-live-preview", children: [
       /* @__PURE__ */ jsxDEV("span", { className: "smu-live-preview-label", children: strings.previewlabel ?? "Resolved URL preview:" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
-        lineNumber: 366,
+        lineNumber: 374,
         columnNumber: 21
       }),
       /* @__PURE__ */ jsxDEV("code", { children: previewUrl }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
-        lineNumber: 367,
+        lineNumber: 375,
         columnNumber: 21
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/FormBuilder.tsx",
-      lineNumber: 365,
+      lineNumber: 373,
       columnNumber: 17
     })
   ] }, void 0, true, {

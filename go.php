@@ -35,7 +35,12 @@ require_course_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/smarturl:view', $context);
 
-smarturl_view($smarturl, $course, $cm, $context);
-$target = \mod_smarturl\local\url\url_resolver::resolve($smarturl, $course, $USER, (int)$cm->id);
+$target = \mod_smarturl\local\url\resource_target::normalise(
+    \mod_smarturl\local\url\url_resolver::resolve($smarturl, $course, $USER, (int)$cm->id)
+);
 
+if (!optional_param('fromviewer', false, PARAM_BOOL)) {
+    smarturl_view($smarturl, $course, $cm, $context);
+}
+\mod_smarturl\event\resource_opened::create(['objectid' => $smarturl->id, 'context' => $context])->trigger();
 redirect($target);

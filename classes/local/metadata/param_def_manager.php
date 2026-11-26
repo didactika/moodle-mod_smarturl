@@ -94,6 +94,29 @@ final class param_def_manager {
     }
 
     /**
+     * Lists fields available as variable sources for site administrators.
+     *
+     * @return array
+     */
+    public static function source_options(): array {
+        global $DB;
+        $builtins = ['course.id', 'course.shortname', 'course.idnumber', 'course.fullname', 'user.id',
+            'user.username', 'user.email', 'user.idnumber', 'user.firstname', 'user.lastname', 'user.lang',
+            'user.roles', 'cm.id', 'site.url'];
+        $user = $DB->get_records('user_info_field', [], 'name ASC', 'id, shortname, name');
+        $handler = \core_customfield\handler::get_handler('core_course', 'course');
+        $course = [];
+        foreach ($handler->get_fields() as $field) {
+            $course[$field->get('shortname')] = $field->get('name');
+        }
+        return [
+            'BUILTIN' => array_combine($builtins, $builtins),
+            'USER_PROFILE_FIELD' => array_column(array_values($user), 'name', 'shortname'),
+            'COURSE_CUSTOM_FIELD' => $course,
+        ];
+    }
+
+    /**
      * Deletes a dynamic URL parameter definition.
      *
      * @param int $id Parameter definition ID.

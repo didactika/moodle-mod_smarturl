@@ -40,6 +40,7 @@ export interface ResourceViewProps {
     name: string;
     intro: string;
     resolvedUrl: string;
+    playerHtml: string;
     goUrl: string;
     displayMode: string;
     popupWidth: number;
@@ -58,6 +59,7 @@ export interface MetadataTypeRecord {
     name: string;
     description: string | null;
     group_name: string;
+    categoryid?: number | null;
     datatype: MetaDatatype | string;
     display_priority: DisplayPriority | string;
     searchable: number;
@@ -85,5 +87,7 @@ export interface AdminConfigProps {
     datatypes: string[];
     priorities: string[];
     sourceTypes: string[];
+    sourceOptions: Record<string, Record<string, string>>;
+    categories: Array<{id: number; name: string; enabled: number}>;
     strings: Record<string, string>;
 }

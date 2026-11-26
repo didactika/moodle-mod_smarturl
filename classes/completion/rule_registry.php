@@ -32,12 +32,12 @@ final class rule_registry {
      */
     public static function providers(): array {
         $providers = [];
-        $subplugins = \core_component::get_plugin_list('smarturlcomp');
+        $subplugins = \mod_smarturl\plugininfo\smarturlcomp::get_enabled_plugins();
         foreach (array_keys($subplugins) as $name) {
             $class = "\\smarturlcomp_{$name}\\completion\\rule_provider";
             if (class_exists($class) && is_subclass_of($class, rule_provider::class)) {
                 $instance = new $class();
-                $providers[$instance->get_rule_key()] = $instance;
+                $providers[$instance->get_rule_key()] ??= $instance;
             }
         }
 
@@ -45,7 +45,7 @@ final class rule_registry {
             $hook = new \mod_smarturl\hook\collect_completion_rules();
             \core\di::get(\core\hook\manager::class)->dispatch($hook);
             foreach ($hook->get_providers() as $key => $provider) {
-                $providers[$key] = $provider;
+                $providers[$key] ??= $provider;
             }
         }
 

@@ -109,10 +109,10 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
             lineNumber: 88,
             columnNumber: 25
           }),
-          /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary btn-sm", onClick: copyJson, children: copied ? strings.copied ?? "Copied" : strings.copyjson ?? "Copy JSON" }, void 0, false, {
+          strings.copyjson && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary btn-sm", onClick: copyJson, children: copied ? strings.copied ?? "Copied" : strings.copyjson }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
             lineNumber: 105,
-            columnNumber: 25
+            columnNumber: 46
           })
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
@@ -179,21 +179,38 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
         lineNumber: 111,
         columnNumber: 17
       }),
-      groupFacets.length > 0 && /* @__PURE__ */ jsxDEV("div", { className: "dd-chips", role: "group", "aria-label": "Metadata groups", children: [
+      groupFacets.length > 0 && /* @__PURE__ */ jsxDEV("div", { className: "d-flex flex-wrap align-items-center gap-2", children: [
         /* @__PURE__ */ jsxDEV(
-          "button",
+          "select",
           {
-            type: "button",
-            className: "dd-chip",
-            "aria-pressed": activeGroup === "",
-            onClick: () => setActiveGroup(""),
+            className: "form-select w-auto",
+            "aria-label": strings.groupname,
+            value: activeGroup,
+            onChange: (event) => setActiveGroup(event.target.value),
             children: [
-              strings.allgroups ?? "All",
-              /* @__PURE__ */ jsxDEV("span", { className: "dd-chip-count", children: queryMatched.length }, void 0, false, {
+              /* @__PURE__ */ jsxDEV("option", { value: "", children: strings.allgroups }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-                lineNumber: 144,
+                lineNumber: 139,
                 columnNumber: 29
-              })
+              }),
+              activeGroup && !groupFacets.some((facet) => facet.name === activeGroup) && /* @__PURE__ */ jsxDEV("option", { value: activeGroup, children: [
+                activeGroup,
+                " (0)"
+              ] }, void 0, true, {
+                fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
+                lineNumber: 141,
+                columnNumber: 36
+              }),
+              groupFacets.map((facet) => /* @__PURE__ */ jsxDEV("option", { value: facet.name, children: [
+                facet.name,
+                " (",
+                facet.count,
+                ")"
+              ] }, facet.name, true, {
+                fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
+                lineNumber: 142,
+                columnNumber: 55
+              }))
             ]
           },
           void 0,
@@ -204,92 +221,25 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
             columnNumber: 25
           }
         ),
-        groupFacets.map((facet) => /* @__PURE__ */ jsxDEV(
+        (searchText || activeGroup) && /* @__PURE__ */ jsxDEV(
           "button",
           {
             type: "button",
-            className: "dd-chip",
-            "aria-pressed": activeGroup === facet.name,
-            onClick: () => setActiveGroup((prev) => prev === facet.name ? "" : facet.name),
-            children: [
-              facet.name,
-              /* @__PURE__ */ jsxDEV("span", { className: "dd-chip-count", children: facet.count }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-                lineNumber: 155,
-                columnNumber: 33
-              })
-            ]
+            className: "btn btn-outline-secondary btn-sm",
+            onClick: clearAll,
+            children: strings.clearfilters
           },
-          facet.name,
-          true,
+          void 0,
+          false,
           {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 147,
-            columnNumber: 29
+            lineNumber: 146,
+            columnNumber: 57
           }
-        ))
+        )
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
         lineNumber: 136,
-        columnNumber: 21
-      }),
-      (debouncedQuery || activeGroup) && /* @__PURE__ */ jsxDEV("div", { className: "dd-chips", "aria-label": "Applied filters", children: [
-        debouncedQuery && /* @__PURE__ */ jsxDEV("span", { className: "dd-chip dd-chip-applied", children: [
-          "\u201C",
-          debouncedQuery,
-          "\u201D",
-          /* @__PURE__ */ jsxDEV(
-            "button",
-            {
-              type: "button",
-              className: "dd-chip-remove",
-              "aria-label": "Clear search",
-              onClick: () => setSearchText("")
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-              lineNumber: 166,
-              columnNumber: 33
-            }
-          )
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 164,
-          columnNumber: 29
-        }),
-        activeGroup && /* @__PURE__ */ jsxDEV("span", { className: "dd-chip dd-chip-applied", children: [
-          activeGroup,
-          /* @__PURE__ */ jsxDEV(
-            "button",
-            {
-              type: "button",
-              className: "dd-chip-remove",
-              "aria-label": `Remove ${activeGroup}`,
-              onClick: () => setActiveGroup("")
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-              lineNumber: 177,
-              columnNumber: 33
-            }
-          )
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 175,
-          columnNumber: 29
-        }),
-        /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-link btn-sm", onClick: clearAll, children: strings.clearfilters ?? "Clear all" }, void 0, false, {
-          fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 185,
-          columnNumber: 25
-        })
-      ] }, void 0, true, {
-        fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 162,
         columnNumber: 21
       })
     ] }, void 0, true, {
@@ -300,138 +250,143 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
     visibleEntries.length === 0 ? /* @__PURE__ */ jsxDEV("div", { className: "dd-empty", children: [
       /* @__PURE__ */ jsxDEV("h3", { className: "dd-empty-title", children: strings.emptymetadata ?? "No metadata matches your search" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 194,
+        lineNumber: 155,
         columnNumber: 21
       }),
       /* @__PURE__ */ jsxDEV("p", { className: "dd-empty-text", children: strings.emptymetadata_hint ?? "Try clearing active group filters or changing your search query." }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 195,
+        lineNumber: 156,
         columnNumber: 21
       }),
       (debouncedQuery || activeGroup) && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-primary btn-sm", onClick: clearAll, children: strings.clearfilters ?? "Clear all" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 199,
+        lineNumber: 160,
         columnNumber: 25
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 193,
+      lineNumber: 154,
       columnNumber: 17
     }) : viewMode === "cards" ? /* @__PURE__ */ jsxDEV("div", { className: "smu-meta-grid", children: groupedCards.map(([groupName, items]) => /* @__PURE__ */ jsxDEV("article", { className: "smu-card", children: [
       /* @__PURE__ */ jsxDEV("h3", { children: groupName }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 208,
+        lineNumber: 169,
         columnNumber: 29
       }),
       /* @__PURE__ */ jsxDEV("dl", { className: "dd-dl", children: items.map((item) => /* @__PURE__ */ jsxDEV("div", { style: { display: "contents" }, children: [
         /* @__PURE__ */ jsxDEV("dt", { title: item.key, children: item.label }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 212,
+          lineNumber: 173,
           columnNumber: 41
         }),
         /* @__PURE__ */ jsxDEV("dd", { children: /* @__PURE__ */ jsxDEV(MetadataValue, { entry: item }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 213,
+          lineNumber: 174,
           columnNumber: 45
         }) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 213,
+          lineNumber: 174,
           columnNumber: 41
         })
       ] }, item.id, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 211,
+        lineNumber: 172,
         columnNumber: 37
       })) }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 209,
+        lineNumber: 170,
         columnNumber: 29
       })
     ] }, groupName, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 207,
+      lineNumber: 168,
       columnNumber: 25
     })) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 205,
+      lineNumber: 166,
       columnNumber: 17
     }) : /* @__PURE__ */ jsxDEV("div", { className: "table-responsive smu-card", children: /* @__PURE__ */ jsxDEV("table", { className: "table table-hover align-middle mb-0", children: [
+      /* @__PURE__ */ jsxDEV("caption", { className: "visually-hidden", children: strings.metadataheading }, void 0, false, {
+        fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
+        lineNumber: 184,
+        columnNumber: 25
+      }),
       /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { children: [
-        /* @__PURE__ */ jsxDEV("th", { children: "Group" }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("th", { scope: "col", children: strings.groupname }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 225,
+          lineNumber: 187,
           columnNumber: 33
         }),
-        /* @__PURE__ */ jsxDEV("th", { children: "Attribute" }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("th", { scope: "col", children: strings.metadatatypes }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 226,
+          lineNumber: 188,
           columnNumber: 33
         }),
-        /* @__PURE__ */ jsxDEV("th", { children: "Value" }, void 0, false, {
+        /* @__PURE__ */ jsxDEV("th", { scope: "col", children: strings.metavalue }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 227,
+          lineNumber: 189,
           columnNumber: 33
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 224,
+        lineNumber: 186,
         columnNumber: 29
       }) }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 223,
+        lineNumber: 185,
         columnNumber: 25
       }),
       /* @__PURE__ */ jsxDEV("tbody", { children: pagedEntries.map((item) => /* @__PURE__ */ jsxDEV("tr", { children: [
         /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "badge text-bg-light", children: item.group }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 233,
+          lineNumber: 195,
           columnNumber: 41
         }) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 233,
+          lineNumber: 195,
           columnNumber: 37
         }),
         /* @__PURE__ */ jsxDEV("td", { children: [
           /* @__PURE__ */ jsxDEV("div", { className: "fw-semibold", children: item.label }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 235,
+            lineNumber: 197,
             columnNumber: 41
           }),
           /* @__PURE__ */ jsxDEV("div", { className: "text-muted small", children: item.key }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 236,
+            lineNumber: 198,
             columnNumber: 41
           })
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 234,
+          lineNumber: 196,
           columnNumber: 37
         }),
         /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV(MetadataValue, { entry: item }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 238,
+          lineNumber: 200,
           columnNumber: 41
         }) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 238,
+          lineNumber: 200,
           columnNumber: 37
         })
       ] }, item.id, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 232,
+        lineNumber: 194,
         columnNumber: 33
       })) }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 230,
+        lineNumber: 192,
         columnNumber: 25
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 222,
+      lineNumber: 183,
       columnNumber: 21
     }) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 221,
+      lineNumber: 182,
       columnNumber: 17
     }),
     visibleEntries.length > COLLAPSED_LIMIT && /* @__PURE__ */ jsxDEV("div", { className: "mt-3 text-center", children: /* @__PURE__ */ jsxDEV(
@@ -446,12 +401,12 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
       false,
       {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 248,
+        lineNumber: 210,
         columnNumber: 21
       }
     ) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 247,
+      lineNumber: 209,
       columnNumber: 17
     })
   ] }, void 0, true, {

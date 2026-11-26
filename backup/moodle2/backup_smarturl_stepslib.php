@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Backup structure definition for mod_smarturl.
  *
@@ -35,12 +33,12 @@ class backup_smarturl_activity_structure_step extends backup_activity_structure_
             'name', 'intro', 'introformat', 'externalurl',
             'display_mode', 'popup_width', 'popup_height', 'aspect_ratio',
             'show_description', 'thumbnail_url', 'duration_seconds',
-            'parameters_json', 'completion_custom_json', 'timemodified',
+            'parameters_json', 'completion_custom_json', 'presentation_json', 'translations_json', 'timemodified',
         ]);
 
         $metavalues = new backup_nested_element('metavalues');
         $metavalue = new backup_nested_element('metavalue', ['id'], [
-            'key', 'value_text', 'sortorder', 'timemodified',
+            'key', 'value_text', 'archived', 'sortorder', 'timemodified',
         ]);
 
         $policies = new backup_nested_element('policies');
@@ -57,7 +55,7 @@ class backup_smarturl_activity_structure_step extends backup_activity_structure_
 
         $smarturl->set_source_table('smarturl', ['id' => backup::VAR_ACTIVITYID]);
         $metavalue->set_source_sql(
-            "SELECT v.id, COALESCE(t.shortname, v.custom_key) AS \"key\", v.value_text, v.sortorder, v.timemodified
+            "SELECT v.id, COALESCE(t.shortname, v.custom_key) AS \"key\", v.value_text, v.archived, v.sortorder, v.timemodified
                FROM {smarturl_meta_value} v
           LEFT JOIN {smarturl_meta_type} t ON t.id = v.typeid
               WHERE v.smarturlid = ?",
@@ -67,6 +65,7 @@ class backup_smarturl_activity_structure_step extends backup_activity_structure_
 
         $smarturl->annotate_files('mod_smarturl', 'intro', null);
         $smarturl->annotate_files('mod_smarturl', 'poster', null);
+        $smarturl->annotate_files('mod_smarturl', 'translation', null);
 
         $this->add_subplugin_structure('smarturlcomp', $smarturl, true);
 
