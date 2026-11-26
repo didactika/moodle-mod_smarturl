@@ -55,6 +55,27 @@ final class availability_composer {
     }
 
     /**
+     * Rejects malformed external availability updates.
+     *
+     * @param string|null $json Availability tree.
+     */
+    public static function validate_external(?string $json): void {
+        if ($json === null || trim($json) === '') {
+            return;
+        }
+        $tree = json_decode($json);
+        if (
+            !is_object($tree) || !isset($tree->c) || !is_array($tree->c) || !in_array(
+                $tree->op ?? '',
+                ['&', '|', '!&', '!|'],
+                true,
+            )
+        ) {
+            throw new \invalid_parameter_exception('Invalid availability tree.');
+        }
+    }
+
+    /**
      * Normalizes an availability JSON string; treats empty condition trees as null.
      *
      * @param string|null $json Availability JSON.

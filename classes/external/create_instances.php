@@ -26,7 +26,6 @@ use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
-use mod_smarturl\local\metadata\metadata_repository;
 use mod_smarturl\local\policy\availability_composer;
 use mod_smarturl\local\policy\policy_manager;
 
@@ -65,6 +64,8 @@ class create_instances extends external_api {
                 'completionview' => new external_value(PARAM_INT, 'Completion on view (0/1)', VALUE_DEFAULT, 0),
                 'completionexpected' => new external_value(PARAM_INT, 'Completion expected timestamp', VALUE_DEFAULT, 0),
                 'managedavailability' => new external_value(PARAM_RAW, 'Managed availability JSON', VALUE_DEFAULT, ''),
+                'presentationjson' => new external_value(PARAM_RAW, 'Presentation settings JSON', VALUE_DEFAULT, ''),
+                'translationsjson' => new external_value(PARAM_RAW, 'Translations by language JSON', VALUE_DEFAULT, ''),
                 'parametersjson' => new external_value(PARAM_RAW, 'Dynamic URL parameters JSON', VALUE_DEFAULT, ''),
                 'managedby' => new external_value(PARAM_ALPHANUMEXT, 'External manager name', VALUE_DEFAULT, ''),
                 'externalkey' => new external_value(PARAM_RAW_TRIMMED, 'External correlation key', VALUE_DEFAULT, ''),
@@ -109,6 +110,7 @@ class create_instances extends external_api {
             $coursecontext = \context_course::instance($course->id);
             require_capability('mod/smarturl:addinstance', $coursecontext);
 
+            availability_composer::validate_external($item['managedavailability']);
             $combinedavail = availability_composer::compose($item['managedavailability'] ?: null, null);
             $moduleinfo = (object)[
                 'modulename' => 'smarturl',
@@ -127,6 +129,9 @@ class create_instances extends external_api {
                 'thumbnail_url' => $item['thumbnailurl'] ?: null,
                 'duration_seconds' => !empty($item['durationseconds']) ? (int)$item['durationseconds'] : null,
                 'parameters_json' => $item['parametersjson'] ?: null,
+                'presentation_json' => $item['presentationjson'] ?: null,
+                'translations_json' => $item['translationsjson'] ?: null,
+                'metadata_entries' => $item['metadata'],
                 'showdescription' => (int)$item['showdescription'],
                 'visible' => (int)$item['visible'],
                 'visibleoncoursepage' => 1,
@@ -140,10 +145,6 @@ class create_instances extends external_api {
             $created = add_moduleinfo($moduleinfo, $course);
             $cmid = (int)$created->coursemodule;
             $smarturlid = (int)$created->instance;
-
-            if (!empty($item['metadata'])) {
-                metadata_repository::replace_for_instance($smarturlid, $item['metadata']);
-            }
 
             $policy = policy_manager::upsert_external($smarturlid, $cmid, [
                 'managedby' => $item['managedby'] ?: null,

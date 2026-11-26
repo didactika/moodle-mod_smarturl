@@ -89,7 +89,10 @@ class set_metadata extends external_api {
             }
             $final = array_values($map);
         } else {
-            $final = array_map(static fn($e) => ['key' => (string)$e['key'], 'value' => (string)$e['value']], $params['entries']);
+            $final = array_map(
+                static fn($e) => ['key' => (string)$e['key'], 'value' => (string)$e['value']],
+                $params['entries'],
+            );
         }
 
         metadata_repository::replace_for_instance((int)$cm->instance, $final);

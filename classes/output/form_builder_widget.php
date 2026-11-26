@@ -37,10 +37,15 @@ class form_builder_widget implements named_templatable, \renderable {
      * @param array<string, string> $strings Localized UI strings.
      */
     public function __construct(
+        /** @var string Type of form rows. */
         private readonly string $kind,
+        /** @var array Initially configured rows. */
         private readonly array $initialrows,
+        /** @var array Available field definitions. */
         private readonly array $catalog,
+        /** @var bool Whether editing is restricted. */
         private readonly bool $locked,
+        /** @var array Localised control labels. */
         private readonly array $strings,
     ) {
     }

@@ -94,7 +94,12 @@ final class external_services_test extends \advanced_testcase {
         $this->assertCount(5, $pdefs['items']);
 
         // Simulate a local course override on custom availability.
-        policy_manager::record_local_override($smarturlid, $cmid, (int)$user->id, '{"op":"&","c":[{"type":"date","d":"<","t":1900000000}],"showc":[true]}');
+        policy_manager::record_local_override(
+            $smarturlid,
+            $cmid,
+            (int)$user->id,
+            '{"op":"&","c":[{"type":"date","d":"<","t":1900000000}],"showc":[true]}',
+        );
         $overrides = get_overrides::execute((int)$course->id, 0, 10);
         $this->assertSame(1, $overrides['total']);
         $this->assertCount(1, $overrides['items']);

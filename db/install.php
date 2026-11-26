@@ -28,4 +28,5 @@
  */
 function xmldb_smarturl_install(): void {
     \mod_smarturl\local\installer::seed_defaults();
+    \mod_smarturl\local\metadata\category_manager::backfill();
 }

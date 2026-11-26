@@ -176,7 +176,7 @@ export const init = (rootId) => {
                 ).join('');
                 fields = `<input type="text" class="form-control smu-builder-input" data-idx="${idx}" data-field="key" ` +
                     `placeholder="${esc(strings.paramqueryname || 'Parameter name')}" value="${esc(row.key)}"${dis}>` +
-                    `<select class="form-control smu-builder-select" data-idx="${idx}" data-field="varName"${dis}>` +
+                    `<select class="custom-select smu-builder-select" data-idx="${idx}" data-field="varName"${dis}>` +
                     `<option value="">${esc(strings.paramchoose || 'Choose variable...')}</option>${opts}` +
                     `<option value="__static__"${row.varName === '__static__' ? ' selected' : ''}>` +
                     `${esc(strings.paramstatic || 'Custom fixed value')}</option></select>`;
@@ -194,7 +194,7 @@ export const init = (rootId) => {
                     ).join('') +
                     `</optgroup>`
                 ).join('');
-                fields = `<select class="form-control smu-builder-select" data-idx="${idx}" data-field="key"${dis}>` +
+                fields = `<select class="custom-select smu-builder-select" data-idx="${idx}" data-field="key"${dis}>` +
                     `<option value="">${esc(strings.choose || 'Choose...')}</option>${opts}` +
                     `<option value="__custom__"${row.key === '__custom__' ? ' selected' : ''}>` +
                     `${esc(strings.customkey || 'Custom key...')}</option></select>`;

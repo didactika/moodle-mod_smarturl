@@ -48,6 +48,7 @@ class save_meta_type extends external_api {
             'searchable' => new external_value(PARAM_BOOL, 'Searchable', VALUE_DEFAULT, true),
             'filterable' => new external_value(PARAM_BOOL, 'Filterable', VALUE_DEFAULT, true),
             'enabled' => new external_value(PARAM_BOOL, 'Enabled', VALUE_DEFAULT, true),
+            'categoryid' => new external_value(PARAM_INT, 'Category ID', VALUE_DEFAULT, 0),
         ]);
     }
 
@@ -67,6 +68,7 @@ class save_meta_type extends external_api {
         bool $searchable = true,
         bool $filterable = true,
         bool $enabled = true,
+        int $categoryid = 0,
     ): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'id' => $id,
@@ -74,6 +76,7 @@ class save_meta_type extends external_api {
             'name' => $name,
             'description' => $description,
             'group_name' => $groupname,
+            'categoryid' => $categoryid,
             'datatype' => $datatype,
             'display_priority' => $displaypriority,
             'searchable' => $searchable,
@@ -100,6 +103,7 @@ class save_meta_type extends external_api {
             'shortname' => new external_value(PARAM_ALPHANUMEXT, 'Shortname'),
             'name' => new external_value(PARAM_TEXT, 'Name'),
             'description' => new external_value(PARAM_RAW, 'Description', VALUE_OPTIONAL),
+            'categoryid' => new external_value(PARAM_INT, 'Category identifier', VALUE_OPTIONAL),
             'group_name' => new external_value(PARAM_TEXT, 'Group name'),
             'datatype' => new external_value(PARAM_ALPHA, 'Datatype'),
             'icon' => new external_value(PARAM_RAW, 'Icon', VALUE_OPTIONAL),

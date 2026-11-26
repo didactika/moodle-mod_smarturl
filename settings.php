@@ -75,26 +75,38 @@ if ($ADMIN->fulltree) {
         PARAM_INT
     ));
 
-    $settings->add(new admin_setting_heading(
-        'mod_smarturl/adminpermissions',
-        get_string('adminpermissionsheading', 'smarturl'),
-        get_string('adminpermissions_desc', 'smarturl')
+    $mimeicons = new admin_setting_configcheckbox(
+        'mod_smarturl/usemimeicons',
+        get_string('usemimeicons', 'smarturl'),
+        get_string('usemimeicons_desc', 'smarturl'),
+        1
+    );
+    $mimeicons->set_updatedcallback([\mod_smarturl\local\presentation::class, 'refresh_course_cache']);
+    $settings->add($mimeicons);
+    $settings->add(new admin_setting_configselect(
+        'mod_smarturl/defaultcoursestyle',
+        get_string('presentation_course', 'smarturl'),
+        get_string('defaultcoursestyle_desc', 'smarturl'),
+        'LINK',
+        array_combine(['LINK', 'CARD', 'IMAGE'], array_map(static fn($option) =>
+            get_string('course_' . strtolower($option), 'smarturl'), ['LINK', 'CARD', 'IMAGE']))
     ));
-
-    $settings->add(new admin_setting_configcheckbox(
-        'mod_smarturl/lockadmins',
-        get_string('lockadmins', 'smarturl'),
-        get_string('lockadmins_desc', 'smarturl'),
-        0
-    ));
-
-    foreach (\mod_smarturl\local\permissions\admin_permissions::CAPABILITIES as $cap => $settingname) {
-        $capkey = str_replace('mod/smarturl:', 'smarturl:', $cap);
-        $settings->add(new admin_setting_configcheckbox(
-            'mod_smarturl/' . $settingname,
-            get_string($capkey, 'smarturl'),
+    foreach (['launch', 'viewer', 'poster'] as $key) {
+        $choices = ['' => get_string('fieldmode_default', 'smarturl')];
+        foreach (\mod_smarturl\local\presentation::OPTIONS[$key] as $choice) {
+            $choices[$choice] = get_string($key . '_' . strtolower($choice), 'smarturl');
+        }
+        $settings->add(new admin_setting_configselect(
+            'mod_smarturl/default' . $key,
+            get_string('presentation_' . $key, 'smarturl'),
             '',
-            1
+            '',
+            $choices
         ));
+    }
+    foreach (\core_component::get_plugin_list('smarturlplayer') as $directory) {
+        if (is_readable($directory . '/settings.php')) {
+            require($directory . '/settings.php');
+        }
     }
 }

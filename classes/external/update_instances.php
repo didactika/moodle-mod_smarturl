@@ -27,7 +27,6 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use mod_smarturl\local\compat\course_module_actions;
-use mod_smarturl\local\metadata\metadata_repository;
 use mod_smarturl\local\policy\availability_composer;
 use mod_smarturl\local\policy\policy_manager;
 
@@ -65,6 +64,8 @@ class update_instances extends external_api {
                 'completionview' => new external_value(PARAM_INT, 'Completion on view', VALUE_OPTIONAL),
                 'completionexpected' => new external_value(PARAM_INT, 'Completion expected timestamp', VALUE_OPTIONAL),
                 'managedavailability' => new external_value(PARAM_RAW, 'Managed availability branch JSON', VALUE_OPTIONAL),
+                'presentationjson' => new external_value(PARAM_RAW, 'Presentation settings JSON', VALUE_OPTIONAL),
+                'translationsjson' => new external_value(PARAM_RAW, 'Translations by language JSON', VALUE_OPTIONAL),
                 'parametersjson' => new external_value(PARAM_RAW, 'Dynamic URL parameters JSON', VALUE_OPTIONAL),
                 'managedby' => new external_value(PARAM_ALPHANUMEXT, 'Managed by', VALUE_OPTIONAL),
                 'externalkey' => new external_value(PARAM_RAW_TRIMMED, 'External correlation key', VALUE_OPTIONAL),
@@ -108,6 +109,9 @@ class update_instances extends external_api {
             $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
             $instance = $DB->get_record('smarturl', ['id' => $cm->instance], '*', MUST_EXIST);
 
+            if (array_key_exists('managedavailability', $item)) {
+                availability_composer::validate_external($item['managedavailability']);
+            }
             $update = (object)['instance' => (int)$instance->id, 'coursemodule' => $cmid, '_skippolicycheck' => true];
             if (array_key_exists('name', $item)) {
                 $update->name = $item['name'];
@@ -143,18 +147,28 @@ class update_instances extends external_api {
             if (array_key_exists('parametersjson', $item)) {
                 $update->parameters_json = $item['parametersjson'];
             }
-            smarturl_update_instance($update);
-
-            if (array_key_exists('metadata', $item)) {
-                metadata_repository::replace_for_instance((int)$instance->id, $item['metadata']);
+            if (array_key_exists('presentationjson', $item)) {
+                $update->presentation_json = $item['presentationjson'];
             }
+            if (array_key_exists('translationsjson', $item)) {
+                $update->translations_json = $item['translationsjson'];
+            }
+            if (array_key_exists('metadata', $item)) {
+                $update->metadata_entries = $item['metadata'];
+            }
+            smarturl_update_instance($update);
 
             if (array_key_exists('visible', $item)) {
                 course_module_actions::set_visible((int)$course->id, $cmid, (int)$item['visible']);
             }
 
             if (array_key_exists('section', $item)) {
-                $section = $DB->get_record('course_sections', ['course' => $course->id, 'section' => (int)$item['section']], '*', MUST_EXIST);
+                $section = $DB->get_record(
+                    'course_sections',
+                    ['course' => $course->id, 'section' => (int)$item['section']],
+                    '*',
+                    MUST_EXIST,
+                );
                 if ((int)$cm->section !== (int)$section->id) {
                     $sectioninfo = get_fast_modinfo($course)->get_section_info((int)$section->section, MUST_EXIST);
                     course_module_actions::move_to_section($course, $cmid, $sectioninfo);
@@ -172,7 +186,12 @@ class update_instances extends external_api {
             if ($hascmfields) {
                 $DB->update_record('course_modules', $cmupdate);
                 if (array_key_exists('completionexpected', $item)) {
-                    \core_completion\api::update_completion_date_event($cmid, 'smarturl', $instance, (int)$item['completionexpected'] ?: null);
+                    \core_completion\api::update_completion_date_event(
+                        $cmid,
+                        'smarturl',
+                        $instance,
+                        (int)$item['completionexpected'] ?: null,
+                    );
                 }
             }
 

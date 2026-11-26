@@ -43,6 +43,7 @@ class get_instances extends external_api {
             'courseids' => new external_multiple_structure(new external_value(PARAM_INT, 'Course IDs')),
             'page' => new external_value(PARAM_INT, 'Zero-based page index', VALUE_DEFAULT, 0),
             'perpage' => new external_value(PARAM_INT, 'Page size (1-200)', VALUE_DEFAULT, 50),
+            'includedetails' => new external_value(PARAM_BOOL, 'Include metadata values', VALUE_DEFAULT, true),
         ]);
     }
 
@@ -54,13 +55,14 @@ class get_instances extends external_api {
      * @param int $perpage Page size (1-200).
      * @return array<string, mixed> Paginated result envelope.
      */
-    public static function execute(array $courseids, int $page = 0, int $perpage = 50): array {
+    public static function execute(array $courseids, int $page = 0, int $perpage = 50, bool $includedetails = true): array {
         global $DB;
 
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseids' => $courseids,
             'page' => $page,
             'perpage' => $perpage,
+            'includedetails' => $includedetails,
         ]);
         self::validate_context(\context_system::instance());
         require_capability('mod/smarturl:manageexternal', \context_system::instance());
@@ -93,8 +95,14 @@ class get_instances extends external_api {
 
         $instanceids = array_map(static fn($cm) => (int)$cm->instance, $slice);
         $instances = $DB->get_records_list('smarturl', 'id', $instanceids);
-        $policies = $DB->get_records_list('smarturl_policy', 'smarturlid', $instanceids, '', 'smarturlid, managed_by, external_key, locked_fields_json, custom_availability_json, local_revision, acked_revision');
-        $metabyid = metadata_repository::for_instances($instanceids, true);
+        $policies = $DB->get_records_list(
+            'smarturl_policy',
+            'smarturlid',
+            $instanceids,
+            '',
+            'smarturlid, managed_by, external_key, locked_fields_json, custom_availability_json, local_revision, acked_revision',
+        );
+        $metabyid = $params['includedetails'] ? metadata_repository::for_instances($instanceids, true) : [];
 
         $items = [];
         foreach ($slice as $cm) {
@@ -130,6 +138,9 @@ class get_instances extends external_api {
                 'localrevision' => $pol ? (int)$pol->local_revision : 0,
                 'ackedrevision' => $pol ? (int)$pol->acked_revision : 0,
                 'parametersjson' => (string)($s->parameters_json ?? ''),
+                'presentationjson' => (string)($s->presentation_json ?? ''),
+                'translationsjson' => (string)($s->translations_json ?? ''),
+                'title' => \mod_smarturl\local\activity_content::title($s),
                 'metadata' => array_map(
                     static fn($m) => ['key' => $m['key'], 'value' => $m['value']],
                     $metabyid[(int)$s->id] ?? []
@@ -183,6 +194,9 @@ class get_instances extends external_api {
                 'localrevision' => new external_value(PARAM_INT, 'Local override revision'),
                 'ackedrevision' => new external_value(PARAM_INT, 'Acknowledged revision'),
                 'parametersjson' => new external_value(PARAM_RAW, 'Dynamic URL parameters JSON'),
+                'presentationjson' => new external_value(PARAM_RAW, 'Presentation settings JSON'),
+                'translationsjson' => new external_value(PARAM_RAW, 'Translations by language JSON'),
+                'title' => new external_value(PARAM_TEXT, 'Title in the current language'),
                 'metadata' => new external_multiple_structure(new external_single_structure([
                     'key' => new external_value(PARAM_RAW_TRIMMED, 'Metadata key'),
                     'value' => new external_value(PARAM_RAW, 'Metadata value'),

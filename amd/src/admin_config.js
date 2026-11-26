@@ -1,231 +1,202 @@
-// This file is part of Moodle - https://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-
 /**
- * Schema & Dynamic URL Parameters admin controller for Moodle 4.5 - 5.2.
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
  *
- * @module     mod_smarturl/admin_config
- * @copyright  2026 Didactika.org
- * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @module mod_smarturl/admin_config
+ * @copyright 2026 Didactika.org
+ * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 import Ajax from 'core/ajax';
 
-/**
- * Escapes HTML special characters safely.
- *
- * @param {string} value Raw string.
- * @returns {string}
- */
-const esc = (value) => String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-
-/**
- * Calls a Moodle external web service function returning a Promise.
- *
- * @param {string} methodname Method name.
- * @param {Object} args Arguments map.
- * @returns {Promise}
- */
 const ws = (methodname, args) => Ajax.call([{methodname, args}])[0];
 
 /**
- * Initializes the AdminConfig studio on a rendered container.
+ * Mounts the site-wide resource catalogue.
  *
- * @param {string} rootId Container ID.
+ * @param {string} id Root element ID.
  */
-export const init = (rootId) => {
-    const root = document.getElementById(rootId);
-    if (!root) {
-        return;
-    }
-
-    const payload = JSON.parse(root.dataset.payload || '{}');
-    let metaTypes = Array.isArray(payload.metaTypes) ? payload.metaTypes : [];
-    let paramDefs = Array.isArray(payload.paramDefs) ? payload.paramDefs : [];
-    const strings = payload.strings || {};
-
-    const errBanner = root.querySelector('[data-region="error-banner"]');
-    const metaTbody = root.querySelector('[data-region="meta-tbody"]');
-    const paramTbody = root.querySelector('[data-region="param-tbody"]');
-    const previewOut = root.querySelector('[data-region="preview-out"]');
-
-    const showError = (err) => {
-        if (!errBanner) {
-            return;
-        }
-        errBanner.textContent = (err && (err.message || err.error)) || 'Request failed';
-        errBanner.hidden = false;
+export const init = id => {
+    const root = document.getElementById(id);
+    const payload = JSON.parse(root.dataset.payload);
+    const strings = payload.strings;
+    const error = root.querySelector('[data-region="error-banner"]');
+    const search = root.querySelector('[data-search]');
+    const meta = {
+        records: payload.metaTypes,
+        form: root.querySelector('[data-form="meta-type"]'),
+        table: root.querySelector('[data-region="meta-tbody"]'),
+        keys: ['shortname', 'name', 'group_name', 'datatype', 'display_priority', 'enabled'],
+        type: 'meta_type',
+    };
+    const params = {
+        records: payload.paramDefs,
+        form: root.querySelector('[data-form="param-def"]'),
+        table: root.querySelector('[data-region="param-tbody"]'),
+        keys: ['shortname', 'name', 'source_type', 'source_key', 'enabled'],
+        type: 'param_def',
     };
 
-    const clearError = () => {
-        if (errBanner) {
-            errBanner.hidden = true;
+    const showError = err => {
+        error.textContent = err?.message || strings.savefailed;
+        error.hidden = false;
+    };
+
+    const selectSource = params.form.querySelector('[data-source-options]');
+    const source = params.form.elements.source_key;
+    const configureSource = () => {
+        const options = payload.sourceOptions[params.form.elements.source_type.value];
+        source.hidden = Boolean(options);
+        source.required = !options;
+        selectSource.hidden = !options;
+        selectSource.required = Boolean(options);
+        selectSource.replaceChildren(new Option(strings.sourcekey, ''));
+        if (options) {
+            Object.entries(options).forEach(([key, label]) => selectSource.add(new Option(label, key)));
+            if (source.value && !(source.value in options)) {
+                selectSource.add(new Option(source.value, source.value));
+            }
+            selectSource.value = source.value;
         }
     };
 
-    const renderMetaRows = () => {
-        if (!metaTbody) {
-            return;
-        }
-        metaTbody.innerHTML = metaTypes.map((mt) =>
-            `<tr>` +
-            `<td><code>${esc(mt.shortname)}</code></td>` +
-            `<td>${esc(mt.name)}</td>` +
-            `<td>${esc(mt.group_name)}</td>` +
-            `<td><span class="dd-tag">${esc(mt.datatype)}</span></td>` +
-            `<td>${esc(mt.display_priority)}</td>` +
-            `<td>${Number(mt.enabled) ? 'Yes' : 'No'}</td>` +
-            `<td><button type="button" class="btn btn-sm btn-outline-danger" data-del-meta="${Number(mt.id)}">` +
-            `${esc(strings.delete || 'Delete')}</button></td>` +
-            `</tr>`
-        ).join('');
+    const action = (label, classes, callback) => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-sm ' + classes;
+        button.type = 'button';
+        button.textContent = label;
+        button.addEventListener('click', callback);
+        return button;
     };
 
-    const renderParamRows = () => {
-        if (!paramTbody) {
-            return;
-        }
-        paramTbody.innerHTML = paramDefs.map((pd) =>
-            `<tr>` +
-            `<td><code>{{${esc(pd.shortname)}}}</code></td>` +
-            `<td>${esc(pd.name)}</td>` +
-            `<td><span class="dd-tag">${esc(pd.source_type)}</span></td>` +
-            `<td><code>${esc(pd.source_key)}</code></td>` +
-            `<td>${Number(pd.enabled) ? 'Yes' : 'No'}</td>` +
-            `<td><button type="button" class="btn btn-sm btn-outline-danger" data-del-param="${Number(pd.id)}">` +
-            `${esc(strings.delete || 'Delete')}</button></td>` +
-            `</tr>`
-        ).join('');
+    const edit = ({form}, record) => {
+        Object.entries(record).forEach(([name, value]) => {
+            const field = form.elements[name];
+            if (field) {
+                if (field.type === 'checkbox') {
+                    field.checked = Boolean(Number(value));
+                } else {
+                    field.value = value ?? '';
+                }
+            }
+        });
+        configureSource();
+        form.elements.shortname.focus();
     };
 
-    renderMetaRows();
-    renderParamRows();
-
-    root.addEventListener('click', (e) => {
-        const tabBtn = e.target.closest('[data-action="tab"]');
-        if (tabBtn) {
-            const tab = tabBtn.dataset.tab;
-            root.querySelectorAll('[data-action="tab"]').forEach((b) => {
-                b.classList.toggle('is-active', b.dataset.tab === tab);
+    const render = config => {
+        const query = search.value.trim().toLocaleLowerCase();
+        const records = config.records.filter(row => [row.name, row.shortname].some(value =>
+            value.toLocaleLowerCase().includes(query)));
+        config.table.replaceChildren();
+        records.forEach(record => {
+            const row = config.table.insertRow();
+            config.keys.forEach(key => {
+                const cell = row.insertCell();
+                cell.textContent = key === 'enabled' ? (Number(record[key]) ? strings.enabled : strings.disabled) : record[key];
             });
-            root.querySelectorAll('[data-panel]').forEach((p) => {
-                p.hidden = p.dataset.panel !== tab;
-            });
-            return;
+            const commands = row.insertCell();
+            commands.append(action(strings.edit, 'btn-outline-secondary mr-1', () => edit(config, record)));
+            commands.append(action(strings.delete, 'btn-outline-danger', () => {
+                if (window.confirm(strings.confirmdelete.replace('{$a}', record.name))) {
+                    ws('mod_smarturl_delete_' + config.type, {id: Number(record.id)}).then(() => {
+                        config.records = config.records.filter(item => Number(item.id) !== Number(record.id));
+                        render(config);
+                        return null;
+                    }).catch(showError);
+                }
+            }));
+        });
+        if (!records.length) {
+            const cell = config.table.insertRow().insertCell();
+            cell.colSpan = config.keys.length + 1;
+            cell.className = 'text-muted text-center';
+            cell.textContent = strings.emptyresults;
         }
+    };
 
-        const delMeta = e.target.closest('[data-del-meta]');
-        if (delMeta) {
-            const id = Number(delMeta.dataset.delMeta);
-            clearError();
-            ws('mod_smarturl_delete_meta_type', {id}).then(() => {
-                metaTypes = metaTypes.filter((m) => Number(m.id) !== id);
-                renderMetaRows();
+    const save = config => {
+        config.form.addEventListener('submit', event => {
+            event.preventDefault();
+            error.hidden = true;
+            const data = new FormData(config.form);
+            const args = {
+                id: Number(data.get('id')),
+                name: String(data.get('name')),
+                shortname: String(data.get('shortname')),
+                enabled: config.form.elements.enabled.checked,
+            };
+            if (config === meta) {
+                Object.assign(args, {
+                    categoryid: Number(data.get('categoryid')),
+                    datatype: String(data.get('datatype')),
+                    display_priority: String(data.get('display_priority')),
+                    searchable: config.form.elements.searchable.checked,
+                    filterable: config.form.elements.filterable.checked,
+                });
+            } else {
+                Object.assign(args, {
+                    source_type: String(data.get('source_type')),
+                    source_key: String(data.get('source_key')),
+                    default_query_param: String(data.get('default_query_param') || ''),
+                });
+            }
+            ws('mod_smarturl_save_' + config.type, args).then(record => {
+                config.records = [...config.records.filter(item => Number(item.id) !== Number(record.id)), record];
+                config.form.reset();
+                configureSource();
+                render(config);
                 return null;
             }).catch(showError);
-            return;
-        }
+        });
+    };
 
-        const delParam = e.target.closest('[data-del-param]');
-        if (delParam) {
-            const id = Number(delParam.dataset.delParam);
-            clearError();
-            ws('mod_smarturl_delete_param_def', {id}).then(() => {
-                paramDefs = paramDefs.filter((p) => Number(p.id) !== id);
-                renderParamRows();
-                return null;
-            }).catch(showError);
-        }
+    root.querySelectorAll('[data-action="tab"]').forEach(button => {
+        button.addEventListener('click', () => {
+            root.querySelectorAll('[data-action="tab"]').forEach(other => {
+                const active = other === button;
+                other.classList.toggle('is-active', active);
+                other.setAttribute('aria-selected', String(active));
+            });
+            root.querySelectorAll('[data-panel]').forEach(panel => {
+                panel.hidden = panel.dataset.panel !== button.dataset.tab;
+            });
+        });
+    });
+    params.form.elements.source_type.addEventListener('change', () => {
+        source.value = '';
+        configureSource();
+    });
+    selectSource.addEventListener('change', () => {
+        source.value = selectSource.value;
+    });
+    search.addEventListener('input', () => {
+        render(meta);
+        render(params);
     });
 
-    const metaForm = root.querySelector('[data-form="meta-type"]');
-    if (metaForm) {
-        metaForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            clearError();
-            const fd = new FormData(metaForm);
-            ws('mod_smarturl_save_meta_type', {
-                id: 0,
-                shortname: String(fd.get('shortname') || ''),
-                name: String(fd.get('name') || ''),
-                groupname: String(fd.get('group_name') || 'General'),
-                datatype: String(fd.get('datatype') || 'TEXT'),
-                displaypriority: String(fd.get('display_priority') || 'SECONDARY'),
-                searchable: metaForm.querySelector('[name="searchable"]').checked ? 1 : 0,
-                filterable: metaForm.querySelector('[name="filterable"]').checked ? 1 : 0,
-                enabled: metaForm.querySelector('[name="enabled"]').checked ? 1 : 0,
-                sortorder: (metaTypes.length + 1) * 10,
-            }).then((saved) => {
-                metaTypes.push(saved);
-                renderMetaRows();
-                metaForm.reset();
-                return null;
-            }).catch(showError);
-        });
-    }
+    const preview = root.querySelector('[data-form="preview"]');
+    preview.addEventListener('submit', event => {
+        event.preventDefault();
+        const fields = new FormData(preview);
+        const output = root.querySelector('[data-region="preview-out"]');
+        ws('mod_smarturl_preview_url', {
+            template: String(fields.get('template')),
+            bindings: fields.get('bind_param') ? [{
+                param: String(fields.get('bind_param')),
+                mode: 'static',
+                var: '',
+                value: String(fields.get('bind_val')),
+            }] : [],
+        }).then(result => {
+            output.querySelector('code').textContent = result.resolved;
+            output.hidden = false;
+            return null;
+        }).catch(showError);
+    });
 
-    const paramForm = root.querySelector('[data-form="param-def"]');
-    if (paramForm) {
-        paramForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            clearError();
-            const fd = new FormData(paramForm);
-            ws('mod_smarturl_save_param_def', {
-                id: 0,
-                shortname: String(fd.get('shortname') || ''),
-                name: String(fd.get('name') || ''),
-                sourcetype: String(fd.get('source_type') || 'BUILTIN'),
-                sourcekey: String(fd.get('source_key') || ''),
-                defaultqueryparam: String(fd.get('default_query_param') || ''),
-                enabled: paramForm.querySelector('[name="enabled"]').checked ? 1 : 0,
-            }).then((saved) => {
-                paramDefs.push(saved);
-                renderParamRows();
-                paramForm.reset();
-                return null;
-            }).catch(showError);
-        });
-    }
-
-    const previewForm = root.querySelector('[data-form="preview"]');
-    if (previewForm) {
-        previewForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            clearError();
-            const fd = new FormData(previewForm);
-            ws('mod_smarturl_preview_url', {
-                template: String(fd.get('template') || ''),
-                courseid: 1,
-                bindings: [{
-                    param: String(fd.get('bind_param') || 'env'),
-                    mode: 'static',
-                    var: '',
-                    value: String(fd.get('bind_val') || 'demo'),
-                }],
-            }).then((res) => {
-                if (previewOut) {
-                    previewOut.querySelector('code').textContent = res.resolved || '';
-                    previewOut.hidden = false;
-                }
-                return null;
-            }).catch(showError);
-        });
-    }
+    [meta, params].forEach(config => {
+        save(config);
+        render(config);
+    });
+    configureSource();
 };

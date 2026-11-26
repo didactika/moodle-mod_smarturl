@@ -23,9 +23,11 @@ use mod_smarturl\completion\rule_registry;
 use mod_smarturl\local\metadata\metadata_repository;
 use mod_smarturl\local\metadata\metadata_type_manager;
 use mod_smarturl\local\metadata\param_def_manager;
-use mod_smarturl\local\permissions\admin_permissions;
 use mod_smarturl\local\policy\availability_composer;
+use mod_smarturl\local\activity_content;
 use mod_smarturl\local\policy\policy_manager;
+use mod_smarturl\local\presentation;
+use mod_smarturl\local\url\resource_target;
 use mod_smarturl\local\url\url_resolver;
 use mod_smarturl\output\form_builder_widget;
 
@@ -71,6 +73,21 @@ class mod_smarturl_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
+        $coursecontext = \context_course::instance((int)$this->get_course()->id);
+        if (policy_manager::can_edit_field('externalurl', $this->policy, $this->form_context(), $this->userid())) {
+            $sources = \mod_smarturl\local\catalogue\catalogue::choices($coursecontext);
+            if ($sources) {
+                $mform->addElement(
+                    'autocomplete',
+                    'smu_catalogue',
+                    get_string('selectresource', 'smarturl'),
+                    $sources,
+                    ['placeholder' => get_string('selectresource', 'smarturl')]
+                );
+                $mform->setType('smu_catalogue', PARAM_RAW_TRIMMED);
+            }
+        }
+
         $mform->addElement('text', 'externalurl', get_string('externalurl', 'smarturl'), ['size' => '80']);
         $mform->setType('externalurl', PARAM_RAW_TRIMMED);
         $mform->addHelpButton('externalurl', 'externalurl', 'smarturl');
@@ -78,61 +95,83 @@ class mod_smarturl_mod_form extends moodleform_mod {
 
         $this->standard_intro_elements();
 
-        // Display & open behaviour.
+        // Presentation controls use the Moodle form contract on both maintenance lines.
         $mform->addElement('header', 'appearancehdr', get_string('appearance', 'smarturl'));
-        $displayoptions = [
-            'AUTO' => get_string('display_auto', 'smarturl'),
-            'NEW' => get_string('display_new', 'smarturl'),
-            'OPEN' => get_string('display_open', 'smarturl'),
-            'POPUP' => get_string('display_popup', 'smarturl'),
-            'EMBED' => get_string('display_embed', 'smarturl'),
-            'INLINE_IFRAME' => get_string('display_inline_iframe', 'smarturl'),
-            'MODAL' => get_string('display_modal', 'smarturl'),
-            'CARD' => get_string('display_card', 'smarturl'),
-        ];
-        $mform->addElement('select', 'display_mode', get_string('displaymode', 'smarturl'), $displayoptions);
-        $mform->setDefault('display_mode', get_config('mod_smarturl', 'defaultdisplay') ?: 'AUTO');
-
-        $mform->addElement('text', 'popup_width', get_string('popupwidth', 'smarturl'), ['size' => '6']);
-        $mform->setType('popup_width', PARAM_INT);
-        $mform->setDefault('popup_width', (int)get_config('mod_smarturl', 'defaultpopupwidth') ?: 1200);
-        $mform->hideIf('popup_width', 'display_mode', 'neq', 'POPUP');
-
-        $mform->addElement('text', 'popup_height', get_string('popupheight', 'smarturl'), ['size' => '6']);
-        $mform->setType('popup_height', PARAM_INT);
-        $mform->setDefault('popup_height', (int)get_config('mod_smarturl', 'defaultpopupheight') ?: 800);
-        $mform->hideIf('popup_height', 'display_mode', 'neq', 'POPUP');
-
-        $mform->addElement('select', 'aspect_ratio', get_string('aspectratio', 'smarturl'), [
-            '16:9' => '16:9 (Widescreen)',
-            '4:3' => '4:3 (Classic)',
-            '1:1' => '1:1 (Square)',
-            '21:9' => '21:9 (Ultrawide)',
-        ]);
-        $mform->setDefault('aspect_ratio', '16:9');
-        foreach (['AUTO', 'NEW', 'OPEN', 'POPUP', 'CARD'] as $nonframe) {
-            $mform->hideIf('aspect_ratio', 'display_mode', 'eq', $nonframe);
+        $mform->addElement('hidden', 'display_mode', get_config('mod_smarturl', 'defaultdisplay') ?: 'AUTO');
+        $mform->setType('display_mode', PARAM_ALPHANUMEXT);
+        $defaults = presentation::for_instance((object)$this->current);
+        if (empty($this->current->id)) {
+            $defaults = presentation::legacy(get_config('mod_smarturl', 'defaultdisplay') ?: 'AUTO');
+            $defaults['course'] = get_config('mod_smarturl', 'defaultcoursestyle') ?: $defaults['course'];
+            foreach (['launch', 'viewer', 'poster'] as $key) {
+                $defaults[$key] = get_config('mod_smarturl', 'default' . $key) ?: $defaults[$key];
+            }
         }
+        foreach (presentation::OPTIONS as $key => $choices) {
+            $options = [];
+            foreach ($choices as $choice) {
+                $options[$choice] = get_string($key . '_' . strtolower($choice), 'smarturl');
+            }
+            $mform->addElement('select', 'smu_' . $key, get_string('presentation_' . $key, 'smarturl'), $options);
+            $mform->setDefault('smu_' . $key, $defaults[$key]);
+        }
+        foreach (presentation::FLAGS as $key) {
+            $mform->addElement('advcheckbox', 'smu_' . $key, get_string('presentation_' . $key, 'smarturl'));
+            $mform->setDefault('smu_' . $key, (int)$defaults[$key]);
+        }
+        foreach (['title', 'icon', 'description'] as $key) {
+            $mform->hideIf('smu_' . $key, 'smu_course', 'neq', 'CARD');
+        }
+        $mform->hideIf('smu_play', 'smu_course', 'eq', 'LINK');
+        $fields = [];
+        foreach (metadata_type_manager::list_all(true) as $definition) {
+            $fields[$definition->shortname] = format_string($definition->name, true);
+        }
+        foreach (['coursefields', 'viewerfields'] as $key) {
+            $selected = $defaults[$key];
+            $fieldoptions = $fields + array_combine($selected ?? [], $selected ?? []);
+            $mform->addElement('select', 'smu_' . $key . 'mode', get_string($key . 'mode', 'smarturl'), [
+                'DEFAULT' => get_string('fieldmode_default', 'smarturl'),
+                'NONE' => get_string('fieldmode_none', 'smarturl'),
+                'SELECT' => get_string('fieldmode_select', 'smarturl'),
+            ]);
+            $mform->setDefault('smu_' . $key . 'mode', $selected === null ? 'DEFAULT' : ($selected ? 'SELECT' : 'NONE'));
+            $mform->addElement('autocomplete', 'smu_' . $key, get_string('fieldselection', 'smarturl'), $fieldoptions, [
+                'multiple' => true,
+            ]);
+            $mform->setType('smu_' . $key, PARAM_ALPHANUMEXT);
+            $mform->setDefault('smu_' . $key, $selected ?? []);
+            $mform->hideIf('smu_' . $key, 'smu_' . $key . 'mode', 'neq', 'SELECT');
+        }
+        foreach (['width' => 1200, 'height' => 800] as $dimension => $value) {
+            $field = 'popup_' . $dimension;
+            $mform->addElement('text', $field, get_string('popup' . $dimension, 'smarturl'), ['size' => 6]);
+            $mform->setType($field, PARAM_INT);
+            $mform->setDefault($field, (int)get_config('mod_smarturl', 'defaultpopup' . $dimension) ?: $value);
+            $mform->hideIf($field, 'smu_launch', 'notin', ['VIEWERWINDOW', 'EXTERNALWINDOW']);
+        }
+        $mform->addElement('select', 'aspect_ratio', get_string('aspectratio', 'smarturl'), array_combine(
+            ['16:9', '4:3', '1:1', '21:9'],
+            ['16:9', '4:3', '1:1', '21:9']
+        ));
+        $mform->setDefault('aspect_ratio', '16:9');
+        $mform->hideIf('aspect_ratio', 'smu_viewer', 'eq', 'LINK');
 
-        // Optional preview card & media details (collapsed unless populated or requested).
-        $mform->addElement('header', 'mediahdr', get_string('mediaheader', 'smarturl'));
-        $mform->setExpanded('mediahdr', false);
-
-        $mform->addElement('text', 'thumbnail_url', get_string('thumbnailurl', 'smarturl'), ['size' => '80']);
+        $mform->addElement('text', 'thumbnail_url', get_string('thumbnailurl', 'smarturl'), ['size' => 80]);
         $mform->setType('thumbnail_url', PARAM_URL);
-        $mform->hideIf('thumbnail_url', 'display_mode', 'eq', 'OPEN');
-        $mform->hideIf('thumbnail_url', 'display_mode', 'eq', 'NEW');
-
+        $mform->hideIf('thumbnail_url', 'smu_poster', 'neq', 'URL');
         $mform->addElement('filemanager', 'poster_filemanager', get_string('posterimage', 'smarturl'), null, [
             'subdirs' => 0,
             'maxfiles' => 1,
             'accepted_types' => ['image'],
         ]);
-        $mform->hideIf('poster_filemanager', 'display_mode', 'eq', 'OPEN');
-        $mform->hideIf('poster_filemanager', 'display_mode', 'eq', 'NEW');
-
-        $mform->addElement('text', 'duration_seconds', get_string('durationseconds', 'smarturl'), ['size' => '8']);
+        $mform->hideIf('poster_filemanager', 'smu_poster', 'neq', 'UPLOAD');
+        $mform->addElement('text', 'duration_seconds', get_string('durationseconds', 'smarturl'), ['size' => 8]);
         $mform->setType('duration_seconds', PARAM_INT);
+        $mform->hideIf('duration_seconds', 'smu_viewer', 'eq', 'LINK');
+
+        $preview = new \mod_smarturl\output\preview_widget((int)$this->get_course()->id, (int)($this->_cm->id ?? 0));
+        $mform->addElement('html', html_writer::div($OUTPUT->render($preview), 'mod-smarturl my-2'));
 
         // Dynamic URL Parameters (single-line Didactika builder, starts with 1 row).
         $mform->addElement('header', 'dynamicparamshdr', get_string('dynamicparams', 'smarturl'));
@@ -196,11 +235,55 @@ class mod_smarturl_mod_form extends moodleform_mod {
             [
                 'choose' => get_string('choose', 'moodle'),
                 'customkey' => get_string('meta_customkey', 'smarturl'),
+                'metavalue' => get_string('meta_value', 'smarturl'),
+                'yes' => get_string('yes'),
+                'no' => get_string('no'),
                 'addrow' => get_string('meta_addmore', 'smarturl'),
                 'removerow' => get_string('param_remove', 'smarturl'),
             ]
         );
         $mform->addElement('html', html_writer::div($OUTPUT->render($metawidget), 'mod-smarturl my-2'));
+
+        $mform->addElement('header', 'translationshdr', get_string('translate', 'smarturl'));
+        $mform->setExpanded('translationshdr', false);
+        $languages = get_string_manager()->get_list_of_translations();
+        $mform->addElement(
+            'select',
+            'smu_language',
+            get_string('translationlanguage', 'smarturl'),
+            ['' => get_string('choosedots')] + $languages
+        );
+        $mform->addElement('static', 'translationhint', '', get_string('translationhint', 'smarturl'));
+        $translations = activity_content::translations((object)$this->current);
+        foreach ($languages as $lang => $label) {
+            $title = 'smu_i18n_' . $lang . '_title';
+            $description = 'smu_i18n_' . $lang . '_description';
+            $mform->addElement('text', $title, get_string('translationtitle', 'smarturl'));
+            $mform->setType($title, PARAM_TEXT);
+            $mform->setDefault($title, $translations[$lang]['title'] ?? '');
+            $mform->hideIf($title, 'smu_language', 'neq', $lang);
+            $mform->addElement(
+                'editor',
+                $description,
+                get_string('translationdescription', 'smarturl'),
+                null,
+                ['subdirs' => true, 'maxfiles' => 8, 'context' => $ctx]
+            );
+            $mform->setType($description, PARAM_RAW);
+            $draft = file_get_submitted_draft_itemid($description);
+            $text = file_prepare_draft_area(
+                $draft,
+                !empty($this->_cm->id) ? $ctx->id : null,
+                'mod_smarturl',
+                'translation',
+                activity_content::file_itemid($lang),
+                ['subdirs' => true],
+                $translations[$lang]['description'] ?? ''
+            );
+            $mform->setDefault($description, ['text' => $text, 'itemid' => $draft,
+                'format' => $translations[$lang]['format'] ?? FORMAT_HTML]);
+            $mform->hideIf($description, 'smu_language', 'neq', $lang);
+        }
 
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -256,7 +339,14 @@ class mod_smarturl_mod_form extends moodleform_mod {
 
         if (!empty($defaultvalues['id'])) {
             $draftitemid = file_get_submitted_draft_itemid('poster_filemanager');
-            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_smarturl', 'poster', 0, ['subdirs' => 0, 'maxfiles' => 1]);
+            file_prepare_draft_area(
+                $draftitemid,
+                $this->context->id,
+                'mod_smarturl',
+                'poster',
+                0,
+                ['subdirs' => 0, 'maxfiles' => 1],
+            );
             $defaultvalues['poster_filemanager'] = $draftitemid;
 
             $entries = metadata_repository::for_instance((int)$defaultvalues['id'], true);
@@ -268,7 +358,12 @@ class mod_smarturl_mod_form extends moodleform_mod {
 
         if (!empty($this->_cm->id)) {
             $policy = policy_manager::get_by_cmid((int)$this->_cm->id);
-            if ($policy && !empty($policy->managed_availability_json) && !admin_permissions::allows('mod/smarturl:overrideavailability', $this->context)) {
+            if (
+                $policy && !empty($policy->managed_availability_json) && !has_capability(
+                    'mod/smarturl:overrideavailability',
+                    $this->context,
+                )
+            ) {
                 $defaultvalues['availabilityconditionsjson'] = $policy->custom_availability_json ?? '';
             }
         }
@@ -302,7 +397,12 @@ class mod_smarturl_mod_form extends moodleform_mod {
         }
 
         if (!policy_manager::can_edit_field('display', $policy, $ctx, $uid)) {
-            foreach (['display_mode', 'popup_width', 'popup_height', 'aspect_ratio', 'duration_seconds'] as $el) {
+            $fields = ['display_mode', 'popup_width', 'popup_height', 'aspect_ratio', 'duration_seconds',
+                'smu_coursefields', 'smu_coursefieldsmode', 'smu_viewerfields', 'smu_viewerfieldsmode'];
+            foreach (array_merge(array_keys(presentation::OPTIONS), presentation::FLAGS) as $key) {
+                $fields[] = 'smu_' . $key;
+            }
+            foreach ($fields as $el) {
                 if ($mform->elementExists($el)) {
                     $mform->hardFreeze($el);
                 }
@@ -320,7 +420,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
                 $name = $el . $this->get_suffix();
                 if ($mform->elementExists($name)) {
                     $mform->hardFreeze($name);
-                } elseif ($mform->elementExists($el)) {
+                } else if ($mform->elementExists($el)) {
                     $mform->hardFreeze($el);
                 }
             }
@@ -343,11 +443,9 @@ class mod_smarturl_mod_form extends moodleform_mod {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
         if (!empty($data['externalurl'])) {
-            $sanitized = preg_replace('/\{\{[a-z0-9_.-]+\}\}/i', 'placeholder', (string)$data['externalurl']);
-            if (!preg_match('|^/|', $sanitized) && !preg_match('|^[a-z]+:|i', $sanitized)) {
-                $sanitized = 'http://' . $sanitized;
-            }
-            if (!preg_match('|^/|', $sanitized) && !url_appears_valid_url($sanitized)) {
+            try {
+                resource_target::normalise($data['externalurl'], true);
+            } catch (\invalid_parameter_exception) {
                 $errors['externalurl'] = get_string('invalidurl', 'smarturl');
             }
         }

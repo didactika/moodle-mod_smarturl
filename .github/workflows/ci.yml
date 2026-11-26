@@ -102,7 +102,7 @@ jobs:
           # them, each with the PHP versions Moodle supports for it: for
           # [400, 502] that is 400, 401, 405 and 502. Add the code of a new LTS
           # release to MOODLE_LTS when Moodle announces it.
-          MOODLE_LTS='["401", "405"]'
+          MOODLE_LTS='["401", "405", "503"]'
           supported_raw=$(grep -oP '\$plugin->supported\s*=\s*\[\K[^\]]+' version.php || true)
           if [ -z "$supported_raw" ]; then
             echo "::error::Could not find \$plugin->supported = [...] in version.php."
@@ -142,11 +142,21 @@ jobs:
               exit 1
             fi
 
+            # Moodle 5.3 asks for PostgreSQL 17 and MariaDB 11.4 at least; the earlier releases keep the
+            # versions that they were tested with.
+            if [ "$v" -ge 503 ]; then
+              pg="17"
+              maria="11.4"
+            else
+              pg="16"
+              maria="10"
+            fi
+
             while IFS= read -r php; do
               for db in pgsql mariadb; do
                 entries=$(echo "$entries" | jq -c \
-                  --arg php "$php" --arg branch "MOODLE_${v}_STABLE" --arg db "$db" \
-                  '. + [{"php": $php, "moodle-branch": $branch, "database": $db}]')
+                  --arg php "$php" --arg branch "MOODLE_${v}_STABLE" --arg db "$db" --arg pg "$pg" --arg maria "$maria" \
+                  '. + [{"php": $php, "moodle-branch": $branch, "database": $db, "postgres-version": $pg, "mariadb-version": $maria}]')
               done
             done <<< "$phps"
           done
@@ -162,7 +172,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:${{ matrix.postgres-version }}
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -171,7 +181,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
 
       mariadb:
-        image: mariadb:10
+        image: mariadb:${{ matrix.mariadb-version }}
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -179,7 +189,7 @@ jobs:
           MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+        options: --health-cmd="mariadb-admin ping" --health-interval 10s --health-timeout 5s --health-retries 3
 
     strategy:
       fail-fast: false
@@ -253,6 +263,19 @@ jobs:
       - name: Grunt
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci grunt --max-lint-warnings 0
+
+      - name: Check Moodle 5.3 TypeScript and ESM
+        if: ${{ !cancelled() && matrix.moodle-branch == 'MOODLE_503_STABLE' && hashFiles('plugin/tsconfig.json') != '' }}
+        run: |
+          source "$NVM_DIR/nvm.sh"
+          nvm use "$(cat moodle/.nvmrc)"
+          component=$(php -r 'define("MOODLE_INTERNAL", true); $plugin = new stdClass(); require $argv[1]; echo $plugin->component;' plugin/version.php)
+          cd moodle
+          path=$(php -r 'define("CLI_SCRIPT", true); require "config.php"; echo core_component::get_component_directory($argv[1]);' "$component")
+          test -f "$path/tsconfig.json"
+          npx --no-install grunt jsconfig
+          npx --no-install tsc --project "$path/tsconfig.json"
+          npx --no-install grunt esm --root="$path"
 
       # Only for a plugin that writes its styles as SCSS and compiles them with its own tools/build-styles.mjs, which takes
       # the root of a Moodle checkout and, with --check, fails when styles.css is not what the SCSS produces.

@@ -17,9 +17,8 @@
 namespace mod_smarturl\output;
 
 use core\output\named_templatable;
-use mod_smarturl\local\metadata\metadata_repository;
 use mod_smarturl\local\policy\policy_manager;
-use mod_smarturl\local\url\url_resolver;
+use mod_smarturl\local\viewer_data;
 
 /**
  * Renders the Smart URL viewer and high-volume metadata explorer via Mustache + AMD (Moodle 4.5 - 5.2).
@@ -40,10 +39,15 @@ class resource_page implements named_templatable, \renderable {
      * @param \stdClass $user Current user.
      */
     public function __construct(
+        /** @var \stdClass Activity record. */
         private readonly \stdClass $smarturl,
+        /** @var \stdClass Course record. */
         private readonly \stdClass $course,
+        /** @var \cm_info|\stdClass Course module. */
         private readonly \cm_info|\stdClass $cm,
+        /** @var \context_module Activity context. */
         private readonly \context_module $context,
+        /** @var \stdClass Current user. */
         private readonly \stdClass $user,
     ) {
     }
@@ -65,11 +69,13 @@ class resource_page implements named_templatable, \renderable {
      * @return array<string, mixed>
      */
     public function export_for_template(\renderer_base $output): array {
-        $resolvedurl = url_resolver::resolve($this->smarturl, $this->course, $this->user, (int)$this->cm->id);
-        $policy = policy_manager::get_by_cmid((int)$this->cm->id);
-        $metadata = metadata_repository::for_instance((int)$this->smarturl->id, false);
-        $displaymode = (string)$this->smarturl->display_mode;
-        $poster = $this->resolve_poster_url();
+        $view = viewer_data::prepare($this->smarturl, $this->course, $this->user, $this->context);
+        $resolvedurl = $view['target']['url'];
+        $canedit = has_capability('moodle/course:manageactivities', $this->context);
+        $policy = $canedit ? policy_manager::get_by_cmid((int)$this->cm->id) : null;
+        $metadata = $view['metadata'];
+        $displaymode = $view['mode'];
+        $poster = $view['poster'];
         $locked = policy_manager::locked_fields($policy);
         $duration = $this->smarturl->duration_seconds !== null ? (int)$this->smarturl->duration_seconds : null;
 
@@ -84,35 +90,39 @@ class resource_page implements named_templatable, \renderable {
             'CARD' => 'Preview card',
         ];
 
-        $host = parse_url($resolvedurl, PHP_URL_HOST) ?: $resolvedurl;
         $primarylabel = $displaymode === 'POPUP'
             ? get_string('launchpopup', 'smarturl')
-            : get_string('openresource', 'smarturl');
+            : get_string('openexternal', 'smarturl');
 
         $payload = [
             'cmid' => (int)$this->cm->id,
-            'name' => format_string($this->smarturl->name, true, ['context' => $this->context]),
+            'name' => $view['name'],
             'resolvedUrl' => $resolvedurl,
-            'goUrl' => (new \moodle_url('/mod/smarturl/go.php', ['id' => $this->cm->id]))->out(false),
+            'playerHtml' => viewer_data::render_target($view['target'], $view['name']),
+            'goUrl' => (new \moodle_url('/mod/smarturl/go.php', ['id' => $this->cm->id, 'fromviewer' => 1]))->out(false),
             'displayMode' => $displaymode,
             'aspectRatio' => (string)($this->smarturl->aspect_ratio ?: '16:9'),
             'popupWidth' => (int)($this->smarturl->popup_width ?: 1200),
             'popupHeight' => (int)($this->smarturl->popup_height ?: 800),
             'metadata' => $metadata,
             'strings' => [
-                'openresource' => get_string('openresource', 'smarturl'),
+                'openresource' => get_string('openexternal', 'smarturl'),
                 'launchiframe' => get_string('launchiframe', 'smarturl'),
                 'launchmodal' => get_string('launchmodal', 'smarturl'),
                 'launchpopup' => get_string('launchpopup', 'smarturl'),
                 'closepreview' => get_string('closepreview', 'smarturl'),
                 'metadataheading' => get_string('metadataheading', 'smarturl'),
+                'groupname' => get_string('groupname', 'smarturl'),
+                'metadatatypes' => get_string('metadatatypes', 'smarturl'),
+                'metavalue' => get_string('meta_value', 'smarturl'),
+                'description' => get_string('description'),
                 'metadatasearch' => get_string('metadatasearch', 'smarturl'),
                 'metadatasearchplaceholder' => get_string('metadatasearchplaceholder', 'smarturl'),
                 'allgroups' => get_string('allgroups', 'smarturl'),
                 'clearfilters' => get_string('clearfilters', 'smarturl'),
                 'viewcards' => get_string('viewcards', 'smarturl'),
                 'viewtable' => get_string('viewtable', 'smarturl'),
-                'copyjson' => get_string('copyjson', 'smarturl'),
+                'copyjson' => $canedit ? get_string('copyjson', 'smarturl') : '',
                 'copied' => get_string('copied', 'smarturl'),
                 'emptymetadata' => get_string('emptymetadata', 'smarturl'),
                 'emptymetadata_hint' => get_string('emptymetadata_hint', 'smarturl'),
@@ -131,9 +141,9 @@ class resource_page implements named_templatable, \renderable {
         return [
             'cmid' => (int)$this->cm->id,
             'name' => $payload['name'],
-            'intro' => format_module_intro('smarturl', $this->smarturl, (int)$this->cm->id),
+            'intro' => $view['intro'],
+            'playerhtml' => viewer_data::render_target($view['target'], $view['name']),
             'resolvedurl' => $resolvedurl,
-            'hostlabel' => $host,
             'gourl' => $payload['goUrl'],
             'displaylabel' => $displaylabels[$displaymode] ?? $displaymode,
             'primarylabel' => $primarylabel,
@@ -156,27 +166,5 @@ class resource_page implements named_templatable, \renderable {
             'strings' => $payload['strings'],
             'payloadjson' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ];
-    }
-
-    /**
-     * Resolves uploaded poster image URL or falls back to thumbnail_url.
-     *
-     * @return string|null
-     */
-    private function resolve_poster_url(): ?string {
-        $fs = get_file_storage();
-        $files = $fs->get_area_files($this->context->id, 'mod_smarturl', 'poster', 0, 'id DESC', false);
-        if (!empty($files)) {
-            $file = reset($files);
-            return \moodle_url::make_pluginfile_url(
-                $file->get_contextid(),
-                $file->get_component(),
-                $file->get_filearea(),
-                $file->get_itemid(),
-                $file->get_filepath(),
-                $file->get_filename()
-            )->out(false);
-        }
-        return !empty($this->smarturl->thumbnail_url) ? (string)$this->smarturl->thumbnail_url : null;
     }
 }

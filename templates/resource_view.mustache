@@ -11,7 +11,6 @@
 <div class="dd-smarturl-app smu-resource-shell" id="smu-viewer-{{uniqid}}" data-payload="{{payloadjson}}">
     <div class="smu-resource-bar">
         <div class="dd-tags">
-            <span class="dd-tag">{{displaylabel}}</span>
             {{#hasduration}}<span class="dd-tag">{{durationlabel}}</span>{{/hasduration}}
             {{#hasmanagedby}}<span class="dd-tag dd-tag-primary">{{managedbadge}}: {{managedby}}</span>{{/hasmanagedby}}
             {{#haslocked}}<span class="dd-tag">{{lockedbadge}}: {{lockedcount}}</span>{{/haslocked}}
@@ -23,16 +22,12 @@
 
     <section class="smu-stage">
         {{#isembed}}
-        <div class="smu-frame-wrap">
-            <iframe class="smu-iframe" src="{{resolvedurl}}" title="{{name}}" allowfullscreen loading="lazy"></iframe>
-        </div>
+        <div class="smu-player">{{{playerhtml}}}</div>
         {{/isembed}}
 
         {{^isembed}}
-        <div class="smu-facade{{#hasthumbnail}} has-poster{{/hasthumbnail}}">
-            <div class="smu-facade-inner">
-                <span class="smu-host-pill">{{hostlabel}}</span>
-                {{#intro}}<div class="smu-facade-intro">{{{intro}}}</div>{{/intro}}
+        <div class="card">{{#hasthumbnail}}<img class="smu-viewer-cover" src="{{thumbnailurl}}" alt="">{{/hasthumbnail}}
+            <div class="card-body">
                 <div class="smu-facade-actions">
                     {{#ismodal}}
                     <button type="button" class="btn btn-primary" data-action="open-modal">{{strings.launchmodal}}</button>
@@ -59,10 +54,17 @@
                 </div>
             </div>
             <div class="smu-frame-wrap">
-                <iframe data-region="modal-iframe" title="{{name}}" allowfullscreen></iframe>
+                <div class="smu-player" data-region="modal-player"></div>
             </div>
         </div>
     </div>
+
+    {{#intro}}
+    <section class="card card-body smu-description">
+        <h2 class="h5">{{strings.description}}</h2>
+        <div class="description">{{{intro}}}</div>
+    </section>
+    {{/intro}}
 
     {{#hasmetadata}}
     <section class="smu-explorer" aria-label="{{strings.metadataheading}}">
@@ -79,7 +81,7 @@
                         <button type="button" class="is-active" data-action="view-mode" data-mode="cards">{{strings.viewcards}}</button>
                         <button type="button" data-action="view-mode" data-mode="table">{{strings.viewtable}}</button>
                     </div>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copy-json">{{strings.copyjson}}</button>
+                    {{#strings.copyjson}}<button type="button" class="btn btn-outline-secondary btn-sm" data-action="copy-json">{{strings.copyjson}}</button>{{/strings.copyjson}}
                 </div>
             </div>
             <div class="dd-chips" data-region="group-chips"></div>

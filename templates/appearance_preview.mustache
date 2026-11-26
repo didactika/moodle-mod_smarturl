@@ -1,0 +1,37 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+    Moodle is free software under the GNU General Public License, version 3 or later.
+    @template mod_smarturl/appearance_preview
+}}
+<div class="d-flex flex-wrap align-items-center smu-course-actions" id="smu-preview-{{uniqid}}"
+    data-url="{{url}}" data-courseid="{{courseid}}" data-cmid="{{cmid}}" data-sesskey="{{sesskey}}">
+    <select class="custom-select w-auto" data-preset aria-label="{{preset}}">
+        <option value="">{{preset}}</option>
+        <option value="video">{{preset_video}}</option>
+        <option value="document">{{preset_document}}</option>
+        <option value="weblink">{{preset_weblink}}</option>
+    </select>
+    <button type="button" class="btn btn-outline-secondary" data-open>{{previewresource}}</button>
+    <dialog class="smu-preview-dialog" aria-labelledby="smu-preview-title-{{uniqid}}">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="h5 mb-0" id="smu-preview-title-{{uniqid}}">{{previewresource}}</h2>
+            <button type="button" class="close" data-close aria-label="{{closepreview}}"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="card-body d-flex flex-wrap align-items-center smu-course-actions">
+            <select class="custom-select w-auto" data-surface aria-label="{{previewresource}}">
+                <option value="course">{{previewcourse}}</option>
+                <option value="activity">{{previewactivity}}</option>
+                <option value="auxiliary">{{previewauxiliary}}</option>
+            </select>
+            <select class="custom-select w-auto" data-language aria-label="{{translationlanguage}}">
+                <option value="">{{translationlanguage}}</option>
+                {{#languages}}<option value="{{code}}">{{name}}</option>{{/languages}}
+            </select>
+            <label class="mb-0"><input type="checkbox" data-mobile> {{previewmobile}}</label>
+        </div>
+        <iframe class="smu-preview-frame" name="smu-preview-frame-{{uniqid}}" title="{{previewresource}}"></iframe>
+    </dialog>
+</div>
+{{#js}}
+require(["mod_smarturl/appearance_preview"], function(Preview) { Preview.init("smu-preview-{{uniqid}}"); });
+{{/js}}

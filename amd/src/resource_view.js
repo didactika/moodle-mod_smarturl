@@ -22,7 +22,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Ajax from 'core/ajax';
 
 const COLLAPSE_THRESHOLD = 18;
 
@@ -43,12 +42,6 @@ const esc = (value) => String(value ?? '')
  *
  * @param {number} cmid Course module ID.
  */
-const trackView = (cmid) => {
-    Ajax.call([{
-        methodname: 'mod_smarturl_track_view',
-        args: {cmid},
-    }]);
-};
 
 /**
  * Renders formatted metadata value markup based on datatype.
@@ -98,11 +91,8 @@ export const init = (rootId) => {
     const chipsHost = root.querySelector('[data-region="group-chips"]');
     const resultsHost = root.querySelector('[data-region="results-host"]');
     const modalBackdrop = root.querySelector('[data-region="modal-backdrop"]');
-    const modalIframe = root.querySelector('[data-region="modal-iframe"]');
+    const modalIframe = root.querySelector('[data-region="modal-player"]');
 
-    if (payload.displayMode === 'EMBED' && payload.cmid) {
-        trackView(Number(payload.cmid));
-    }
 
     const groupsMap = {};
     items.forEach((item) => {
@@ -234,23 +224,17 @@ export const init = (rootId) => {
                 actionEl.textContent = strings.copyjson || 'Copy JSON';
             }, 1800);
         } else if (action === 'track-open') {
-            trackView(Number(payload.cmid));
         } else if (action === 'launch-inline') {
             const stage = root.querySelector('.smu-stage');
             if (stage) {
-                const ratio = String(payload.aspectRatio || '16:9').replace(':', ' / ');
-                stage.innerHTML = `<div class="smu-frame-wrap" style="aspect-ratio: ${esc(ratio)};">` +
-                    `<iframe src="${esc(payload.resolvedUrl)}" title="${esc(payload.name || '')}" allowfullscreen></iframe>` +
-                    `</div>`;
-                trackView(Number(payload.cmid));
-            }
+                stage.innerHTML = '<div class="smu-player">' + (payload.playerHtml || '') + '</div>';
+                }
         } else if (action === 'open-modal' && modalBackdrop && modalIframe) {
-            modalIframe.src = payload.resolvedUrl;
+            modalIframe.innerHTML = payload.playerHtml || '';
             modalBackdrop.hidden = false;
-            trackView(Number(payload.cmid));
         } else if (action === 'close-modal' && modalBackdrop && modalIframe) {
             modalBackdrop.hidden = true;
-            modalIframe.src = 'about:blank';
+            modalIframe.innerHTML = '';
         }
     });
 

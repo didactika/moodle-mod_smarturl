@@ -62,7 +62,12 @@ class list_meta_types extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-        if (!has_any_capability(['mod/smarturl:manageschema', 'mod/smarturl:manageexternal', 'mod/smarturl:addinstance'], $context)) {
+        if (
+            !has_any_capability(
+                ['mod/smarturl:manageschema', 'mod/smarturl:manageexternal', 'mod/smarturl:addinstance'],
+                $context,
+            )
+        ) {
             require_capability('mod/smarturl:manageschema', $context);
         }
 

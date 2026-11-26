@@ -26,6 +26,18 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
+    'mod_smarturl_get_editor_context' => [
+        'classname' => \mod_smarturl\external\get_editor_context::class,
+        'description' => 'Loads the configuration for an editable Smart URL resource.',
+        'type' => 'read',
+        'ajax' => true,
+    ], 'mod_smarturl_save_instances' => [
+        'classname' => \mod_smarturl\external\save_instances::class,
+        'description' => 'Saves a batch of complete Smart URL resources with a result per item.',
+        'type' => 'write',
+        'capabilities' => 'mod/smarturl:manageexternal',
+        'ajax' => false,
+    ],
     'mod_smarturl_create_instances' => [
         'classname' => \mod_smarturl\external\create_instances::class,
         'description' => 'Creates one or more Smart URL module instances with policy, parameters and metadata.',

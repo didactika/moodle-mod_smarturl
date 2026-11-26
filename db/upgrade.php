@@ -30,8 +30,42 @@
  * @return bool True on completion.
  */
 function xmldb_smarturl_upgrade(int $oldversion): bool {
-    if ($oldversion < 2026112600) {
-        \mod_smarturl\local\installer::seed_defaults();
+    global $DB;
+
+    if ($oldversion < 2026112502) {
+        $manager = $DB->get_manager();
+        if (!$manager->table_exists('smarturl_meta_category')) {
+            $manager->install_one_table_from_xmldb_file(__DIR__ . '/install.xml', 'smarturl_meta_category');
+        }
+        foreach (
+            [
+            'smarturl' => [
+                new xmldb_field('presentation_json', XMLDB_TYPE_TEXT, null, null, null, null, null, 'duration_seconds'),
+                new xmldb_field('translations_json', XMLDB_TYPE_TEXT, null, null, null, null, null, 'presentation_json'),
+            ],
+            'smarturl_meta_type' => [
+                new xmldb_field('categoryid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description'),
+            ],
+            'smarturl_meta_value' => [
+                new xmldb_field('archived', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'custom_key'),
+            ],
+            ] as $tablename => $fields
+        ) {
+            $table = new xmldb_table($tablename);
+            foreach ($fields as $field) {
+                if (!$manager->field_exists($table, $field)) {
+                    $manager->add_field($table, $field);
+                }
+            }
+        }
+
+        \mod_smarturl\local\metadata\category_manager::backfill();
+        foreach (get_config('mod_smarturl') as $name => $value) {
+            if ($name === 'lockadmins' || str_starts_with($name, 'adminperm_')) {
+                unset_config($name, 'mod_smarturl');
+            }
+        }
+        upgrade_mod_savepoint(true, 2026112502, 'smarturl');
     }
     return true;
 }

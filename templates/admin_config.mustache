@@ -25,10 +25,14 @@
         <button type="button" role="tab" data-action="tab" data-tab="preview">{{strings.testresolution}}</button>
     </div>
 
-    <div class="alert alert-danger" hidden data-region="error-banner"></div>
+    <div class="alert alert-danger" role="alert" hidden data-region="error-banner"></div>
+    <div class="table-toolbar py-2" role="search">
+        <input type="search" class="form-control" data-search aria-label="{{strings.search}}" placeholder="{{strings.search}}">
+    </div>
 
     <section class="smu-admin-panel" data-panel="metadata">
         <form class="smu-admin-form" data-form="meta-type">
+            <input type="hidden" name="id" value="0">
             <div class="smu-form-grid">
                 <label>{{strings.shortname}}
                     <input class="form-control" name="shortname" required placeholder="e.g. curriculum_code">
@@ -37,7 +41,10 @@
                     <input class="form-control" name="name" required placeholder="e.g. Curriculum code">
                 </label>
                 <label>{{strings.groupname}}
-                    <input class="form-control" name="group_name" value="General">
+                    <select class="custom-select" name="categoryid">
+                        <option value="0">{{strings.groupname}}</option>
+                        {{#categories}}<option value="{{id}}">{{name}}</option>{{/categories}}
+                    </select>
                 </label>
                 <label>{{strings.datatype}}
                     <select class="form-control" name="datatype">
@@ -57,17 +64,17 @@
             </div>
             <button type="submit" class="btn btn-primary">{{strings.addmetatype}}</button>
         </form>
-        <div class="smu-table-wrap">
-            <table class="table smu-table">
+        <div class="table-responsive" data-region="tablewrap">
+            <table class="table table-hover smu-table mb-0">
                 <thead>
                     <tr>
-                        <th>{{strings.shortname}}</th>
-                        <th>Name</th>
-                        <th>{{strings.groupname}}</th>
-                        <th>{{strings.datatype}}</th>
-                        <th>{{strings.priority}}</th>
-                        <th>{{strings.enabled}}</th>
-                        <th></th>
+                        <th scope="col">{{strings.shortname}}</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">{{strings.groupname}}</th>
+                        <th scope="col">{{strings.datatype}}</th>
+                        <th scope="col">{{strings.priority}}</th>
+                        <th scope="col">{{strings.enabled}}</th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody data-region="meta-tbody"></tbody>
@@ -77,6 +84,7 @@
 
     <section class="smu-admin-panel" data-panel="params" hidden>
         <form class="smu-admin-form" data-form="param-def">
+            <input type="hidden" name="id" value="0">
             <div class="smu-form-grid">
                 <label>{{strings.shortname}}
                     <input class="form-control" name="shortname" required placeholder="e.g. campus_code">
@@ -90,7 +98,8 @@
                     </select>
                 </label>
                 <label>{{strings.sourcekey}}
-                    <input class="form-control" name="source_key" required placeholder="e.g. course.shortname or campuscode">
+                    <input class="form-control" name="source_key" data-source-key required>
+                    <select class="custom-select" data-source-options aria-label="{{strings.sourcekey}}" hidden></select>
                 </label>
                 <label>{{strings.defaultqueryparam}}
                     <input class="form-control" name="default_query_param" placeholder="optional query param">
@@ -101,16 +110,16 @@
             </div>
             <button type="submit" class="btn btn-primary">{{strings.addparamdef}}</button>
         </form>
-        <div class="smu-table-wrap">
-            <table class="table smu-table">
+        <div class="table-responsive" data-region="tablewrap">
+            <table class="table table-hover smu-table mb-0">
                 <thead>
                     <tr>
-                        <th>{{strings.shortname}}</th>
-                        <th>Name</th>
-                        <th>{{strings.sourcetype}}</th>
-                        <th>{{strings.sourcekey}}</th>
-                        <th>{{strings.enabled}}</th>
-                        <th></th>
+                        <th scope="col">{{strings.shortname}}</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">{{strings.sourcetype}}</th>
+                        <th scope="col">{{strings.sourcekey}}</th>
+                        <th scope="col">{{strings.enabled}}</th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody data-region="param-tbody"></tbody>

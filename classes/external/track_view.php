@@ -42,6 +42,7 @@ class track_view extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'Course module ID'),
+            'fromviewer' => new external_value(PARAM_BOOL, 'The activity view has already been recorded', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -51,10 +52,10 @@ class track_view extends external_api {
      * @param int $cmid Course module ID.
      * @return array<string, mixed>
      */
-    public static function execute(int $cmid): array {
+    public static function execute(int $cmid, bool $fromviewer = false): array {
         global $DB;
 
-        $params = self::validate_parameters(self::execute_parameters(), ['cmid' => $cmid]);
+        $params = self::validate_parameters(self::execute_parameters(), ['cmid' => $cmid, 'fromviewer' => $fromviewer]);
         $cm = get_coursemodule_from_id('smarturl', (int)$params['cmid'], 0, false, MUST_EXIST);
         $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
         $smarturl = $DB->get_record('smarturl', ['id' => $cm->instance], '*', MUST_EXIST);
@@ -63,7 +64,13 @@ class track_view extends external_api {
         self::validate_context($context);
         require_capability('mod/smarturl:view', $context);
 
-        smarturl_view($smarturl, $course, $cm, $context);
+        if (!$params['fromviewer']) {
+            smarturl_view($smarturl, $course, $cm, $context);
+        }
+        \mod_smarturl\event\resource_opened::create([
+            'objectid' => $smarturl->id,
+            'context' => $context,
+        ])->trigger();
 
         return ['cmid' => (int)$cm->id, 'tracked' => true];
     }
