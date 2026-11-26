@@ -2,7 +2,7 @@
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
- * Interactive stage supporting click-to-play lazy inline iframe, modal lightbox, and popup/tab launch.
+ * Interactive stage supporting embedded iframe, lazy inline preview, modal lightbox, and launch cards.
  *
  * @module     mod_smarturl/components/viewer/PlayerStage
  * @copyright  2026 Didactika.org
@@ -42,7 +42,7 @@ const PlayerStage = ({props, modalOpen, onCloseModal, onOpenModal}: PlayerStageP
             );
             return;
         }
-        if (props.displayMode === 'NEW') {
+        if (props.displayMode === 'NEW' || props.displayMode === 'OPEN' || props.displayMode === 'CARD' || props.displayMode === 'AUTO') {
             window.open(props.resolvedUrl, '_blank', 'noopener,noreferrer');
             return;
         }
@@ -52,6 +52,27 @@ const PlayerStage = ({props, modalOpen, onCloseModal, onOpenModal}: PlayerStageP
         }
         setInlineMounted(true);
     };
+
+    const primaryLabel = (() => {
+        if (props.displayMode === 'INLINE_IFRAME') {
+            return props.strings.launchiframe ?? 'Load preview here';
+        }
+        if (props.displayMode === 'MODAL') {
+            return props.strings.launchmodal ?? 'Open preview';
+        }
+        if (props.displayMode === 'POPUP') {
+            return props.strings.launchpopup ?? 'Open pop-up window';
+        }
+        return props.strings.openresource ?? 'Open in new tab';
+    })();
+
+    const hostLabel = (() => {
+        try {
+            return new URL(props.resolvedUrl).hostname;
+        } catch {
+            return props.resolvedUrl;
+        }
+    })();
 
     return (
         <>
@@ -67,33 +88,22 @@ const PlayerStage = ({props, modalOpen, onCloseModal, onOpenModal}: PlayerStageP
                     </div>
                 ) : (
                     <div
-                        className="smu-facade"
-                        style={props.thumbnailUrl ? {backgroundImage: `linear-gradient(rgb(15 23 42 / 55%), rgb(15 23 42 / 65%)), url(${props.thumbnailUrl})`, color: '#fff'} : undefined}
+                        className={`smu-facade${props.thumbnailUrl ? ' has-poster' : ''}`}
+                        style={props.thumbnailUrl ? {backgroundImage: `linear-gradient(rgb(15 23 42 / 58%), rgb(15 23 42 / 72%)), url(${props.thumbnailUrl})`} : undefined}
                     >
-                        <div className="d-grid gap-3 justify-items-center">
+                        <div className="smu-facade-inner">
+                            <span className="smu-host-pill">{hostLabel}</span>
                             {props.intro && (
                                 <div
-                                    className="small"
-                                    style={{maxWidth: '42rem'}}
+                                    className="smu-facade-intro"
                                     // Trusted Moodle formatted intro HTML.
                                     dangerouslySetInnerHTML={{__html: props.intro}}
                                 />
                             )}
-                            <div className="d-flex flex-wrap gap-2 justify-content-center">
+                            <div className="smu-facade-actions">
                                 <button type="button" className="btn btn-primary" onClick={launchPrimary}>
-                                    {props.displayMode === 'INLINE_IFRAME'
-                                        ? (props.strings.launchiframe ?? 'Load interactive preview')
-                                        : (props.strings.openresource ?? 'Open resource')}
+                                    {primaryLabel}
                                 </button>
-                                <a
-                                    href={props.goUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-outline-secondary"
-                                    onClick={notifyView}
-                                >
-                                    {props.strings.openresource ?? 'Open resource'}
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -105,9 +115,20 @@ const PlayerStage = ({props, modalOpen, onCloseModal, onOpenModal}: PlayerStageP
                     <div className="smu-modal">
                         <div className="smu-modal-bar">
                             <span className="fw-semibold">{props.name}</span>
-                            <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onCloseModal}>
-                                {props.strings.closepreview ?? 'Close'}
-                            </button>
+                            <div className="d-flex align-items-center gap-2">
+                                <a
+                                    href={props.goUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={notifyView}
+                                >
+                                    {props.strings.openresource ?? 'Open in new tab'}
+                                </a>
+                                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onCloseModal}>
+                                    {props.strings.closepreview ?? 'Close'}
+                                </button>
+                            </div>
                         </div>
                         <div className="smu-frame-wrap">
                             <iframe src={props.resolvedUrl} title={props.name} allowFullScreen/>

@@ -71,4 +71,18 @@ final class admin_permissions {
 
         return (bool)get_config('mod_smarturl', $setting);
     }
+
+    /**
+     * Enforces an admin-restrictable capability, throwing required_capability_exception if denied.
+     *
+     * @param string $capability Capability name.
+     * @param \context $context Context.
+     * @param int|null $userid Optional user ID.
+     */
+    public static function require_capability(string $capability, \context $context, ?int $userid = null): void {
+        require_capability($capability, $context, $userid);
+        if (!self::allows($capability, $context, $userid)) {
+            throw new \required_capability_exception($context, $capability, 'nopermissions', '');
+        }
+    }
 }

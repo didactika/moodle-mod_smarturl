@@ -1,6 +1,6 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
+import { jsxDEV } from "react/jsx-dev-runtime";
 /**
  * This file is part of Moodle - https://moodle.org/
  * Moodle is free software under the GNU General Public License, version 3 or later.
@@ -13,86 +13,82 @@ import { Fragment, jsxDEV } from "react/jsx-dev-runtime";
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import { useState } from "react";
-import PageHeader from "./components/common/PageHeader";
 import MetadataExplorer from "./components/viewer/MetadataExplorer";
 import PlayerStage from "./components/viewer/PlayerStage";
 import { formatDuration } from "./lib/metadata";
-import { trackView } from "./services/api";
+const DISPLAY_LABELS = {
+  AUTO: "Automatic",
+  EMBED: "Embedded on page",
+  INLINE_IFRAME: "Interactive preview",
+  MODAL: "Preview dialog",
+  POPUP: "Pop-up window",
+  NEW: "New browser tab",
+  OPEN: "Direct redirect",
+  CARD: "Preview card"
+};
 const ResourceView = /* @__PURE__ */ __name((props) => {
   const [modalOpen, setModalOpen] = useState(false);
-  const handleOpen = /* @__PURE__ */ __name(() => {
-    trackView(props.cmid).catch(() => null);
-    if (props.displayMode === "MODAL") {
-      setModalOpen(true);
-      return;
-    }
-    if (props.displayMode === "POPUP") {
-      window.open(
-        props.resolvedUrl,
-        `smarturl_${props.cmid}`,
-        `width=${props.popupWidth},height=${props.popupHeight},scrollbars=yes,resizable=yes`
-      );
-      return;
-    }
-    window.open(props.resolvedUrl, "_blank", "noopener,noreferrer");
-  }, "handleOpen");
-  const subtitle = /* @__PURE__ */ jsxDEV(Fragment, { children: [
-    /* @__PURE__ */ jsxDEV("span", { className: "badge text-bg-light", children: props.displayMode }, void 0, false, {
+  const hasDuration = typeof props.durationSeconds === "number" && props.durationSeconds > 0;
+  const isEmbedStage = props.displayMode === "EMBED";
+  const modeLabel = DISPLAY_LABELS[props.displayMode] ?? props.displayMode;
+  return /* @__PURE__ */ jsxDEV("div", { className: "smu-resource-shell", children: [
+    /* @__PURE__ */ jsxDEV("div", { className: "smu-resource-bar", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "dd-tags", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "dd-tag", children: modeLabel }, void 0, false, {
+          fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
+          lineNumber: 39,
+          columnNumber: 21
+        }),
+        hasDuration && /* @__PURE__ */ jsxDEV("span", { className: "dd-tag", children: formatDuration(props.durationSeconds) }, void 0, false, {
+          fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
+          lineNumber: 41,
+          columnNumber: 25
+        }),
+        props.policy.managedBy && /* @__PURE__ */ jsxDEV("span", { className: "dd-tag dd-tag-primary", children: [
+          props.strings.managedbadge ?? "Managed externally",
+          ": ",
+          props.policy.managedBy
+        ] }, void 0, true, {
+          fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
+          lineNumber: 44,
+          columnNumber: 25
+        }),
+        props.policy.lockedFields.length > 0 && /* @__PURE__ */ jsxDEV("span", { className: "dd-tag", children: [
+          props.strings.lockedbadge ?? "Protected",
+          ": ",
+          props.policy.lockedFields.join(", ")
+        ] }, void 0, true, {
+          fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
+          lineNumber: 49,
+          columnNumber: 25
+        })
+      ] }, void 0, true, {
+        fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
+        lineNumber: 38,
+        columnNumber: 17
+      }),
+      isEmbedStage && /* @__PURE__ */ jsxDEV(
+        "a",
+        {
+          href: props.goUrl,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: "btn btn-outline-secondary btn-sm",
+          children: props.strings.openresource ?? "Open in new tab"
+        },
+        void 0,
+        false,
+        {
+          fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
+          lineNumber: 55,
+          columnNumber: 21
+        }
+      )
+    ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 42,
+      lineNumber: 37,
       columnNumber: 13
     }),
-    props.durationSeconds && /* @__PURE__ */ jsxDEV("span", { className: "badge text-bg-light", children: formatDuration(props.durationSeconds) }, void 0, false, {
-      fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 43,
-      columnNumber: 39
-    }),
-    props.policy.managedBy && /* @__PURE__ */ jsxDEV("span", { className: "badge badge-soft rounded-pill text-bg-info", children: [
-      props.strings.managedbadge ?? "Externally governed",
-      ": ",
-      props.policy.managedBy
-    ] }, void 0, true, {
-      fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 45,
-      columnNumber: 17
-    }),
-    props.policy.lockedFields.length > 0 && /* @__PURE__ */ jsxDEV("span", { className: "badge badge-soft rounded-pill text-bg-secondary", children: [
-      props.strings.lockedbadge ?? "Policy locked",
-      ": ",
-      props.policy.lockedFields.join(", ")
-    ] }, void 0, true, {
-      fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 50,
-      columnNumber: 17
-    })
-  ] }, void 0, true, {
-    fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-    lineNumber: 41,
-    columnNumber: 9
-  });
-  const actions = /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: handleOpen, children: props.strings.openresource ?? "Open resource" }, void 0, false, {
-    fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-    lineNumber: 58,
-    columnNumber: 9
-  });
-  return /* @__PURE__ */ jsxDEV("div", { children: [
-    /* @__PURE__ */ jsxDEV(
-      PageHeader,
-      {
-        breadcrumb: [{ label: props.coursename, href: props.courseurl }, { label: props.name }],
-        title: props.name,
-        subtitle,
-        iconLabel: "URL",
-        actions
-      },
-      void 0,
-      false,
-      {
-        fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-        lineNumber: 65,
-        columnNumber: 13
-      }
-    ),
     /* @__PURE__ */ jsxDEV(
       PlayerStage,
       {
@@ -105,18 +101,18 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
       false,
       {
         fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-        lineNumber: 73,
+        lineNumber: 66,
         columnNumber: 13
       }
     ),
     props.metadata.length > 0 && /* @__PURE__ */ jsxDEV(MetadataExplorer, { entries: props.metadata, strings: props.strings }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 81,
+      lineNumber: 74,
       columnNumber: 17
     })
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-    lineNumber: 64,
+    lineNumber: 36,
     columnNumber: 9
   });
 }, "ResourceView");

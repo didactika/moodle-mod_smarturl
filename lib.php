@@ -149,11 +149,6 @@ function smarturl_update_instance(\stdClass $data, $mform = null): bool {
         if (property_exists($data, 'thumbnail_url')) {
             $record->thumbnail_url = !empty($data->thumbnail_url) ? trim((string)$data->thumbnail_url) : null;
         }
-        if (property_exists($data, 'duration_seconds')) {
-            $record->duration_seconds = ($data->duration_seconds !== '' && $data->duration_seconds !== null)
-                ? (int)$data->duration_seconds
-                : null;
-        }
     }
 
     if ($can('externalurl')) {
@@ -175,6 +170,11 @@ function smarturl_update_instance(\stdClass $data, $mform = null): bool {
         }
         if (isset($data->aspect_ratio)) {
             $record->aspect_ratio = (string)$data->aspect_ratio ?: '16:9';
+        }
+        if (property_exists($data, 'duration_seconds')) {
+            $record->duration_seconds = ($data->duration_seconds !== '' && $data->duration_seconds !== null)
+                ? (int)$data->duration_seconds
+                : null;
         }
     }
 
@@ -272,7 +272,58 @@ function smarturl_delete_instance(int $id): bool {
 }
 
 /**
- * Populates cached course module information including custom completion rules.
+ * Guesses a Moodle core MIME file-type icon (e.g. PDF, video, document) from the external URL.
+ *
+ * Returns null for generic pages, directory URLs, or unknown extensions so the module icon is used.
+ *
+ * @param string $rawurl External URL or template.
+ * @return string|null Icon identifier accepted by cached_cm_info::$icon.
+ */
+function smarturl_guess_icon(string $rawurl): ?string {
+    global $CFG;
+    require_once($CFG->libdir . '/filelib.php');
+
+    $cleanurl = preg_replace('/\{\{[a-z0-9_.-]+\}\}/i', 'token', trim($rawurl));
+    if ($cleanurl === '' || substr_count($cleanurl, '/') < 3 || substr($cleanurl, -1) === '/') {
+        return null;
+    }
+
+    try {
+        $moodleurl = new \moodle_url($cleanurl);
+        $cleanurl = $moodleurl->out_omit_querystring();
+    } catch (\moodle_exception $e) {
+        return null;
+    }
+
+    $icon = file_extension_icon($cleanurl);
+    $htmlicon = file_extension_icon('.htm');
+    $unknownicon = file_extension_icon('');
+    $phpicon = file_extension_icon('.php');
+
+    if ($icon === $unknownicon || $icon === $htmlicon || $icon === $phpicon) {
+        return null;
+    }
+
+    return $icon;
+}
+
+/**
+ * Checks whether an external URL is likely suitable for inline embedding under AUTO mode.
+ *
+ * @param string $rawurl External URL or template.
+ * @return bool
+ */
+function smarturl_is_embeddable_url(string $rawurl): bool {
+    $lower = strtolower(trim($rawurl));
+    return (bool)preg_match('/\.(mp4|webm|ogg|m3u8|pdf)(\?.*|#.*)?$/i', $lower)
+        || str_contains($lower, 'youtube.com')
+        || str_contains($lower, 'youtu.be')
+        || str_contains($lower, 'vimeo.com')
+        || str_contains($lower, '/embed');
+}
+
+/**
+ * Populates cached course module information including MIME icon, launch behaviour, and completion rules.
  *
  * @param \stdClass $coursemodule Course module DB record.
  * @return cached_cm_info|false
@@ -291,12 +342,16 @@ function smarturl_get_coursemodule_info(\stdClass $coursemodule) {
 
     $info = new cached_cm_info();
     $info->name = $smarturl->name;
+    $info->icon = smarturl_guess_icon((string)$smarturl->externalurl);
 
     if (!empty($coursemodule->showdescription)) {
         $info->content = format_module_intro('smarturl', $smarturl, $coursemodule->id, false);
     }
 
-    $custom = [];
+    $custom = [
+        'display_mode' => $smarturl->display_mode,
+        'filtericon' => true,
+    ];
     if (!empty($smarturl->completion_custom_json)) {
         $decoded = json_decode((string)$smarturl->completion_custom_json, true);
         if (is_array($decoded)) {
@@ -305,31 +360,34 @@ function smarturl_get_coursemodule_info(\stdClass $coursemodule) {
     }
     $info->customdata = $custom;
 
-    if (in_array($smarturl->display_mode, ['POPUP', 'NEW'], true)) {
-        $viewurl = new moodle_url('/mod/smarturl/go.php', ['id' => $coursemodule->id]);
-        if ($smarturl->display_mode === 'POPUP') {
-            $w = (int)($smarturl->popup_width ?: 1200);
-            $h = (int)($smarturl->popup_height ?: 800);
-            $jsurl = $viewurl->out(false);
-            $info->onclick = "window.open('{$jsurl}', 'smarturl{$coursemodule->id}', 'width={$w},height={$h},toolbar=no,location=no,menubar=no,scrollbars=yes,resizable=yes'); return false;";
-        }
+    $gourl = (new moodle_url('/mod/smarturl/go.php', ['id' => $coursemodule->id]))->out(false);
+    if ($smarturl->display_mode === 'POPUP') {
+        $w = (int)($smarturl->popup_width ?: 1200);
+        $h = (int)($smarturl->popup_height ?: 800);
+        $info->onclick = "window.open('{$gourl}', 'smarturl{$coursemodule->id}', 'width={$w},height={$h},toolbar=no,location=no,menubar=no,scrollbars=yes,resizable=yes'); return false;";
+    } else if ($smarturl->display_mode === 'NEW') {
+        $info->onclick = "window.open('{$gourl}', '_blank', 'noopener'); return false;";
     }
 
     return $info;
 }
 
 /**
- * Adds a concise Didactika metadata summary and launch action to the course activity card.
+ * Enhances the course activity card according to display mode, primary metadata, and preview controls.
  *
  * @param cm_info $cm Course module info.
  */
 function smarturl_cm_info_view(cm_info $cm): void {
-    global $DB;
+    global $DB, $COURSE, $USER;
 
     if (!$cm->uservisible) {
         return;
     }
-    $instance = $DB->get_record('smarturl', ['id' => $cm->instance], 'id, display_mode, duration_seconds');
+    $instance = $DB->get_record(
+        'smarturl',
+        ['id' => $cm->instance],
+        'id, course, name, externalurl, parameters_json, display_mode, aspect_ratio, thumbnail_url, duration_seconds'
+    );
     if (!$instance) {
         return;
     }
@@ -341,13 +399,75 @@ function smarturl_cm_info_view(cm_info $cm): void {
             $badges[] = html_writer::span(s($entry['label'] . ': ' . $entry['value']), 'dd-course-pill');
         }
     }
-    if (!empty($instance->duration_seconds) && count($badges) < 4) {
+    if (!empty($instance->duration_seconds) && (int)$instance->duration_seconds > 0 && count($badges) < 4) {
         $mins = (int)floor((int)$instance->duration_seconds / 60);
         $secs = (int)$instance->duration_seconds % 60;
         $badges[] = html_writer::span(sprintf('%d:%02d', $mins, $secs), 'dd-course-pill');
     }
-    if (!empty($badges)) {
-        $cm->set_after_link(html_writer::div(implode('', $badges), 'mod-smarturl-course-pills mt-1'));
+
+    $parts = [];
+    if ($instance->display_mode === 'CARD') {
+        $viewurl = new moodle_url('/mod/smarturl/view.php', ['id' => $cm->id, 'forceview' => 1]);
+        $gourl = new moodle_url('/mod/smarturl/go.php', ['id' => $cm->id]);
+        $thumb = '';
+        if (!empty($instance->thumbnail_url)) {
+            $thumb = html_writer::empty_tag('img', [
+                'src' => $instance->thumbnail_url,
+                'alt' => format_string($instance->name),
+                'class' => 'smu-course-card-thumb',
+                'loading' => 'lazy',
+            ]);
+        }
+        $actions = html_writer::link($gourl, get_string('openresource', 'smarturl'), [
+            'class' => 'btn btn-sm btn-primary',
+            'target' => '_blank',
+            'rel' => 'noopener noreferrer',
+        ]) . html_writer::link($viewurl, get_string('viewdetails', 'smarturl'), [
+            'class' => 'btn btn-sm btn-outline-secondary',
+        ]);
+        $cardbody = html_writer::div(
+            implode('', $badges) . html_writer::div($actions, 'smu-course-card-actions'),
+            'smu-course-card-body'
+        );
+        $parts[] = html_writer::div($thumb . $cardbody, 'smu-course-card mt-2');
+    } else {
+        if (!empty($meta) && in_array($instance->display_mode, ['NEW', 'POPUP', 'OPEN', 'AUTO'], true)) {
+            $viewurl = new moodle_url('/mod/smarturl/view.php', ['id' => $cm->id, 'forceview' => 1]);
+            $badges[] = html_writer::link(
+                $viewurl,
+                get_string('viewmetadata', 'smarturl', count($meta)),
+                ['class' => 'smu-course-meta-link']
+            );
+        }
+        if (!empty($badges)) {
+            $parts[] = html_writer::div(implode('', $badges), 'mod-smarturl-course-pills mt-1');
+        }
+        if ($instance->display_mode === 'INLINE_IFRAME') {
+            $course = ($COURSE && (int)$COURSE->id === (int)$instance->course)
+                ? $COURSE
+                : $DB->get_record('course', ['id' => $cm->course]);
+            if ($course && $USER) {
+                $resolved = \mod_smarturl\local\url\url_resolver::resolve($instance, $course, $USER, (int)$cm->id);
+                $ratio = str_replace(':', ' / ', (string)($instance->aspect_ratio ?: '16:9'));
+                $iframe = html_writer::tag('iframe', '', [
+                    'src' => $resolved,
+                    'title' => format_string($instance->name),
+                    'loading' => 'lazy',
+                    'allowfullscreen' => 'allowfullscreen',
+                ]);
+                $framewrap = html_writer::div($iframe, 'smu-course-iframe-wrap', ['style' => "aspect-ratio: {$ratio};"]);
+                $parts[] = html_writer::tag(
+                    'details',
+                    html_writer::tag('summary', get_string('launchiframe', 'smarturl'), ['class' => 'smu-course-inline-toggle'])
+                    . $framewrap,
+                    ['class' => 'smu-course-inline mt-2']
+                );
+            }
+        }
+    }
+
+    if (!empty($parts)) {
+        $cm->set_after_link(implode('', $parts));
     }
 }
 
@@ -455,6 +575,28 @@ function smarturl_extract_parameters_json(\stdClass $data, ?string $fallback = n
 function smarturl_extract_metadata_entries(\stdClass $data, bool $nullwhenabsent = false): ?array {
     if (isset($data->metadata_entries) && is_array($data->metadata_entries)) {
         return $data->metadata_entries;
+    }
+
+    if (property_exists($data, 'metadata_json')) {
+        $rawjson = trim((string)$data->metadata_json);
+        if ($rawjson === '') {
+            return [];
+        }
+        $decoded = json_decode($rawjson, true);
+        if (is_array($decoded)) {
+            $entries = [];
+            foreach ($decoded as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $key = trim((string)($row['key'] ?? ''));
+                $val = trim((string)($row['value'] ?? ''));
+                if ($key !== '' && $val !== '') {
+                    $entries[] = ['key' => $key, 'value' => $val];
+                }
+            }
+            return $entries;
+        }
     }
 
     $foundany = false;

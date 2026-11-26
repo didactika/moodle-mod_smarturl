@@ -45,8 +45,9 @@ require_capability('mod/smarturl:view', $context);
 
 smarturl_view($smarturl, $course, $cm, $context);
 
-// Direct redirect when configured as direct OPEN without staying on intermediate view page.
-if ($smarturl->display_mode === 'OPEN') {
+$forceview = optional_param('forceview', 0, PARAM_BOOL);
+$isautoopen = ($smarturl->display_mode === 'AUTO' && !smarturl_is_embeddable_url((string)$smarturl->externalurl));
+if (!$forceview && ($smarturl->display_mode === 'OPEN' || $isautoopen)) {
     $target = \mod_smarturl\local\url\url_resolver::resolve($smarturl, $course, $USER, (int)$cm->id);
     redirect(new moodle_url($target));
 }

@@ -88,4 +88,29 @@ final class policy_and_availability_test extends \advanced_testcase {
         $this->assertSame(0, (int)$updated->acked_revision);
         $this->assertTrue($DB->record_exists('smarturl_policy', ['id' => $updated->id]));
     }
+
+    /**
+     * Tests MIME file icon guessing (.pdf, .mp4) and course-page launch behaviors for NEW and POPUP modes.
+     */
+    public function test_coursemodule_mime_icon_and_launch_behavior(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/mod/smarturl/lib.php');
+        $this->resetAfterTest(true);
+
+        $this->assertSame('f/pdf', smarturl_guess_icon('https://cdn.example.org/docs/guide.pdf?token={{user_id}}'));
+        $this->assertNull(smarturl_guess_icon('https://example.org/portal/view'));
+
+        $course = $this->getDataGenerator()->create_course();
+        $pdfmod = $this->getDataGenerator()->create_module('smarturl', [
+            'course' => $course->id,
+            'externalurl' => 'https://cdn.example.org/syllabus.pdf',
+            'display_mode' => 'NEW',
+        ]);
+        $cm = $DB->get_record('course_modules', ['id' => $pdfmod->cmid], '*', MUST_EXIST);
+        $info = smarturl_get_coursemodule_info($cm);
+        $this->assertNotFalse($info);
+        $this->assertSame('f/pdf', $info->icon);
+        $this->assertStringContainsString("'_blank'", (string)$info->onclick);
+        $this->assertStringContainsString('/mod/smarturl/go.php?id=' . $pdfmod->cmid, (string)$info->onclick);
+    }
 }

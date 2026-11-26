@@ -10,65 +10,58 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import {useState} from 'react';
-import PageHeader from './components/common/PageHeader';
 import MetadataExplorer from './components/viewer/MetadataExplorer';
 import PlayerStage from './components/viewer/PlayerStage';
 import {formatDuration} from './lib/metadata';
-import {trackView} from './services/api';
 import type {ResourceViewProps} from './types';
+
+const DISPLAY_LABELS: Record<string, string> = {
+    AUTO: 'Automatic',
+    EMBED: 'Embedded on page',
+    INLINE_IFRAME: 'Interactive preview',
+    MODAL: 'Preview dialog',
+    POPUP: 'Pop-up window',
+    NEW: 'New browser tab',
+    OPEN: 'Direct redirect',
+    CARD: 'Preview card',
+};
 
 const ResourceView = (props: ResourceViewProps) => {
     const [modalOpen, setModalOpen] = useState(false);
-
-    const handleOpen = () => {
-        trackView(props.cmid).catch(() => null);
-        if (props.displayMode === 'MODAL') {
-            setModalOpen(true);
-            return;
-        }
-        if (props.displayMode === 'POPUP') {
-            window.open(
-                props.resolvedUrl,
-                `smarturl_${props.cmid}`,
-                `width=${props.popupWidth},height=${props.popupHeight},scrollbars=yes,resizable=yes`
-            );
-            return;
-        }
-        window.open(props.resolvedUrl, '_blank', 'noopener,noreferrer');
-    };
-
-    const subtitle = (
-        <>
-            <span className="badge text-bg-light">{props.displayMode}</span>
-            {props.durationSeconds && <span className="badge text-bg-light">{formatDuration(props.durationSeconds)}</span>}
-            {props.policy.managedBy && (
-                <span className="badge badge-soft rounded-pill text-bg-info">
-                    {props.strings.managedbadge ?? 'Externally governed'}: {props.policy.managedBy}
-                </span>
-            )}
-            {props.policy.lockedFields.length > 0 && (
-                <span className="badge badge-soft rounded-pill text-bg-secondary">
-                    {props.strings.lockedbadge ?? 'Policy locked'}: {props.policy.lockedFields.join(', ')}
-                </span>
-            )}
-        </>
-    );
-
-    const actions = (
-        <button type="button" className="btn btn-primary" onClick={handleOpen}>
-            {props.strings.openresource ?? 'Open resource'}
-        </button>
-    );
+    const hasDuration = typeof props.durationSeconds === 'number' && props.durationSeconds > 0;
+    const isEmbedStage = props.displayMode === 'EMBED';
+    const modeLabel = DISPLAY_LABELS[props.displayMode] ?? props.displayMode;
 
     return (
-        <div>
-            <PageHeader
-                breadcrumb={[{label: props.coursename, href: props.courseurl}, {label: props.name}]}
-                title={props.name}
-                subtitle={subtitle}
-                iconLabel="URL"
-                actions={actions}
-            />
+        <div className="smu-resource-shell">
+            <div className="smu-resource-bar">
+                <div className="dd-tags">
+                    <span className="dd-tag">{modeLabel}</span>
+                    {hasDuration && (
+                        <span className="dd-tag">{formatDuration(props.durationSeconds)}</span>
+                    )}
+                    {props.policy.managedBy && (
+                        <span className="dd-tag dd-tag-primary">
+                            {props.strings.managedbadge ?? 'Managed externally'}: {props.policy.managedBy}
+                        </span>
+                    )}
+                    {props.policy.lockedFields.length > 0 && (
+                        <span className="dd-tag">
+                            {props.strings.lockedbadge ?? 'Protected'}: {props.policy.lockedFields.join(', ')}
+                        </span>
+                    )}
+                </div>
+                {isEmbedStage && (
+                    <a
+                        href={props.goUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-outline-secondary btn-sm"
+                    >
+                        {props.strings.openresource ?? 'Open in new tab'}
+                    </a>
+                )}
+            </div>
 
             <PlayerStage
                 props={props}

@@ -3,8 +3,20 @@
 
 // Resource viewer stage & high-volume metadata explorer.
 .mod-smarturl {
+    .smu-resource-shell {
+        display: grid;
+        gap: 1.25rem;
+    }
+
+    .smu-resource-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
     .smu-stage {
-        margin-bottom: 1.5rem;
         border: 1px solid var(--dd-hairline);
         border-radius: var(--dd-radius-lg);
         background: var(--dd-surface);
@@ -15,12 +27,40 @@
         position: relative;
         display: grid;
         place-items: center;
-        min-height: 15rem;
+        min-height: 13rem;
         background: var(--dd-surface-2);
         background-size: cover;
         background-position: center;
-        padding: 2rem;
+        padding: 2rem 1.5rem;
         text-align: center;
+        color: var(--dd-ink);
+
+        &.has-poster {
+            min-height: 17rem;
+            color: #fff;
+        }
+    }
+
+    .smu-facade-inner {
+        display: grid;
+        gap: 0.9rem;
+        justify-items: center;
+        max-width: 42rem;
+    }
+
+    .smu-host-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.7rem;
+        border-radius: 999px;
+        background: rgb(15 23 42 / 7%);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.78rem;
+    }
+
+    .smu-facade.has-poster .smu-host-pill {
+        background: rgb(255 255 255 / 16%);
+        color: #fff;
     }
 
     .smu-frame-wrap {
@@ -104,5 +144,74 @@
         justify-content: space-between;
         padding: 0.75rem 1rem;
         border-bottom: 1px solid var(--dd-hairline);
+    }
+}
+
+.smu-course-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    align-items: center;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--dd-hairline, #e2e8f0);
+    border-radius: var(--dd-radius-lg, 0.75rem);
+    background: var(--dd-surface, #fff);
+    max-width: 44rem;
+}
+
+.smu-course-card-thumb {
+    width: 7.5rem;
+    height: 4.5rem;
+    object-fit: cover;
+    border-radius: var(--dd-radius-md, 0.5rem);
+}
+
+.smu-course-card-body {
+    display: flex;
+    flex: 1 1 14rem;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.smu-course-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.smu-course-meta-link {
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-left: 0.35rem;
+}
+
+.smu-course-inline {
+    border: 1px solid var(--dd-hairline, #e2e8f0);
+    border-radius: var(--dd-radius-md, 0.5rem);
+    background: var(--dd-surface, #fff);
+    padding: 0.5rem 0.75rem;
+    max-width: 48rem;
+}
+
+.smu-course-inline-toggle {
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dd-accent, #2563eb);
+}
+
+.smu-course-iframe-wrap {
+    margin-top: 0.65rem;
+    width: 100%;
+    border-radius: var(--dd-radius-md, 0.5rem);
+    overflow: hidden;
+    background: #000;
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
     }
 }

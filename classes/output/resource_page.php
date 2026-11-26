@@ -93,6 +93,8 @@ class resource_page implements react_component_renderable, \renderable {
             'strings' => [
                 'openresource' => get_string('openresource', 'smarturl'),
                 'launchiframe' => get_string('launchiframe', 'smarturl'),
+                'launchmodal' => get_string('launchmodal', 'smarturl'),
+                'launchpopup' => get_string('launchpopup', 'smarturl'),
                 'closepreview' => get_string('closepreview', 'smarturl'),
                 'metadataheading' => get_string('metadataheading', 'smarturl'),
                 'metadatasearch' => get_string('metadatasearch', 'smarturl'),

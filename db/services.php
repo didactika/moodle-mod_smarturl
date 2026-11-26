@@ -61,13 +61,6 @@ $functions = [
         'capabilities' => 'mod/smarturl:manageexternal',
         'ajax' => false,
     ],
-    'mod_smarturl_reorder_section' => [
-        'classname' => \mod_smarturl\external\reorder_section::class,
-        'description' => 'Reorders Smart URL modules inside a course section.',
-        'type' => 'write',
-        'capabilities' => 'mod/smarturl:manageexternal',
-        'ajax' => false,
-    ],
     'mod_smarturl_track_view' => [
         'classname' => \mod_smarturl\external\track_view::class,
         'description' => 'Records view completion and logs a Smart URL view event.',
@@ -115,6 +108,27 @@ $functions = [
         'description' => 'Resolves a URL template and parameter bindings for previewing dynamic parameters.',
         'type' => 'read',
         'capabilities' => 'mod/smarturl:manageschema',
+        'ajax' => true,
+    ],
+    'mod_smarturl_list_meta_types' => [
+        'classname' => \mod_smarturl\external\list_meta_types::class,
+        'description' => 'Lists configured metadata type definitions.',
+        'type' => 'read',
+        'capabilities' => 'mod/smarturl:manageschema, mod/smarturl:manageexternal',
+        'ajax' => true,
+    ],
+    'mod_smarturl_list_param_defs' => [
+        'classname' => \mod_smarturl\external\list_param_defs::class,
+        'description' => 'Lists configured dynamic URL variable definitions.',
+        'type' => 'read',
+        'capabilities' => 'mod/smarturl:manageschema, mod/smarturl:manageexternal',
+        'ajax' => true,
+    ],
+    'mod_smarturl_set_metadata' => [
+        'classname' => \mod_smarturl\external\set_metadata::class,
+        'description' => 'Replaces or merges metadata entries on a Smart URL instance.',
+        'type' => 'write',
+        'capabilities' => 'mod/smarturl:editmetadata, mod/smarturl:manageexternal',
         'ajax' => true,
     ],
 ];

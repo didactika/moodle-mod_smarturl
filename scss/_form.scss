@@ -1,0 +1,175 @@
+// This file is part of Moodle - https://moodle.org/
+// Moodle is free software under the GNU General Public License, version 3 or later.
+
+// Didactika-styled interactive form builders and scoped mod_form controls.
+body.path-mod-smarturl .mform {
+    select.form-control,
+    select.custom-select,
+    select.form-select {
+        border-color: var(--dd-hairline-strong, #cbd5e1);
+        border-radius: var(--dd-radius-md, 0.5rem);
+        background-color: var(--dd-surface, #fff);
+        color: var(--dd-ink, #0f172a);
+        transition: border-color 140ms ease, box-shadow 140ms ease;
+
+        &:focus {
+            border-color: var(--dd-accent, #2563eb);
+            box-shadow: 0 0 0 0.2rem rgb(37 99 235 / 16%);
+            outline: none;
+        }
+    }
+}
+
+.mod-smarturl .smu-form-builder {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--dd-hairline);
+    border-radius: var(--dd-radius-lg);
+    background: var(--dd-surface);
+    box-shadow: var(--dd-shadow-sm);
+    max-width: 58rem;
+}
+
+.mod-smarturl .smu-token-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--dd-hairline);
+}
+
+.mod-smarturl .smu-token-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--dd-muted);
+    margin-right: 0.25rem;
+}
+
+.mod-smarturl .smu-token-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.mod-smarturl .smu-token-chip {
+    border: 1px solid var(--dd-hairline-strong);
+    border-radius: 999px;
+    background: var(--dd-surface-2);
+    color: var(--dd-ink);
+    font-size: 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 0.18rem 0.6rem;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+    &:hover:not(:disabled) {
+        border-color: var(--dd-accent);
+        background: var(--dd-accent-soft);
+        color: var(--dd-accent);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.mod-smarturl .smu-builder-rows {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.mod-smarturl .smu-builder-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mod-smarturl .smu-builder-input,
+.mod-smarturl .smu-builder-select {
+    flex: 1 1 11rem;
+    min-width: 9rem;
+    border: 1px solid var(--dd-hairline-strong);
+    border-radius: var(--dd-radius-md);
+    background-color: var(--dd-surface);
+    color: var(--dd-ink);
+    font-size: 0.875rem;
+    height: 2.35rem;
+    padding: 0.3rem 0.65rem;
+
+    &:focus {
+        border-color: var(--dd-accent);
+        box-shadow: 0 0 0 0.2rem rgb(37 99 235 / 16%);
+        outline: none;
+    }
+}
+
+.mod-smarturl .smu-builder-val {
+    flex: 1.6 1 14rem;
+}
+
+.mod-smarturl .smu-row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.mod-smarturl .smu-icon-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 1px solid var(--dd-hairline-strong);
+    background: var(--dd-surface);
+    color: var(--dd-ink);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+.mod-smarturl .smu-icon-add:hover:not(:disabled) {
+    border-color: var(--dd-accent);
+    background: var(--dd-accent);
+    color: #fff;
+}
+
+.mod-smarturl .smu-icon-remove:hover:not(:disabled) {
+    border-color: #dc2626;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.mod-smarturl .smu-live-preview {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--dd-radius-md);
+    background: var(--dd-surface-2);
+    border: 1px dashed var(--dd-hairline-strong);
+    font-size: 0.8rem;
+
+    code {
+        color: var(--dd-accent);
+        word-break: break-all;
+    }
+}
+
+.mod-smarturl .smu-live-preview-label {
+    color: var(--dd-muted);
+    font-weight: 600;
+}

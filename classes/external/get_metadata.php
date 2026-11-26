@@ -24,7 +24,7 @@ use core_external\external_value;
 use mod_smarturl\local\metadata\metadata_repository;
 
 /**
- * Returns searchable and filterable metadata entries for a Smart URL activity.
+ * Returns paginated, searchable, and filterable metadata entries for a Smart URL activity.
  *
  * @package    mod_smarturl
  * @copyright  2026 Didactika.org
@@ -42,28 +42,37 @@ class get_metadata extends external_api {
             'cmid' => new external_value(PARAM_INT, 'Course module ID'),
             'query' => new external_value(PARAM_RAW_TRIMMED, 'Optional search query', VALUE_DEFAULT, ''),
             'group' => new external_value(PARAM_RAW_TRIMMED, 'Optional group filter', VALUE_DEFAULT, ''),
+            'page' => new external_value(PARAM_INT, 'Zero-based page index', VALUE_DEFAULT, 0),
+            'perpage' => new external_value(PARAM_INT, 'Page size (1-200)', VALUE_DEFAULT, 50),
         ]);
     }
 
     /**
-     * Returns metadata entries and group facet counts.
+     * Returns paginated metadata entries and group facet counts.
      *
      * @param int $cmid Course module ID.
      * @param string $query Optional search filter.
      * @param string $group Optional group filter.
+     * @param int $page Zero-based page index.
+     * @param int $perpage Page size (1-200).
      * @return array<string, mixed>
      */
-    public static function execute(int $cmid, string $query = '', string $group = ''): array {
+    public static function execute(int $cmid, string $query = '', string $group = '', int $page = 0, int $perpage = 50): array {
         $params = self::validate_parameters(self::execute_parameters(), [
             'cmid' => $cmid,
             'query' => $query,
             'group' => $group,
+            'page' => $page,
+            'perpage' => $perpage,
         ]);
 
         $cm = get_coursemodule_from_id('smarturl', (int)$params['cmid'], 0, false, MUST_EXIST);
         $context = \context_module::instance($cm->id);
         self::validate_context($context);
         require_capability('mod/smarturl:view', $context);
+
+        $page = max(0, (int)$params['page']);
+        $perpage = max(1, min(200, (int)$params['perpage']));
 
         $all = metadata_repository::for_instance((int)$cm->instance, false);
         $needle = strtolower(trim((string)$params['query']));
@@ -88,9 +97,13 @@ class get_metadata extends external_api {
             $groupcounts[$g] = ($groupcounts[$g] ?? 0) + 1;
         }
 
-        $items = $wantedgroup === ''
+        $matching = $wantedgroup === ''
             ? $searchmatched
             : array_values(array_filter($searchmatched, static fn($e) => $e['group'] === $wantedgroup));
+
+        $total = count($matching);
+        $offset = $page * $perpage;
+        $items = array_slice($matching, $offset, $perpage);
 
         $groupsout = [];
         foreach ($groupcounts as $name => $count) {
@@ -98,7 +111,10 @@ class get_metadata extends external_api {
         }
 
         return [
-            'total' => count($searchmatched),
+            'total' => $total,
+            'page' => $page,
+            'perpage' => $perpage,
+            'hasmore' => ($offset + count($items)) < $total,
             'groups' => $groupsout,
             'items' => array_map(static fn($e) => [
                 'id' => $e['id'],
@@ -120,6 +136,9 @@ class get_metadata extends external_api {
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
             'total' => new external_value(PARAM_INT, 'Total matching entries'),
+            'page' => new external_value(PARAM_INT, 'Current page index'),
+            'perpage' => new external_value(PARAM_INT, 'Page size'),
+            'hasmore' => new external_value(PARAM_BOOL, 'True if further pages exist'),
             'groups' => new external_multiple_structure(new external_single_structure([
                 'name' => new external_value(PARAM_RAW, 'Group name'),
                 'count' => new external_value(PARAM_INT, 'Count in group'),

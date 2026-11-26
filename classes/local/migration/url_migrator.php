@@ -60,44 +60,87 @@ final class url_migrator {
         $dryrun = !empty($options['dryrun']);
         $managedby = !empty($options['managedby']) ? (string)$options['managedby'] : null;
 
-        $where = ["m.name = 'url'", "cm.deletioninprogress = 0"];
-        $params = [];
+        $urlmoduleid = (int)$DB->get_field('modules', 'id', ['name' => 'url'], MUST_EXIST);
+        $clauses = ['module = :urlmoduleid', 'deletioninprogress = 0'];
+        $params = ['urlmoduleid' => $urlmoduleid];
 
         if (!empty($options['courseid'])) {
-            $where[] = 'cm.course = :courseid';
+            $clauses[] = 'course = :courseid';
             $params['courseid'] = (int)$options['courseid'];
         }
         if (!empty($options['categoryid'])) {
-            $where[] = 'c.category = :categoryid';
-            $params['categoryid'] = (int)$options['categoryid'];
+            $courseids = $DB->get_fieldset_select('course', 'id', 'category = :categoryid', ['categoryid' => (int)$options['categoryid']]);
+            if (empty($courseids)) {
+                return ['dryrun' => $dryrun, 'matched' => 0, 'migrated' => 0, 'completions' => 0, 'rewired' => 0, 'items' => []];
+            }
+            [$cinsql, $cinparams] = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED, 'catc');
+            $clauses[] = "course $cinsql";
+            $params = array_merge($params, $cinparams);
         }
         if (!empty($options['cmids'])) {
             $cmids = array_values(array_filter(array_map('intval', (array)$options['cmids']), static fn($id) => $id > 0));
             if (empty($cmids)) {
-                return ['matched' => 0, 'migrated' => 0, 'completions' => 0, 'items' => []];
+                return ['dryrun' => $dryrun, 'matched' => 0, 'migrated' => 0, 'completions' => 0, 'rewired' => 0, 'items' => []];
             }
             [$insql, $inparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED, 'cm');
-            $where[] = "cm.id $insql";
+            $clauses[] = "id $insql";
             $params = array_merge($params, $inparams);
         }
         if (!empty($options['idnumberprefix'])) {
-            $where[] = $DB->sql_like('cm.idnumber', ':idprefix', false, false);
+            $clauses[] = $DB->sql_like('idnumber', ':idprefix', false, false);
             $params['idprefix'] = $DB->sql_like_escape((string)$options['idnumberprefix']) . '%';
         }
 
-        $sql = "SELECT cm.id AS cmid, cm.course, cm.section, cm.idnumber, cm.visible, cm.visibleoncoursepage,
-                       cm.availability, cm.showdescription, cm.completion, cm.completionview, cm.completionexpected,
-                       cm.groupmode, cm.groupingid, cs.section AS sectionnum,
-                       u.id AS urlid, u.name, u.intro, u.introformat, u.externalurl, u.display, u.displayoptions, u.parameters
-                  FROM {course_modules} cm
-                  JOIN {modules} m ON m.id = cm.module
-                  JOIN {url} u ON u.id = cm.instance
-                  JOIN {course} c ON c.id = cm.course
-                  JOIN {course_sections} cs ON cs.id = cm.section
-                 WHERE " . implode(' AND ', $where) . "
-              ORDER BY cm.course ASC, cs.section ASC, cm.id ASC";
+        $cmrows = $DB->get_records_select(
+            'course_modules',
+            implode(' AND ', $clauses),
+            $params,
+            'course ASC, section ASC, id ASC'
+        );
+        if (empty($cmrows)) {
+            return ['dryrun' => $dryrun, 'matched' => 0, 'migrated' => 0, 'completions' => 0, 'rewired' => 0, 'items' => []];
+        }
 
-        $candidates = array_values($DB->get_records_sql($sql, $params));
+        $urlids = array_values(array_unique(array_map(static fn($cm) => (int)$cm->instance, $cmrows)));
+        $secids = array_values(array_unique(array_map(static fn($cm) => (int)$cm->section, $cmrows)));
+        $urlrecords = $DB->get_records_list('url', 'id', $urlids);
+        $secrecords = $DB->get_records_list('course_sections', 'id', $secids, '', 'id, section');
+
+        $candidates = [];
+        foreach ($cmrows as $cm) {
+            $u = $urlrecords[(int)$cm->instance] ?? null;
+            $sec = $secrecords[(int)$cm->section] ?? null;
+            if (!$u || !$sec) {
+                continue;
+            }
+            $candidates[] = (object)[
+                'cmid' => (int)$cm->id,
+                'course' => (int)$cm->course,
+                'section' => (int)$cm->section,
+                'idnumber' => (string)($cm->idnumber ?? ''),
+                'visible' => (int)$cm->visible,
+                'visibleoncoursepage' => (int)$cm->visibleoncoursepage,
+                'availability' => $cm->availability,
+                'showdescription' => (int)$cm->showdescription,
+                'completion' => (int)$cm->completion,
+                'completionview' => (int)$cm->completionview,
+                'completionexpected' => (int)$cm->completionexpected,
+                'groupmode' => (int)$cm->groupmode,
+                'groupingid' => (int)$cm->groupingid,
+                'sectionnum' => (int)$sec->section,
+                'urlid' => (int)$u->id,
+                'name' => (string)$u->name,
+                'intro' => (string)($u->intro ?? ''),
+                'introformat' => (int)$u->introformat,
+                'externalurl' => (string)$u->externalurl,
+                'display' => (int)$u->display,
+                'displayoptions' => $u->displayoptions,
+                'parameters' => $u->parameters,
+            ];
+        }
+        usort($candidates, static fn($a, $b) => ($a->course <=> $b->course)
+            ?: ($a->sectionnum <=> $b->sectionnum)
+            ?: ($a->cmid <=> $b->cmid));
 
         if (!empty($options['urlpattern'])) {
             $pattern = (string)$options['urlpattern'];
@@ -383,12 +426,17 @@ final class url_migrator {
             }
         }
 
-        $DB->execute(
-            "UPDATE {course_completion_criteria}
-                SET module = 'smarturl', moduleinstance = :newcmid
-              WHERE course = :courseid AND criteriatype = 4 AND module = 'url' AND moduleinstance = :oldcmid",
-            ['courseid' => $courseid, 'newcmid' => $newcmid, 'oldcmid' => $oldcmid]
-        );
+        $criteria = $DB->get_records('course_completion_criteria', [
+            'course' => $courseid,
+            'criteriatype' => 4,
+            'module' => 'url',
+            'moduleinstance' => $oldcmid,
+        ]);
+        foreach ($criteria as $criterion) {
+            $criterion->module = 'smarturl';
+            $criterion->moduleinstance = $newcmid;
+            $DB->update_record('course_completion_criteria', $criterion);
+        }
 
         return $rewired;
     }
