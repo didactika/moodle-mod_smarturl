@@ -20,7 +20,7 @@ const install = /* @__PURE__ */ __name((root) => {
     const Modal = await loadModal();
     const dialog = await Modal.create({ title, removeOnClose: true, returnElement: opener });
     dialog.getBody()[0].replaceChildren(content);
-    dialog.getRoot().find(".modal-dialog").addClass("smu-fixed-modal");
+    dialog.getBody()[0].closest(".modal-dialog")?.classList.add("smu-fixed-modal");
     dialog.getRoot().find(".modal-footer").addClass("d-none");
     dialog.show();
   }, "show");
@@ -34,7 +34,7 @@ const install = /* @__PURE__ */ __name((root) => {
       const label = (toggle.textContent ?? "").trim();
       toggle.setAttribute("aria-label", label);
       toggle.title = label;
-      toggle.classList.add("smu-iconpill", "smu-course-completion-button");
+      toggle.classList.add("smu-course-completion-button");
       const icon = document.createElement("i");
       icon.className = "fa fa-list-check";
       icon.setAttribute("aria-hidden", "true");
@@ -43,6 +43,7 @@ const install = /* @__PURE__ */ __name((root) => {
       toggle.replaceChildren(icon, text);
       const content = completion.querySelector('[data-for="dropdowndialog_content"]');
       if (content) {
+        toggle.classList.remove("dropdown-toggle");
         toggle.removeAttribute("data-toggle");
         toggle.removeAttribute("data-bs-toggle");
         toggle.removeAttribute("aria-expanded");
@@ -83,7 +84,7 @@ function ResourceTools() {
   }, []);
   return /* @__PURE__ */ jsxDEV("span", { ref: marker, hidden: true }, void 0, false, {
     fileName: "public/mod/smarturl/js/esm/src/ResourceTools.tsx",
-    lineNumber: 89,
+    lineNumber: 90,
     columnNumber: 12
   }, this);
 }

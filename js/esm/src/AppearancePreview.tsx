@@ -128,7 +128,7 @@ const AppearancePreview = (props: PreviewProps) => {
                     {props.languages.map(lang => <option key={lang.code} value={lang.code}>{lang.name}</option>)}
                 </select>
                 <div className="form-check form-switch smu-preview-switch">
-                    <input id={id + "-mobile"} type="checkbox" className="form-check-input"
+                    <input id={id + "-mobile"} type="checkbox" role="switch" className="form-check-input"
                         checked={mobile} onChange={e => setMobile(e.target.checked)}/>
                     <label className="form-check-label" htmlFor={id + "-mobile"}>{props.previewmobile}</label>
                 </div>

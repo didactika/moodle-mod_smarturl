@@ -189,6 +189,7 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
             {
               id: id + "-mobile",
               type: "checkbox",
+              role: "switch",
               className: "form-check-input",
               checked: mobile,
               onChange: (e) => setMobile(e.target.checked)

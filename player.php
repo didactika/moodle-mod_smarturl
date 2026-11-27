@@ -55,6 +55,7 @@ if ($target['kind'] !== 'media') {
 
 $PAGE->set_url('/mod/smarturl/player.php', ['id' => $id]);
 $PAGE->set_pagelayout('embedded');
+$PAGE->set_show_navigation_footer(false);
 $PAGE->activityheader->disable();
 $PAGE->set_title($title);
 echo $OUTPUT->header();

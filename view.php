@@ -62,6 +62,7 @@ smarturl_view($smarturl, $course, $cm, $context);
 $PAGE->set_url('/mod/smarturl/view.php', ['id' => $cm->id] + ($auxiliary ? ['aux' => 1] : []));
 if ($auxiliary) {
     $PAGE->set_pagelayout('embedded');
+    $PAGE->set_show_navigation_footer(false);
     $PAGE->activityheader->disable();
 }
 $name = format_string(activity_content::title($smarturl), true, ['context' => $context]);

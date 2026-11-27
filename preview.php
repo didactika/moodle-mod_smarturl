@@ -51,6 +51,7 @@ if ($lang && array_key_exists($lang, get_string_manager()->get_list_of_translati
 $PAGE->set_context($context);
 $PAGE->set_url('/mod/smarturl/preview.php', ['courseid' => $courseid, 'cmid' => $cmid]);
 $PAGE->set_pagelayout('embedded');
+$PAGE->set_show_navigation_footer(false);
 $PAGE->activityheader->disable();
 $PAGE->set_title(get_string('previewresource', 'smarturl'));
 
@@ -71,9 +72,7 @@ $name = format_string(activity_content::title($data), true, ['context' => $conte
 $target = null;
 $message = '';
 try {
-    if ($profile['deferred']) {
-        $message = get_string('deferred_preview', 'smarturl');
-    } else if ($profile['protected']) {
+    if ($profile['protected']) {
         $file = protected_resource::draft((int)($data->smu_resourcefile ?? 0));
         if ($file) {
             $url = moodle_url::make_draftfile_url(
@@ -91,7 +90,12 @@ try {
             url_resolver::decode_bindings($data->parameters_json ?? null)
         );
         $drafttarget = resource_target::describe($resolved, $profile['viewer'] === 'EMBED');
-        $target = resource_target::with_markup($drafttarget, $name);
+        if ($profile['deferred']) {
+            $message = get_string('deferred_preview', 'smarturl');
+            $target = $drafttarget;
+        } else {
+            $target = resource_target::with_markup($drafttarget, $name);
+        }
     }
 } catch (invalid_parameter_exception $error) {
     $message = get_string('invalidurl', 'smarturl');
@@ -122,7 +126,7 @@ if ($remoteimage && !$poster && !empty($data->thumbnail_url)) {
         $poster = null;
     }
 }
-if (!$poster && in_array($profile['poster'], ['AUTO', 'PROVIDER'], true)) {
+if (!$poster && !$profile['deferred'] && in_array($profile['poster'], ['AUTO', 'PROVIDER'], true)) {
     $poster = $target['poster'] ?? null;
 }
 
@@ -134,7 +138,8 @@ foreach (smarturl_extract_metadata_entries($data) as $entry) {
         continue;
     }
     $metadata[] = $entry + ['label' => $definition->name ?? $entry['key'],
-        'priority' => $definition->display_priority ?? 'SECONDARY', 'group' => $definition->group_name ?? ''];
+        'priority' => $definition->display_priority ?? 'SECONDARY', 'group' => $definition->group_name ?? '',
+        'datatype' => $definition->datatype ?? 'TEXT'];
 }
 $incourse = $surface === 'course';
 $imageonly = $incourse && $profile['course'] === 'IMAGE' && $poster;
@@ -143,30 +148,32 @@ $metadata = $imageonly ? [] : presentation::select_fields(
     $incourse ? $profile['coursefields'] : $profile['viewerfields'],
     $incourse
 );
-$description = (!$incourse)
-    ? activity_content::description($data, $context, 0) : '';
+$description = trim(activity_content::description($data, $context, 0));
 
-$embed = $target && !$incourse && in_array($profile['viewer'], ['AUTO', 'EMBED'], true) && $target['kind'] !== 'link';
+$embed = $target && !$incourse && !$profile['deferred'] && in_array($profile['viewer'], ['AUTO', 'EMBED'], true)
+    && $target['kind'] !== 'link';
 $useposter = $poster && (!$incourse || $profile['course'] !== 'LINK');
 $launchlabel = $incourse ? get_string('launch_' . strtolower($profile['launch']), 'smarturl')
     : get_string('openexternal', 'smarturl');
 $playable = !empty($target['playable']) || in_array($target['kind'] ?? '', ['audio', 'video'], true);
+$renderer = $PAGE->get_renderer('mod_smarturl');
 $payload = [
     'name' => !$imageonly && (!$incourse || $profile['title']) ? $name : '',
     'message' => $message,
     'poster' => $useposter && !$embed ? $poster : null,
     'covercard' => $incourse && $useposter,
     'player' => $embed ? viewer_data::render_target($target, $name) : '',
-    'circle' => $target && !$embed && (!$incourse || ($useposter && $profile['play'] && $playable)),
+    'circle' => $target && !$embed && (!$incourse || ($useposter && (!$playable || $profile['play']))),
     'plainbutton' => $target && !$useposter && $incourse,
     'launchlabel' => $launchlabel,
     'icon' => $playable ? 'fa-play' : 'fa-external-link',
-    'description' => trim($description),
+    'description' => $incourse ? '' : $description,
     'descriptionlabel' => get_string('description'),
+    'details' => !$incourse && $metadata ? $renderer->resource_details($metadata) : '',
     'metadataheading' => get_string('metadataheading', 'smarturl'),
-    'hasdetails' => !empty($metadata),
+    'hasdetails' => $incourse && (!empty($metadata) || $description !== ''),
 ];
 
 echo $OUTPUT->header();
-echo $PAGE->get_renderer('mod_smarturl')->draft_preview($payload);
+echo $renderer->draft_preview($payload);
 echo $OUTPUT->footer();

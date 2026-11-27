@@ -26,7 +26,7 @@ const install = (root: Element) => {
         const Modal = await loadModal();
         const dialog = await Modal.create({title, removeOnClose: true, returnElement: opener});
         dialog.getBody()[0].replaceChildren(content);
-        dialog.getRoot().find('.modal-dialog').addClass('smu-fixed-modal');
+        dialog.getBody()[0].closest('.modal-dialog')?.classList.add('smu-fixed-modal');
         dialog.getRoot().find('.modal-footer').addClass('d-none');
         dialog.show();
     };
@@ -40,7 +40,7 @@ const install = (root: Element) => {
             const label = (toggle.textContent ?? '').trim();
             toggle.setAttribute('aria-label', label);
             toggle.title = label;
-            toggle.classList.add('smu-iconpill', 'smu-course-completion-button');
+            toggle.classList.add('smu-course-completion-button');
             const icon = document.createElement('i');
             icon.className = 'fa fa-list-check';
             icon.setAttribute('aria-hidden', 'true');
@@ -49,6 +49,7 @@ const install = (root: Element) => {
             toggle.replaceChildren(icon, text);
             const content = completion.querySelector('[data-for="dropdowndialog_content"]');
             if (content) {
+                toggle.classList.remove('dropdown-toggle');
                 toggle.removeAttribute('data-toggle');
                 toggle.removeAttribute('data-bs-toggle');
                 toggle.removeAttribute('aria-expanded');
