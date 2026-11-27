@@ -9,17 +9,19 @@
     <template>
         <div class="mod-smarturl smu-preview-pane">
         <div class="smu-preview-toolbar d-flex flex-wrap align-items-center gap-2 pb-3 border-bottom">
-            <select class="form-select w-auto" data-surface aria-label="{{previewresource}}">
+            <select class="custom-select w-auto" data-surface aria-label="{{previewresource}}">
                 <option value="course">{{previewcourse}}</option>
                 <option value="activity">{{previewactivity}}</option>
                 <option value="auxiliary">{{previewauxiliary}}</option>
             </select>
-            <select class="form-select w-auto" data-language aria-label="{{translationlanguage}}">
+            <select class="custom-select w-auto" data-language aria-label="{{translationlanguage}}">
                 <option value="">{{previewcurrentlanguage}}</option>
                 {{#languages}}<option value="{{code}}">{{name}}</option>{{/languages}}
             </select>
-            <div class="form-check form-switch smu-preview-switch"><input id="smu-mobile-{{uniqid}}" class="form-check-input" type="checkbox" role="switch" data-mobile>
-            <label for="smu-mobile-{{uniqid}}" class="form-check-label">{{previewmobile}}</label></div>
+            <div class="custom-control custom-switch smu-preview-switch">
+                <input id="smu-mobile-{{uniqid}}" class="custom-control-input" type="checkbox" role="switch" data-mobile>
+                <label for="smu-mobile-{{uniqid}}" class="custom-control-label">{{previewmobile}}</label>
+            </div>
         </div>
         <iframe class="smu-preview-frame" name="smu-preview-frame-{{uniqid}}" title="{{previewresource}}"></iframe>
         </div>

@@ -57,25 +57,3 @@
         border-radius: 50rem;
     }
 }
-
-.smu-preview-switch {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    padding: 0;
-}
-
-.smu-preview-switch .form-check-input {
-    appearance: none;
-    width: 2rem;
-    height: 1.1rem;
-    position: static;
-    margin: 0;
-    border: 1px solid var(--secondary);
-    border-radius: 50rem;
-    background: radial-gradient(circle at 26% 50%, var(--white) 0.33rem, transparent 0.36rem) var(--gray);
-}
-
-.smu-preview-switch .form-check-input:checked {
-    background: radial-gradient(circle at 74% 50%, var(--white) 0.33rem, transparent 0.36rem) var(--primary);
-}
