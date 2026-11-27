@@ -389,7 +389,7 @@ function smarturl_get_coursemodule_info(\stdClass $coursemodule) {
     $info->name = $smarturl->name;
     $profile = presentation::for_instance($smarturl);
     $usemimeicons = get_config('mod_smarturl', 'usemimeicons');
-    $info->icon = !$profile['protected'] && ($usemimeicons === false || $usemimeicons)
+    $info->icon = !$profile['protected'] && !$profile['gateway'] && ($usemimeicons === false || $usemimeicons)
         ? smarturl_guess_icon((string)$smarturl->externalurl) : null;
 
     if (empty($smarturl->presentation_json) && !empty($coursemodule->showdescription)) {
@@ -474,7 +474,6 @@ function smarturl_cm_info_view(cm_info $cm): void {
         true
     );
     $viewurl = new moodle_url('/mod/smarturl/view.php', ['id' => $cm->id]);
-    $detailsurl = new moodle_url($viewurl, ['forceview' => 1]);
     $attributes = [];
     $launch = $profile['launch'];
     $action = match ($launch) {
@@ -494,14 +493,8 @@ function smarturl_cm_info_view(cm_info $cm): void {
     $actionlabel = in_array($launch, ['VIEWERTAB', 'VIEWERWINDOW', 'EXTERNALTAB', 'EXTERNALWINDOW'], true)
         ? get_string('launch_' . strtolower($launch), 'smarturl')
         : get_string('openactivity', 'smarturl');
-    $badges = [];
-    foreach ($fields as $entry) {
-        $badges[] = html_writer::span(
-            s($entry['label'] . ' · ' . $entry['value']),
-            'badge rounded-pill smu-meta-badge',
-        );
-    }
     $parts = [];
+    $renderer = $PAGE->get_renderer('mod_smarturl');
     if ($profile['course'] !== 'LINK' || $launch === 'INLINE') {
         $course = (int)$COURSE->id === (int)$instance->course ? $COURSE : $DB->get_record('course', ['id' => $cm->course]);
         try {
@@ -509,7 +502,7 @@ function smarturl_cm_info_view(cm_info $cm): void {
         } catch (\moodle_exception) {
             $target = ['kind' => 'link', 'poster' => null];
         }
-        $source = $profile['protected'] ? 'UPLOAD' : $profile['poster'];
+        $source = ($profile['protected'] || $profile['gateway']) ? 'UPLOAD' : $profile['poster'];
         $poster = viewer_data::poster($instance, $cm->context, $source, $target['poster']);
         if ($profile['course'] !== 'LINK') {
             $picture = $poster ? html_writer::empty_tag('img', [
@@ -534,17 +527,10 @@ function smarturl_cm_info_view(cm_info $cm): void {
             if (!$picture) {
                 $actions = html_writer::link($action, $actionlabel, $attributes + ['class' => 'btn btn-primary btn-sm']);
             }
-            if ($profile['course'] === 'CARD' && !$action->compare($viewurl, URL_MATCH_EXACT)) {
-                $actions .= html_writer::link(
-                    $detailsurl,
-                    get_string('viewdetails', 'smarturl'),
-                    ['class' => 'btn btn-outline-secondary btn-sm'],
-                );
-            }
-            $parts[] = $PAGE->get_renderer('mod_smarturl')->course_card([
+            $parts[] = $renderer->course_card([
                 'cover' => $cover,
-                'hasbody' => $actions !== '' || !empty($badges),
-                'badges' => $badges,
+                'hasbody' => $actions !== '',
+                'tools' => $renderer->resource_tools($fields, true),
                 'actions' => $actions,
             ]);
         }
@@ -553,9 +539,9 @@ function smarturl_cm_info_view(cm_info $cm): void {
             $preview = new \mod_smarturl\output\course_preview((int)$cm->id, $embed);
             $parts[] = $PAGE->get_renderer('mod_smarturl')->render($preview);
         }
-    } else if ($badges) {
-        $badges[] = html_writer::link($detailsurl, get_string('viewdetails', 'smarturl'), ['class' => 'smu-course-meta-link']);
-        $parts[] = html_writer::div(implode(' ', $badges), 'mod-smarturl-course-pills');
+    }
+    if ($profile['course'] === 'LINK' && $fields) {
+        $parts[] = html_writer::div($renderer->resource_tools($fields), 'smu-course-inline-tools');
     }
     if ($profile['description'] && $profile['course'] !== 'IMAGE' && !empty($instance->presentation_json)) {
         $intro = activity_content::description($instance, $cm->context, (int)$cm->id);

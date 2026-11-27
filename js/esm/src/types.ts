@@ -48,6 +48,5 @@ export interface ResourceViewProps {
     thumbnailUrl: string | null;
     durationSeconds: number | null;
     policy: PolicySummary;
-    metadata: MetadataEntry[];
     strings: Record<string, string>;
 }

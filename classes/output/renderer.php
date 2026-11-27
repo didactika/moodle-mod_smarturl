@@ -105,4 +105,65 @@ class renderer extends plugin_renderer_base {
     public function draft_preview(array $data): string {
         return $this->render_from_template('mod_smarturl/draft_preview', $data);
     }
+
+    /**
+     * Renders information and completion tools at the resource.
+     *
+     * @param array $fields Visible resource metadata.
+     * @param bool $course Whether this is a course item.
+     * @param string $completion Moodle completion controls.
+     * @return string
+     */
+    public function resource_tools(array $fields, bool $course = false, string $completion = ''): string {
+        if (!$fields && !$course && $completion === '') {
+            return '';
+        }
+        $groups = [];
+        foreach ($fields as $field) {
+            $group = $field['group'] ?: get_string('metadataheading', 'smarturl');
+            if ($field['datatype'] === 'URL' && preg_match('~^https?://~i', $field['value'])) {
+                $field['url'] = $field['value'];
+            } else if ($field['datatype'] === 'BOOLEAN') {
+                $truth = in_array(strtolower($field['value']), ['1', 'true', 'yes', 'si'], true);
+                $field['value'] = get_string($truth ? 'yes' : 'no');
+            }
+            $groups[$group][] = $field;
+        }
+        $data = [
+            'groups' => array_map(
+                static fn($name, $items) => ['name' => $name, 'items' => $items],
+                array_keys($groups),
+                array_values($groups),
+            ),
+            'details' => get_string('metadataheading', 'smarturl'),
+            'hasfields' => !empty($fields),
+            'completion' => $completion,
+            'course' => $course,
+        ];
+        return $this->render_from_template('mod_smarturl/resource_tools', $data)
+            . $this->render_react_component('mod_smarturl/ResourceTools', (object)[]);
+    }
+
+    /**
+     * Gets the native completion data for the compact activity tools.
+     *
+     * @param \cm_info $cm Activity information.
+     * @param int $userid Current user.
+     * @return string
+     */
+    public function completion_tools(\cm_info $cm, int $userid): string {
+        $output = new \core_course\output\completion_status($cm, $userid);
+        $data = $output->export_for_template($this);
+        if (empty($data['hascompletion']) || empty($data['uservisible'])) {
+            return '';
+        }
+        if (!empty($data['showmanualcompletion'])) {
+            return \core_courseformat\local\linearnavigationsettings::show_navigation_footer($this->page)
+                ? '' : $this->render_from_template('core_course/completion_manual', $data);
+        }
+        if (empty($data['completiondetails'])) {
+            return '';
+        }
+        return $this->render_from_template('mod_smarturl/compact_completion', $data);
+    }
 }

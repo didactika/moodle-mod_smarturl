@@ -98,7 +98,6 @@ class resource_page implements react_component_renderable, \renderable {
                 'managedBy' => $policy->managed_by ?? null,
                 'lockedFields' => policy_manager::locked_fields($policy),
             ],
-            'metadata' => $view['metadata'],
             'strings' => [
                 'playresource' => get_string('playresource', 'smarturl'),
                 'openresource' => get_string('openexternal', 'smarturl'),

@@ -114,6 +114,12 @@ if ($ADMIN->fulltree) {
             PARAM_INT,
         ));
     }
+    $settings->add(new admin_setting_configtextarea(
+        'mod_smarturl/deliveryhosts',
+        get_string('deliveryhosts', 'smarturl'),
+        get_string('deliveryhosts_desc', 'smarturl'),
+        '',
+    ));
     foreach (\core_component::get_plugin_list('smarturlplayer') as $directory) {
         if (is_readable($directory . '/settings.php')) {
             require($directory . '/settings.php');

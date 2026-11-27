@@ -33,7 +33,7 @@ final class presentation {
     ];
 
     /** @var array Boolean configuration keys. */
-    public const FLAGS = ['title', 'icon', 'description', 'play', 'protected'];
+    public const FLAGS = ['title', 'icon', 'description', 'play', 'protected', 'gateway'];
 
     /**
      * Refreshes affected course icons after the administrator changes the setting.
@@ -82,6 +82,7 @@ final class presentation {
             'description' => $description,
             'play' => false,
             'protected' => false,
+            'gateway' => false,
             'coursefields' => null,
             'viewerfields' => null,
         ];

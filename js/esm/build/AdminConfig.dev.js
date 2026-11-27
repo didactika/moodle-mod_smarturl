@@ -14,7 +14,7 @@ import { openSchemaModal } from "./lib/schemaModal";
 import { useDebouncedValue } from "./hooks/useDebouncedValue";
 const Icon = /* @__PURE__ */ __name(({ name }) => /* @__PURE__ */ jsxDEV("i", { className: "fa fa-" + name, "aria-hidden": "true" }, void 0, false, {
   fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-  lineNumber: 25,
+  lineNumber: 28,
   columnNumber: 42
 }), "Icon");
 const AdminConfig = /* @__PURE__ */ __name((props) => {
@@ -27,20 +27,9 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
   const [page, setPage] = useState(0);
   const [failure, setFailure] = useState("");
   const root = useRef(null);
-  const filterBox = useRef(null);
   const queryApplied = useDebouncedValue(query.trim().toLocaleLowerCase(), 400);
   const section = props.sections.find((candidate) => candidate.key === tab) ?? props.sections[0];
   useEffect(() => root.current ? installSelectMenus(root.current) : void 0, []);
-  useEffect(() => {
-    const outside = /* @__PURE__ */ __name((event) => {
-      const target = event.target;
-      if (target instanceof Element && !filterBox.current?.contains(target) && !target.closest(".smu-select-menu")) {
-        filterBox.current?.removeAttribute("open");
-      }
-    }, "outside");
-    document.addEventListener("pointerdown", outside);
-    return () => document.removeEventListener("pointerdown", outside);
-  }, []);
   const open = /* @__PURE__ */ __name((opener, row, remove = false) => {
     setFailure("");
     const title = document.createElement("span");
@@ -73,7 +62,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
   return /* @__PURE__ */ jsxDEV("div", { className: "smu-schema", ref: root, children: [
     /* @__PURE__ */ jsxDEV("p", { className: "text-body-secondary", children: t.adminconfigsubtitle }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 82,
+      lineNumber: 74,
       columnNumber: 9
     }),
     /* @__PURE__ */ jsxDEV("nav", { className: "nav nav-tabs mb-3", "aria-label": t.settings, children: props.sections.map((item) => /* @__PURE__ */ jsxDEV(
@@ -95,7 +84,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
           " ",
           /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill smu-state", children: rows[item.key].length }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 93,
+            lineNumber: 85,
             columnNumber: 33
           })
         ]
@@ -104,17 +93,17 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
       true,
       {
         fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 84,
+        lineNumber: 76,
         columnNumber: 41
       }
     )) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 83,
+      lineNumber: 75,
       columnNumber: 9
     }),
     failure && /* @__PURE__ */ jsxDEV("div", { className: "alert alert-danger", role: "alert", children: failure }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 95,
+      lineNumber: 87,
       columnNumber: 21
     }),
     /* @__PURE__ */ jsxDEV("div", { className: "smu-list-toolbar d-flex align-items-center flex-wrap gap-2 mb-3", children: [
@@ -135,118 +124,34 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
         false,
         {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 97,
+          lineNumber: 89,
           columnNumber: 13
         }
       ),
       /* @__PURE__ */ jsxDEV(
-        "details",
+        "select",
         {
-          ref: filterBox,
-          className: "dropdown smu-filter",
-          onKeyDown: (event) => {
-            if (event.key === "Escape") {
-              event.currentTarget.open = false;
-              event.currentTarget.querySelector("summary")?.focus();
-            }
+          className: "form-select smu-status-filter",
+          value: status,
+          "aria-label": t.status,
+          onChange: (event) => {
+            setStatus(event.target.value);
+            setPage(0);
           },
           children: [
-            /* @__PURE__ */ jsxDEV("summary", { className: "btn btn-outline-secondary", children: [
-              /* @__PURE__ */ jsxDEV(Icon, { name: "filter" }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 106,
-                columnNumber: 64
-              }),
-              " ",
-              t.filters,
-              status && /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill smu-state ms-2", children: "1" }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 107,
-                columnNumber: 32
-              })
-            ] }, void 0, true, {
+            /* @__PURE__ */ jsxDEV("option", { value: "", children: t.status }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 106,
+              lineNumber: 93,
               columnNumber: 17
             }),
-            /* @__PURE__ */ jsxDEV("div", { className: "dropdown-menu show p-3", children: [
-              /* @__PURE__ */ jsxDEV("div", { className: "d-flex justify-content-between align-items-center mb-2", children: [
-                /* @__PURE__ */ jsxDEV("strong", { children: t.filters }, void 0, false, {
-                  fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                  lineNumber: 111,
-                  columnNumber: 25
-                }),
-                /* @__PURE__ */ jsxDEV(
-                  "button",
-                  {
-                    type: "button",
-                    className: "btn btn-link btn-sm",
-                    title: t.clearfilters,
-                    "aria-label": t.clearfilters,
-                    onClick: clear,
-                    children: /* @__PURE__ */ jsxDEV(Icon, { name: "rotate-left" }, void 0, false, {
-                      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                      lineNumber: 113,
-                      columnNumber: 45
-                    })
-                  },
-                  void 0,
-                  false,
-                  {
-                    fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                    lineNumber: 112,
-                    columnNumber: 25
-                  }
-                )
-              ] }, void 0, true, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 110,
-                columnNumber: 21
-              }),
-              /* @__PURE__ */ jsxDEV("label", { htmlFor: "smu-catalogue-status", className: "form-label small text-uppercase", children: t.status }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 115,
-                columnNumber: 21
-              }),
-              /* @__PURE__ */ jsxDEV(
-                "select",
-                {
-                  id: "smu-catalogue-status",
-                  className: "form-select",
-                  value: status,
-                  onChange: (event) => {
-                    setStatus(event.target.value);
-                    setPage(0);
-                  },
-                  children: [
-                    /* @__PURE__ */ jsxDEV("option", { value: "", children: t.all }, void 0, false, {
-                      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                      lineNumber: 118,
-                      columnNumber: 25
-                    }),
-                    /* @__PURE__ */ jsxDEV("option", { value: "active", children: t.enabled }, void 0, false, {
-                      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                      lineNumber: 118,
-                      columnNumber: 58
-                    }),
-                    /* @__PURE__ */ jsxDEV("option", { value: "inactive", children: t.disabled }, void 0, false, {
-                      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                      lineNumber: 119,
-                      columnNumber: 25
-                    })
-                  ]
-                },
-                void 0,
-                true,
-                {
-                  fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                  lineNumber: 116,
-                  columnNumber: 21
-                }
-              )
-            ] }, void 0, true, {
+            /* @__PURE__ */ jsxDEV("option", { value: "active", children: t.enabled }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 109,
+              lineNumber: 93,
+              columnNumber: 53
+            }),
+            /* @__PURE__ */ jsxDEV("option", { value: "inactive", children: t.disabled }, void 0, false, {
+              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+              lineNumber: 94,
               columnNumber: 17
             })
           ]
@@ -255,45 +160,66 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
         true,
         {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 99,
+          lineNumber: 91,
           columnNumber: 13
+        }
+      ),
+      status && /* @__PURE__ */ jsxDEV(
+        "button",
+        {
+          type: "button",
+          className: "btn btn-outline-secondary smu-iconpill",
+          onClick: () => {
+            setStatus("");
+            setPage(0);
+          },
+          title: t.clearfilters,
+          "aria-label": t.clearfilters,
+          dangerouslySetInnerHTML: { __html: props.clearIcon }
+        },
+        void 0,
+        false,
+        {
+          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+          lineNumber: 96,
+          columnNumber: 24
         }
       ),
       /* @__PURE__ */ jsxDEV("div", { className: "smu-list-actions d-flex flex-wrap gap-2", children: [
         /* @__PURE__ */ jsxDEV("a", { href: props.settingsUrl, className: "btn btn-outline-secondary", children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "gear" }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 124,
+            lineNumber: 100,
             columnNumber: 83
           }),
           " ",
           t.settings
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 124,
+          lineNumber: 100,
           columnNumber: 17
         }),
         /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: (event) => open(event.currentTarget), children: [
           /* @__PURE__ */ jsxDEV(Icon, { name: "plus" }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 126,
+            lineNumber: 102,
             columnNumber: 21
           }),
           " ",
           section.add
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 125,
+          lineNumber: 101,
           columnNumber: 17
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 123,
+        lineNumber: 99,
         columnNumber: 13
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 96,
+      lineNumber: 88,
       columnNumber: 9
     }),
     /* @__PURE__ */ jsxDEV("div", { className: "card", children: [
@@ -301,41 +227,41 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
         /* @__PURE__ */ jsxDEV("table", { className: "table table-hover align-middle mb-0", children: [
           /* @__PURE__ */ jsxDEV("caption", { className: "visually-hidden", children: section.title }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 133,
+            lineNumber: 109,
             columnNumber: 21
           }),
           /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { children: [
             /* @__PURE__ */ jsxDEV("th", { scope: "col", children: t.name }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 135,
+              lineNumber: 111,
               columnNumber: 25
             }),
             section.columns.map((column) => /* @__PURE__ */ jsxDEV("th", { scope: "col", children: column }, column, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 136,
+              lineNumber: 112,
               columnNumber: 56
             })),
             /* @__PURE__ */ jsxDEV("th", { scope: "col", className: "smu-fit", children: t.status }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 137,
+              lineNumber: 113,
               columnNumber: 25
             }),
             /* @__PURE__ */ jsxDEV("th", { scope: "col", className: "smu-fit", children: /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: t.actions }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 138,
+              lineNumber: 114,
               columnNumber: 61
             }) }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 138,
+              lineNumber: 114,
               columnNumber: 25
             })
           ] }, void 0, true, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 134,
+            lineNumber: 110,
             columnNumber: 28
           }) }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 134,
+            lineNumber: 110,
             columnNumber: 21
           }),
           /* @__PURE__ */ jsxDEV("tbody", { children: matches.slice(offset, offset + span).map((row) => /* @__PURE__ */ jsxDEV("tr", { children: [
@@ -345,35 +271,35 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
                 open(event.currentTarget, row);
               }, children: row.name }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 142,
+                lineNumber: 118,
                 columnNumber: 29
               }),
               row.detail && /* @__PURE__ */ jsxDEV("div", { className: "small text-body-secondary", children: /* @__PURE__ */ jsxDEV("code", { children: row.detail }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 145,
+                lineNumber: 121,
                 columnNumber: 87
               }) }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 145,
+                lineNumber: 121,
                 columnNumber: 44
               })
             ] }, void 0, true, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 141,
+              lineNumber: 117,
               columnNumber: 25
             }),
             row.columns.map((column, index) => /* @__PURE__ */ jsxDEV("td", { children: column }, index, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 147,
+              lineNumber: 123,
               columnNumber: 61
             })),
             /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill smu-state" + (row.enabled ? " smu-state-on" : ""), children: row.enabled ? t.enabled : t.disabled }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 148,
+              lineNumber: 124,
               columnNumber: 29
             }) }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 148,
+              lineNumber: 124,
               columnNumber: 25
             }),
             /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("div", { className: "smu-row-actions", children: [
@@ -387,7 +313,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
                   onClick: (event) => open(event.currentTarget, row),
                   children: /* @__PURE__ */ jsxDEV(Icon, { name: "pen" }, void 0, false, {
                     fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                    lineNumber: 154,
+                    lineNumber: 130,
                     columnNumber: 33
                   })
                 },
@@ -395,7 +321,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
                 false,
                 {
                   fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                  lineNumber: 152,
+                  lineNumber: 128,
                   columnNumber: 29
                 }
               ),
@@ -409,7 +335,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
                   onClick: (event) => open(event.currentTarget, row, true),
                   children: /* @__PURE__ */ jsxDEV(Icon, { name: "trash" }, void 0, false, {
                     fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                    lineNumber: 158,
+                    lineNumber: 134,
                     columnNumber: 33
                   })
                 },
@@ -417,52 +343,52 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
                 false,
                 {
                   fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                  lineNumber: 156,
+                  lineNumber: 132,
                   columnNumber: 29
                 }
               )
             ] }, void 0, true, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 151,
+              lineNumber: 127,
               columnNumber: 29
             }) }, void 0, false, {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 151,
+              lineNumber: 127,
               columnNumber: 25
             })
           ] }, row.id, true, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 140,
+            lineNumber: 116,
             columnNumber: 77
           })) }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 140,
+            lineNumber: 116,
             columnNumber: 21
           })
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 132,
+          lineNumber: 108,
           columnNumber: 17
         }),
         !total && /* @__PURE__ */ jsxDEV("div", { className: "p-4 text-center text-body-secondary", "data-region": "empty", children: [
           /* @__PURE__ */ jsxDEV("p", { children: query || status ? t.emptyresults : t.listempty }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 164,
+            lineNumber: 140,
             columnNumber: 21
           }),
           /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: (event) => query || status ? clear() : open(event.currentTarget), children: query || status ? t.clearfilters : section.add }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 165,
+            lineNumber: 141,
             columnNumber: 21
           })
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 163,
+          lineNumber: 139,
           columnNumber: 28
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 131,
+        lineNumber: 107,
         columnNumber: 13
       }),
       /* @__PURE__ */ jsxDEV("div", { className: "smu-list-pager border-top px-3 py-2 d-flex align-items-center justify-content-between gap-2 flex-wrap", children: [
@@ -479,7 +405,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
               },
               children: options.map((option) => /* @__PURE__ */ jsxDEV("option", { value: option, children: option || t.all }, option, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 173,
+                lineNumber: 149,
                 columnNumber: 48
               }))
             },
@@ -487,19 +413,19 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 171,
+              lineNumber: 147,
               columnNumber: 21
             }
           )
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 170,
+          lineNumber: 146,
           columnNumber: 17
         }),
         /* @__PURE__ */ jsxDEV("div", { className: "d-flex align-items-center gap-2", children: [
           /* @__PURE__ */ jsxDEV("span", { className: "small text-body-secondary", role: "status", children: range }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 177,
+            lineNumber: 153,
             columnNumber: 21
           }),
           /* @__PURE__ */ jsxDEV(
@@ -511,9 +437,9 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
               title: t.previous,
               disabled: offset === 0,
               onClick: () => setPage(current - 1),
-              children: /* @__PURE__ */ jsxDEV(Icon, { name: "chevron-left" }, void 0, false, {
+              children: /* @__PURE__ */ jsxDEV("span", { dangerouslySetInnerHTML: { __html: props.previousIcon } }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 179,
+                lineNumber: 155,
                 columnNumber: 86
               })
             },
@@ -521,7 +447,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 178,
+              lineNumber: 154,
               columnNumber: 21
             }
           ),
@@ -534,9 +460,9 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
               title: t.next,
               disabled: offset + span >= total,
               onClick: () => setPage(current + 1),
-              children: /* @__PURE__ */ jsxDEV(Icon, { name: "chevron-right" }, void 0, false, {
+              children: /* @__PURE__ */ jsxDEV("span", { dangerouslySetInnerHTML: { __html: props.nextIcon } }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 181,
+                lineNumber: 157,
                 columnNumber: 96
               })
             },
@@ -544,28 +470,28 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 180,
+              lineNumber: 156,
               columnNumber: 21
             }
           )
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 176,
+          lineNumber: 152,
           columnNumber: 17
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 169,
+        lineNumber: 145,
         columnNumber: 13
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 130,
+      lineNumber: 106,
       columnNumber: 9
     })
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-    lineNumber: 81,
+    lineNumber: 73,
     columnNumber: 12
   });
 }, "AdminConfig");

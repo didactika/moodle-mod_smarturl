@@ -18,6 +18,9 @@ interface Props {
     tab: Tab;
     rows: Rows;
     settingsUrl: string;
+    previousIcon: string;
+    nextIcon: string;
+    clearIcon: string;
     adminUrl: string;
     strings: Record<string, string>;
 }
@@ -34,21 +37,10 @@ const AdminConfig = (props: Props) => {
     const [page, setPage] = useState(0);
     const [failure, setFailure] = useState('');
     const root = useRef<HTMLDivElement>(null);
-    const filterBox = useRef<HTMLDetailsElement>(null);
     const queryApplied = useDebouncedValue(query.trim().toLocaleLowerCase(), 400);
     const section = props.sections.find(candidate => candidate.key === tab) ?? props.sections[0];
 
     useEffect(() => root.current ? installSelectMenus(root.current) : undefined, []);
-    useEffect(() => {
-        const outside = (event: PointerEvent) => {
-            const target = event.target;
-            if (target instanceof Element && !filterBox.current?.contains(target) && !target.closest('.smu-select-menu')) {
-                filterBox.current?.removeAttribute('open');
-            }
-        };
-        document.addEventListener('pointerdown', outside);
-        return () => document.removeEventListener('pointerdown', outside);
-    }, []);
 
     const open = (opener: HTMLElement, row?: Row, remove = false) => {
         setFailure('');
@@ -96,30 +88,14 @@ const AdminConfig = (props: Props) => {
         <div className="smu-list-toolbar d-flex align-items-center flex-wrap gap-2 mb-3">
             <input className="form-control" type="search" aria-label={t.search} placeholder={t.search} value={query}
                 onChange={event => { setQuery(event.target.value); setPage(0); }}/>
-            <details ref={filterBox} className="dropdown smu-filter"
-                onKeyDown={event => {
-                    if (event.key === 'Escape') {
-                        event.currentTarget.open = false;
-                        event.currentTarget.querySelector('summary')?.focus();
-                    }
-                }}>
-                <summary className="btn btn-outline-secondary"><Icon name="filter"/> {t.filters}
-                    {status && <span className="badge rounded-pill smu-state ms-2">1</span>}
-                </summary>
-                <div className="dropdown-menu show p-3">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>{t.filters}</strong>
-                        <button type="button" className="btn btn-link btn-sm" title={t.clearfilters} aria-label={t.clearfilters}
-                            onClick={clear}><Icon name="rotate-left"/></button>
-                    </div>
-                    <label htmlFor="smu-catalogue-status" className="form-label small text-uppercase">{t.status}</label>
-                    <select id="smu-catalogue-status" className="form-select" value={status}
-                        onChange={event => { setStatus(event.target.value); setPage(0); }}>
-                        <option value="">{t.all}</option><option value="active">{t.enabled}</option>
-                        <option value="inactive">{t.disabled}</option>
-                    </select>
-                </div>
-            </details>
+            <select className="form-select smu-status-filter" value={status} aria-label={t.status}
+                onChange={event => { setStatus(event.target.value); setPage(0); }}>
+                <option value="">{t.status}</option><option value="active">{t.enabled}</option>
+                <option value="inactive">{t.disabled}</option>
+            </select>
+            {status && <button type="button" className="btn btn-outline-secondary smu-iconpill"
+                onClick={() => { setStatus(''); setPage(0); }} title={t.clearfilters} aria-label={t.clearfilters}
+                dangerouslySetInnerHTML={{__html: props.clearIcon}}/>}
             <div className="smu-list-actions d-flex flex-wrap gap-2">
                 <a href={props.settingsUrl} className="btn btn-outline-secondary"><Icon name="gear"/> {t.settings}</a>
                 <button type="button" className="btn btn-primary" onClick={event => open(event.currentTarget)}>
@@ -176,9 +152,9 @@ const AdminConfig = (props: Props) => {
                 <div className="d-flex align-items-center gap-2">
                     <span className="small text-body-secondary" role="status">{range}</span>
                     <button type="button" className="btn btn-link btn-sm" aria-label={t.previous} title={t.previous}
-                        disabled={offset === 0} onClick={() => setPage(current - 1)}><Icon name="chevron-left"/></button>
+                        disabled={offset === 0} onClick={() => setPage(current - 1)}><span dangerouslySetInnerHTML={{__html: props.previousIcon}}/></button>
                     <button type="button" className="btn btn-link btn-sm" aria-label={t.next} title={t.next}
-                        disabled={offset + span >= total} onClick={() => setPage(current + 1)}><Icon name="chevron-right"/></button>
+                        disabled={offset + span >= total} onClick={() => setPage(current + 1)}><span dangerouslySetInnerHTML={{__html: props.nextIcon}}/></button>
                 </div>
             </div>
         </div>

@@ -34,6 +34,15 @@ const AppearancePreview = (props: PreviewProps) => {
     const [surface, setSurface] = useState('course');
     const [language, setLanguage] = useState('');
     const [mobile, setMobile] = useState(false);
+    const resize = () => {
+        const frame = iframe.current;
+        const content = frame?.contentDocument?.querySelector('.smu-draft-preview');
+        if (frame && content) {
+            frame.style.height = Math.min(content.scrollHeight + 4, window.innerHeight * 0.6) + 'px';
+        }
+    };
+
+    useEffect(() => { window.requestAnimationFrame(resize); }, [mobile]);
 
     const [previewPane, setPreviewPane] = useState<HTMLDivElement | null>(null);
     useEffect(() => previewPane ? installSelectMenus(previewPane) : undefined, [previewPane]);
@@ -75,27 +84,6 @@ const AppearancePreview = (props: PreviewProps) => {
     }, [open, previewPane, surface, language, props.url, props.courseid, props.cmid, props.sesskey]);
 
     useEffect(() => {
-        const editor = trigger.current?.closest('form');
-        const catalogue = editor?.querySelector<HTMLSelectElement>('[name="smu_catalogue"]');
-        const link = editor?.querySelector<HTMLInputElement>('[name="externalurl"]');
-        if (!catalogue || !link) {
-            return undefined;
-        }
-        const choose = () => {
-            if (catalogue.value) {
-                link.value = catalogue.value;
-                link.dispatchEvent(new Event('input', {bubbles: true}));
-                const title = editor?.querySelector<HTMLInputElement>('[name="name"]');
-                if (title && !title.value) {
-                    title.value = catalogue.selectedOptions[0]?.textContent?.trim() ?? '';
-                }
-            }
-        };
-        catalogue.addEventListener('change', choose);
-        return () => catalogue.removeEventListener('change', choose);
-    }, []);
-
-    useEffect(() => {
         const form = trigger.current?.closest('form');
         if (!form) {
             return undefined;
@@ -111,6 +99,7 @@ const AppearancePreview = (props: PreviewProps) => {
             const showCover = useCard || (!launch.startsWith('EXTERNAL') && (viewer !== 'AUTO' || !media) && viewer !== 'EMBED');
             const popup = ['VIEWERWINDOW', 'EXTERNALWINDOW'].includes(launch);
             ['popup_width', 'popup_height'].forEach(name => field(name)?.closest('.fitem')?.classList.toggle('d-none', !popup));
+            form.querySelector('[data-smu-cover-heading]')?.classList.toggle('d-none', !showCover);
             ['smu_poster', 'thumbnail_url', 'poster_filemanager'].forEach(name => {
                 field(name)?.closest('.fitem')?.classList.toggle('d-none', !showCover);
             });
@@ -147,12 +136,13 @@ const AppearancePreview = (props: PreviewProps) => {
                     <option value="">{props.previewcurrentlanguage}</option>
                     {props.languages.map(lang => <option key={lang.code} value={lang.code}>{lang.name}</option>)}
                 </select>
-                <label className="d-flex align-items-center gap-2">
-                    <input type="checkbox" className="form-check-input" checked={mobile} onChange={e => setMobile(e.target.checked)}/>
-                    {props.previewmobile}
-                </label>
+                <div className="form-check">
+                    <input id={id + "-mobile"} type="checkbox" className="form-check-input"
+                        checked={mobile} onChange={e => setMobile(e.target.checked)}/>
+                    <label className="form-check-label" htmlFor={id + "-mobile"}>{props.previewmobile}</label>
+                </div>
             </div>
-            <iframe ref={iframe} name={'smu-preview' + id} title={props.previewresource}
+            <iframe ref={iframe} onLoad={resize} name={'smu-preview' + id} title={props.previewresource}
                 className={mobile ? 'smu-preview-frame smu-preview-mobile' : 'smu-preview-frame'}/>
             </div>
         </MoodleModal>}

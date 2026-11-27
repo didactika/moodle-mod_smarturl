@@ -167,23 +167,6 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
         setRows((prev) => (prev.length <= 1 ? [createEmptyRow()] : prev.filter((r) => r.id !== id)));
     };
 
-    const insertTokenIntoUrl = (shortname: string) => {
-        if (locked) {
-            return;
-        }
-        const urlEl = document.getElementById('id_externalurl') as HTMLInputElement | null;
-        if (!urlEl) {
-            return;
-        }
-        const token = `{{${shortname}}}`;
-        const start = urlEl.selectionStart ?? urlEl.value.length;
-        const end = urlEl.selectionEnd ?? urlEl.value.length;
-        const nextVal = `${urlEl.value.slice(0, start)}${token}${urlEl.value.slice(end)}`;
-        urlEl.value = nextVal;
-        urlEl.dispatchEvent(new Event('input', {bubbles: true}));
-        urlEl.focus();
-    };
-
     const previewUrl = useMemo(() => {
         if (kind !== 'params') {
             return '';
@@ -205,25 +188,6 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
 
     return (
         <div className="smu-form-builder">
-            {kind === 'params' && catalog.length > 0 && (
-                <div className="smu-token-bar">
-                    <span className="smu-token-label">{strings.inserttokens ?? 'Quick tokens for URL:'}</span>
-                    <div className="smu-token-chips">
-                        {catalog.map((item) => (
-                            <button
-                                key={item.shortname}
-                                type="button"
-                                className="btn btn-sm btn-outline-secondary"
-                                disabled={locked}
-                                onClick={() => insertTokenIntoUrl(item.shortname)}
-                                title={item.name}
-                            >
-                                + {`{{${item.shortname}}}`}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
 
             <div className="smu-builder-rows">
                 {rows.map((row) => {

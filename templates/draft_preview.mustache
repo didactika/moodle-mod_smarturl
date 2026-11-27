@@ -11,6 +11,13 @@
         {{#player}}<div class="smu-player">{{{player}}}</div>{{/player}}
         {{#poster}}
         <div class="smu-cover-stage">
+            {{#hasdetails}}
+            <div class="smu-resource-tools smu-preview-info">
+                <button class="btn btn-outline-secondary smu-iconpill" type="button" disabled aria-label="{{metadataheading}}">
+                    <i class="fa fa-info" aria-hidden="true"></i>
+                </button>
+            </div>
+            {{/hasdetails}}
             <img class="smu-viewer-cover" src="{{poster}}" alt="">
             {{#circle}}
             <button type="button" class="btn btn-primary smu-launch-circle smu-play-overlay" disabled aria-label="{{launchlabel}}">
@@ -27,11 +34,6 @@
         </div>
         {{/circle}}{{/poster}}
         {{#plainbutton}}<button type="button" class="btn btn-outline-secondary" disabled>{{launchlabel}}</button>{{/plainbutton}}
-        {{#hasbadges}}
-        <div class="p-2">
-            {{#badges}}<span class="badge rounded-pill smu-state">{{label}} · {{value}}</span>{{/badges}}
-        </div>
-        {{/hasbadges}}
     </div>
     {{#description}}
     <section class="smu-description">
@@ -39,12 +41,4 @@
         <div class="description">{{{description}}}</div>
     </section>
     {{/description}}
-    {{#hasmetadata}}
-    <section class="mt-3">
-        <h2 class="h5">{{metadataheading}}</h2>
-        <dl class="row">
-            {{#metadata}}<dt class="col-sm-4">{{label}}</dt><dd class="col-sm-8">{{value}}</dd>{{/metadata}}
-        </dl>
-    </section>
-    {{/hasmetadata}}
 </div>

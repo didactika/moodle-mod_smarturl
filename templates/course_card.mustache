@@ -4,12 +4,12 @@
     Example context (json):
     {"cover":"","hasbody":true,"badges":[],"actions":"Open"}
 }}
-<div class="card overflow-hidden">
+<div class="smu-course-visual {{#cover}}has-cover{{/cover}}">
     {{{cover}}}
     {{#hasbody}}
     <div class="card-body p-2">
-        {{#badges}}{{{.}}} {{/badges}}
         {{#actions}}<div class="d-flex flex-wrap smu-course-actions">{{{actions}}}</div>{{/actions}}
     </div>
     {{/hasbody}}
+    {{{tools}}}
 </div>

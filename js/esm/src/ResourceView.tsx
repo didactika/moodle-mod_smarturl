@@ -10,7 +10,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import {useState} from 'react';
-import MetadataExplorer from './components/viewer/MetadataExplorer';
 import PlayerStage from './components/viewer/PlayerStage';
 import {formatDuration} from './lib/metadata';
 import type {ResourceViewProps} from './types';
@@ -22,6 +21,13 @@ const ResourceView = (props: ResourceViewProps) => {
 
     return (
         <div className="smu-resource-shell">
+            <PlayerStage
+                props={props}
+                modalOpen={modalOpen}
+                onOpenModal={() => setModalOpen(true)}
+                onCloseModal={() => setModalOpen(false)}
+            />
+
             {(hasDuration || props.policy.managedBy || props.policy.lockedFields.length > 0 || isEmbedStage) && <div className="smu-resource-bar">
                 <div className="dd-tags">
                     {hasDuration && (
@@ -50,13 +56,6 @@ const ResourceView = (props: ResourceViewProps) => {
                 )}
             </div>}
 
-            <PlayerStage
-                props={props}
-                modalOpen={modalOpen}
-                onOpenModal={() => setModalOpen(true)}
-                onCloseModal={() => setModalOpen(false)}
-            />
-
             {props.intro && (
                 <section className="smu-description">
                     <h2 className="h5">{props.strings.description}</h2>
@@ -64,9 +63,6 @@ const ResourceView = (props: ResourceViewProps) => {
                 </section>
             )}
 
-            {props.metadata.length > 0 && (
-                <MetadataExplorer entries={props.metadata} strings={props.strings}/>
-            )}
         </div>
     );
 };

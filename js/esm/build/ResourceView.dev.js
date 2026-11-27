@@ -13,7 +13,6 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import { useState } from "react";
-import MetadataExplorer from "./components/viewer/MetadataExplorer";
 import PlayerStage from "./components/viewer/PlayerStage";
 import { formatDuration } from "./lib/metadata";
 const ResourceView = /* @__PURE__ */ __name((props) => {
@@ -21,11 +20,27 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
   const hasDuration = typeof props.durationSeconds === "number" && props.durationSeconds > 0;
   const isEmbedStage = props.displayMode === "EMBED";
   return /* @__PURE__ */ jsxDEV("div", { className: "smu-resource-shell", children: [
+    /* @__PURE__ */ jsxDEV(
+      PlayerStage,
+      {
+        props,
+        modalOpen,
+        onOpenModal: () => setModalOpen(true),
+        onCloseModal: () => setModalOpen(false)
+      },
+      void 0,
+      false,
+      {
+        fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
+        lineNumber: 24,
+        columnNumber: 13
+      }
+    ),
     (hasDuration || props.policy.managedBy || props.policy.lockedFields.length > 0 || isEmbedStage) && /* @__PURE__ */ jsxDEV("div", { className: "smu-resource-bar", children: [
       /* @__PURE__ */ jsxDEV("div", { className: "dd-tags", children: [
         hasDuration && /* @__PURE__ */ jsxDEV("span", { className: "dd-tag", children: formatDuration(props.durationSeconds) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-          lineNumber: 28,
+          lineNumber: 34,
           columnNumber: 25
         }),
         props.policy.managedBy && /* @__PURE__ */ jsxDEV("span", { className: "dd-tag dd-tag-primary", children: [
@@ -34,7 +49,7 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
           props.policy.managedBy
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-          lineNumber: 31,
+          lineNumber: 37,
           columnNumber: 25
         }),
         props.policy.lockedFields.length > 0 && /* @__PURE__ */ jsxDEV("span", { className: "dd-tag", children: [
@@ -43,12 +58,12 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
           props.policy.lockedFields.join(", ")
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-          lineNumber: 36,
+          lineNumber: 42,
           columnNumber: 25
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-        lineNumber: 26,
+        lineNumber: 32,
         columnNumber: 17
       }),
       isEmbedStage && /* @__PURE__ */ jsxDEV(
@@ -64,55 +79,34 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
         false,
         {
           fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-          lineNumber: 42,
+          lineNumber: 48,
           columnNumber: 21
         }
       )
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 25,
+      lineNumber: 31,
       columnNumber: 113
     }),
-    /* @__PURE__ */ jsxDEV(
-      PlayerStage,
-      {
-        props,
-        modalOpen,
-        onOpenModal: () => setModalOpen(true),
-        onCloseModal: () => setModalOpen(false)
-      },
-      void 0,
-      false,
-      {
-        fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-        lineNumber: 53,
-        columnNumber: 13
-      }
-    ),
     props.intro && /* @__PURE__ */ jsxDEV("section", { className: "smu-description", children: [
       /* @__PURE__ */ jsxDEV("h2", { className: "h5", children: props.strings.description }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-        lineNumber: 62,
+        lineNumber: 61,
         columnNumber: 21
       }),
       /* @__PURE__ */ jsxDEV("div", { className: "description", dangerouslySetInnerHTML: { __html: props.intro } }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-        lineNumber: 63,
+        lineNumber: 62,
         columnNumber: 21
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 61,
-      columnNumber: 17
-    }),
-    props.metadata.length > 0 && /* @__PURE__ */ jsxDEV(MetadataExplorer, { entries: props.metadata, strings: props.strings }, void 0, false, {
-      fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-      lineNumber: 68,
+      lineNumber: 60,
       columnNumber: 17
     })
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
-    lineNumber: 24,
+    lineNumber: 23,
     columnNumber: 9
   });
 }, "ResourceView");

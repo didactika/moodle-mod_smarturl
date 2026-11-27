@@ -39,6 +39,9 @@ final class viewer_data {
      * @return array
      */
     public static function target(\stdClass $instance, \stdClass $course, \stdClass $user, int $cmid, array $profile): array {
+        if ($profile['gateway']) {
+            return remote_delivery::target(url_resolver::resolve($instance, $course, $user, $cmid), $cmid);
+        }
         if ($profile['protected']) {
             return protected_resource::target(\context_module::instance($cmid));
         }
@@ -71,12 +74,13 @@ final class viewer_data {
         } else {
             $mode = 'EMBED';
         }
+        $postersource = ($profile['protected'] || $profile['gateway']) ? 'UPLOAD' : $profile['poster'];
         return [
             'name' => $name,
             'intro' => activity_content::description($instance, $context, $cmid),
             'target' => $target,
             'mode' => $mode,
-            'poster' => self::poster($instance, $context, $profile['protected'] ? 'UPLOAD' : $profile['poster'], $target['poster']),
+            'poster' => self::poster($instance, $context, $postersource, $target['poster']),
             'metadata' => presentation::select_fields(
                 metadata_repository::for_instance((int)$instance->id),
                 $profile['viewerfields']

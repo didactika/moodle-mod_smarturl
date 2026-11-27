@@ -36,10 +36,7 @@ $context = context_module::instance($cm->id);
 require_capability('mod/smarturl:view', $context);
 
 $profile = \mod_smarturl\local\presentation::for_instance($smarturl);
-$target = $profile['protected'] ? \mod_smarturl\local\protected_resource::target($context)['url']
-    : \mod_smarturl\local\url\resource_target::normalise(
-        \mod_smarturl\local\url\url_resolver::resolve($smarturl, $course, $USER, (int)$cm->id)
-    );
+$target = \mod_smarturl\local\viewer_data::target($smarturl, $course, $USER, (int)$cm->id, $profile)['url'];
 
 if (!optional_param('fromviewer', false, PARAM_BOOL)) {
     smarturl_view($smarturl, $course, $cm, $context);

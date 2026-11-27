@@ -78,20 +78,24 @@ const installSelectMenus = /* @__PURE__ */ __name((root) => {
     menu.dataset.region = "select-menu";
     menu.setAttribute("role", "group");
     menu.setAttribute("aria-label", select.labels?.[0]?.textContent?.trim() ?? select.getAttribute("aria-label") ?? "");
-    const label = select.getAttribute("data-search-label");
+    const label = select.getAttribute("data-search-label") || (document.documentElement.lang.startsWith("es") ? "Buscar opciones" : "Search options");
     const options = [...select.options].filter((option) => !option.hidden);
     if (options.length > 10) {
       search = document.createElement("input");
       search.type = "search";
-      search.className = "form-control form-control-sm mb-2";
+      search.className = "form-control form-control-sm rounded-pill";
       search.setAttribute("aria-label", label ?? select.getAttribute("aria-label") ?? select.labels?.[0]?.textContent?.trim() ?? "");
       if (label) {
         search.placeholder = label;
       }
-      menu.append(search);
+      const searchBox = document.createElement("div");
+      searchBox.className = "smu-menu-search";
+      searchBox.append(search);
+      menu.append(searchBox);
     }
     const list = document.createElement("div");
     list.setAttribute("role", "listbox");
+    list.className = "smu-menu-options";
     list.setAttribute("aria-label", menu.getAttribute("aria-label") ?? "");
     let group;
     options.forEach((option) => {
@@ -107,10 +111,17 @@ const installSelectMenus = /* @__PURE__ */ __name((root) => {
       button.type = "button";
       button.className = "dropdown-item";
       button.disabled = option.disabled || parent instanceof HTMLOptGroupElement && parent.disabled;
-      button.classList.toggle("active", option.selected);
       button.setAttribute("role", "option");
       button.setAttribute("aria-selected", String(option.selected));
-      button.textContent = option.textContent;
+      const text = document.createElement("span");
+      text.textContent = option.textContent;
+      button.append(text);
+      if (option.selected) {
+        const marker = document.createElement("i");
+        marker.className = "fa fa-check";
+        marker.setAttribute("aria-hidden", "true");
+        button.append(marker);
+      }
       button.addEventListener("click", () => {
         const changed = select.selectedIndex !== option.index;
         close(true);
@@ -123,25 +134,44 @@ const installSelectMenus = /* @__PURE__ */ __name((root) => {
       entries.push(button);
       list.append(button);
     });
+    const empty = document.createElement("div");
+    empty.className = "px-3 py-2 text-body-secondary";
+    empty.hidden = true;
+    empty.textContent = select.getAttribute("data-noresults") || (document.documentElement.lang.startsWith("es") ? "No hay opciones que coincidan" : "No matching options");
     search?.addEventListener("input", () => {
-      const query = search?.value.trim().toLocaleLowerCase() ?? "";
-      let shown = 0;
+      const fold = /* @__PURE__ */ __name((value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase(), "fold");
+      const words = fold(search?.value.trim() ?? "").split(/\s+/);
       entries.forEach((entry) => {
-        const match = entry.textContent?.toLocaleLowerCase().includes(query);
-        entry.hidden = !match || shown >= 10;
-        if (match) {
-          shown++;
-        }
+        entry.hidden = !words.every((word) => fold(entry.textContent ?? "").includes(word));
       });
+      list.querySelectorAll(".dropdown-header").forEach((header) => {
+        if (!(header instanceof HTMLElement)) {
+          return;
+        }
+        let option = header.nextElementSibling;
+        let found = false;
+        while (option instanceof HTMLElement && !option.classList.contains("dropdown-header")) {
+          found ||= !option.hidden;
+          option = option.nextElementSibling;
+        }
+        header.hidden = !found;
+      });
+      empty.hidden = entries.some((entry) => !entry.hidden);
       place();
     });
-    menu.append(list);
+    menu.append(list, empty);
     (select.closest(".modal") ?? document.body).append(menu);
     select.setAttribute("aria-expanded", "true");
     select.setAttribute("aria-controls", menu.id);
+    search?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        entries.find((entry) => !entry.hidden && !entry.disabled)?.click();
+      }
+    });
     menu.addEventListener("keydown", keyboard);
     place();
-    (search ?? entries.find((entry) => entry.classList.contains("active") && !entry.disabled) ?? entries.find((entry) => !entry.disabled) ?? menu).focus();
+    (search ?? entries.find((entry) => entry.getAttribute("aria-selected") === "true" && !entry.disabled) ?? entries.find((entry) => !entry.disabled) ?? menu).focus();
   }, "open");
   const trigger = /* @__PURE__ */ __name((event) => {
     const select = event.target;
