@@ -230,7 +230,7 @@
     color: var(--bs-body-color, var(--dark));
 }
 
-.smu-resource-tools .smu-iconpill {
+.smu-resource-tools .smu-iconpill:not(.smu-course-completion-button) {
     width: 2.125rem;
     height: 2.125rem;
     display: inline-grid;
@@ -328,6 +328,7 @@
 
 .smu-preview-toolbar .form-check {
     margin-block-end: 0;
+    margin-inline-start: .5rem;
 }
 
 .smu-preview-frame {
@@ -335,8 +336,6 @@
     border-radius: var(--bs-border-radius, .5rem);
     margin-block-start: .75rem;
 }
-
-.smu-course-completion-button::after { display: none; }
 
 .smu-detail-values dt {
     color: var(--bs-secondary-color, var(--dd-muted));
@@ -407,7 +406,7 @@
     margin-block-start: .375rem;
 }
 
-.smu-resource-tools .smu-info-trigger {
+.smu-resource-tools .smu-iconpill.smu-info-trigger {
     width: 1.75rem;
     height: 1.75rem;
     border-color: transparent;
@@ -417,15 +416,16 @@
     font-size: .8rem;
 }
 
-.smu-course-inline-tools .smu-info-trigger {
+.smu-course-inline-tools .smu-iconpill.smu-info-trigger,
+.smu-course-visual:not(.has-cover) .smu-iconpill.smu-info-trigger {
     width: 1.35rem;
     height: 1.35rem;
-    background: var(--dd-primary-soft);
+    background: color-mix(in srgb, var(--bs-primary, var(--primary)) 12%, var(--bs-body-bg, var(--white)));
     box-shadow: none;
     font-size: .7rem;
 }
 
-.smu-resource-tools .smu-course-completion-button,
+.smu-resource-tools .activity-completion .smu-course-completion-button,
 .smu-completion-popover > .btn {
     display: inline-flex;
     align-items: center;
@@ -436,6 +436,7 @@
     border-radius: 50rem;
     padding: .2rem .55rem;
     font-size: .8rem;
+    white-space: nowrap;
 }
 
 .smu-view-details {
