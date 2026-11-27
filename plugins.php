@@ -62,7 +62,8 @@ foreach (subplugins::TYPES as $type) {
             'status' => get_string($active ? 'enabled' : 'disabled', 'smarturl'),
             'active' => $active,
             'enabled' => (int)!$active,
-            'toggle' => get_string($active ? 'disable' : 'enable'),
+            'togglelabel' => get_string($active ? 'disable' : 'enable') . ' ' . $plugin->displayname,
+            'settingslabel' => get_string('settings') . ' ' . $plugin->displayname,
             'settingsurl' => $settings ? $settings->out(false) : '',
         ];
     }

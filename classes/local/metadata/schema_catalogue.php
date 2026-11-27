@@ -138,20 +138,22 @@ final class schema_catalogue {
      * @return array
      */
     public static function props(string $tab): array {
-        global $OUTPUT;
         $sections = [];
         foreach (
             [
-            'fields' => ['metadatatypes', 'newfield', ['category', 'datatype', 'priority']],
-            'categories' => ['categories', 'createcategory', ['metadatatypes']],
-            'variables' => ['paramdefs', 'newvariable', ['sourcetype', 'defaultqueryparam']],
-            ] as $key => [$title, $add, $columns]
+            'categories' => ['categories', 'createcategory', ['metadatatypes'], 'i/folder'],
+            'fields' => ['metadatatypes', 'newfield', ['category', 'datatype', 'priority'], 'i/outcomes'],
+            'variables' => ['paramdefs', 'newvariable', ['sourcetype', 'defaultqueryparam'], 'i/link'],
+            ] as $key => [$title, $add, $columns, $icon]
         ) {
             $sections[] = [
                 'key' => $key,
                 'title' => get_string($title, 'smarturl'),
                 'add' => get_string($add, 'smarturl'),
                 'columns' => array_map(static fn($column) => get_string($column, 'smarturl'), $columns),
+                'icon' => $icon,
+                'emptytitle' => get_string('empty' . $key, 'smarturl'),
+                'emptytext' => get_string('empty' . $key . '_text', 'smarturl'),
             ];
         }
         $strings = [];
@@ -163,10 +165,11 @@ final class schema_catalogue {
         }
         foreach (
             ['enabled', 'disabled', 'adminconfigsubtitle', 'clearfilters', 'emptyresults', 'pagerlabel',
-            'pagerange', 'listempty', 'confirmdelete', 'deletecategoryheading'] as $name
+            'pagerange', 'confirmdelete', 'deletecategoryheading'] as $name
         ) {
             $strings[$name] = get_string($name, 'smarturl');
         }
+        $strings['emptyresultstext'] = get_string('emptyresults_text', 'smarturl');
         return [
             'sections' => $sections,
             'rows' => self::rows(),
@@ -174,9 +177,6 @@ final class schema_catalogue {
             'settingsUrl' => (new \moodle_url('/admin/settings.php', ['section' => 'modsettingsmarturl']))->out(false),
             'adminUrl' => (new \moodle_url('/mod/smarturl/admin.php'))->out(false),
             'strings' => $strings,
-            'previousIcon' => $OUTPUT->pix_icon('i/previous', ''),
-            'nextIcon' => $OUTPUT->pix_icon('i/next', ''),
-            'clearIcon' => $OUTPUT->pix_icon('e/cancel', ''),
         ];
     }
 }

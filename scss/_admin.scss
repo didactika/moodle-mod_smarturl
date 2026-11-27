@@ -1,115 +1,9 @@
 // This file is part of Moodle - https://moodle.org/
 // Moodle is free software under the GNU General Public License, version 3 or later.
 
-// Admin configuration studio for metadata schemas & dynamic URL parameters.
+// Pieces of the activity form and the viewer that have not moved to the design system yet. The catalogue and the extensions
+// pages are drawn by the design system layer (tokens, chrome, feedback, states, tabs and dialogs).
 .mod-smarturl {
-    .smu-admin-layout {
-        display: grid;
-        gap: 1.25rem;
-    }
-
-    .smu-settings-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.875rem 0;
-        border-top: 1px solid var(--dd-hairline);
-    }
-
-    .smu-form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-        gap: 0.875rem;
-    }
-
-    .smu-preview-box {
-        padding: 0.75rem 1rem;
-        border-radius: var(--dd-radius);
-        border: 1px solid var(--dd-hairline);
-        background: var(--dd-surface-2);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.875rem;
-        overflow-wrap: anywhere;
-    }
-}
-
-.mod-smarturl {
-    .smu-list-toolbar,
-    .smu-list-actions {
-        gap: .5rem;
-    }
-
-    .smu-list-table caption,
-    .smu-list-table th span.visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-        border: 0;
-    }
-
-    .smu-list-toolbar {
-        .form-control {
-            width: 20rem;
-            max-width: 100%;
-        }
-    }
-
-    .smu-list-actions {
-        margin-inline-start: auto;
-    }
-
-    .smu-list-toolbar .form-control,
-    .smu-list-toolbar .btn,
-    .smu-list-pager .form-select {
-        border-radius: 50rem;
-    }
-
-    .smu-filter .dropdown-menu {
-        min-width: 13rem;
-    }
-
-    .smu-filter summary {
-        list-style: none;
-
-        &::-webkit-details-marker {
-            display: none;
-        }
-    }
-
-    .smu-list-table {
-        min-height: 20rem;
-        height: 60vh;
-
-        thead {
-            position: sticky;
-            top: 0;
-            z-index: 1;
-            background: var(--bs-body-bg, var(--white));
-        }
-
-        .table th,
-        .table td {
-            padding-block: .55rem;
-            vertical-align: middle;
-        }
-
-        .table th[scope="row"] {
-            font-weight: 400;
-        }
-
-        .smu-fit {
-            width: 1%;
-            white-space: nowrap;
-        }
-    }
-
     .smu-row-actions {
         display: flex;
         justify-content: flex-end;
@@ -123,88 +17,13 @@
         height: 2.125rem;
         padding: 0;
         border-radius: 50%;
-
-        &.tone-primary {
-            color: var(--bs-primary, var(--primary));
-        }
-
-        &.tone-danger {
-            color: var(--bs-danger, var(--danger));
-        }
     }
 
     .smu-iconpill:hover {
         background: var(--bs-tertiary-bg, var(--light));
     }
 
-    .smu-state {
-        color: var(--bs-body-color, var(--body-color));
-        background: var(--bs-tertiary-bg, var(--light));
+    .smu-form-builder .smu-builder-row {
+        align-items: start;
     }
-
-    .smu-state-on {
-        background: color-mix(in srgb, var(--bs-success, var(--success)) 18%, var(--bs-body-bg, var(--white)));
-    }
-
-    .smu-list-pager .btn {
-        border: 0;
-        background: transparent;
-    }
-}
-
-.mod-smarturl {
-    .smu-schema .nav-tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        margin-block-end: .875rem;
-    }
-
-    .smu-schema .nav-link { white-space: nowrap; }
-
-    .smu-status-filter {
-        width: auto;
-        border-radius: 50rem;
-    }
-
-    .smu-list-table thead th {
-        color: var(--bs-secondary-color, var(--dd-muted));
-        font-size: .75rem;
-        font-weight: 600;
-        letter-spacing: .05em;
-        text-transform: uppercase;
-        white-space: nowrap;
-    }
-
-    .smu-list-pager .btn { padding-inline: .375rem; }
-    .smu-list-pager .icon { margin: 0; }
-
-    .smu-form-builder .smu-builder-row { align-items: start; }
-}
-
-@media (max-width: 42rem) {
-    .mod-smarturl .smu-list-toolbar .form-control { flex-basis: 100%; }
-    .mod-smarturl .smu-list-actions { margin-inline-start: 0; }
-}
-
-@media (max-width: 42rem) {
-    .mod-smarturl .smu-schema .nav-tabs {
-        overflow: visible;
-    }
-
-    .mod-smarturl .smu-schema .nav-link {
-        flex: 1 1 0;
-        padding: .5rem .25rem;
-        font-size: .85rem;
-        text-align: center;
-        white-space: normal;
-    }
-}
-
-@media (max-width: 32rem) {
-    .mod-smarturl .smu-list-table thead th {
-        white-space: normal;
-        letter-spacing: .015em;
-    }
-
-    .mod-smarturl .smu-list-table .smu-row-actions { gap: .25rem; }
 }

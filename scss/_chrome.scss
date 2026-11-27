@@ -1,0 +1,464 @@
+// This file is part of Moodle - https://moodle.org/
+// Moodle is free software under the GNU General Public License, version 3 or later.
+
+// The chrome of the lists of the plugin, as the design system draws it, written as overrides of the Bootstrap components the
+// markup uses (card, nav-tabs, table) and as data-region hooks, always inside .mod-smarturl so nothing reaches the rest of
+// Moodle. Buttons, fields, dialogs and alerts stay the ones of Moodle.
+// @copyright 2026 Didactika.org
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+.mod-smarturl {
+    min-width: 0;
+
+    // A stack of the page (d-grid) is one column as wide as its box: a long name that ends with an ellipsis never makes it wider
+    // than the screen.
+    & .d-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    @include dd-tabs;
+
+    // Cards: a thin line and the radius of the system, no shadow. A list is a card with its table and its pager. A card keeps its
+    // layers to itself (the sticky header, the fixed first column and the foot over the rows), so the controls Moodle fixes over
+    // the page, such as the button that opens the block drawer, always stay above it.
+    & .card {
+        isolation: isolate;
+        overflow: hidden;
+        border: 1px solid var(--dd-hairline);
+        border-radius: var(--dd-radius-lg);
+        background: var(--dd-surface);
+        box-shadow: none;
+    }
+
+    & .card-body {
+        padding: 1.25rem;
+    }
+
+    & .card-title {
+        margin-bottom: 0.75rem;
+        color: var(--dd-ink);
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    // A toolbar of filters keeps one row: the search shrinks down to its own room, the menus keep their width beside it and the
+    // button that clears them stays at the end. On a phone the search gives up room down to 7rem.
+    & [data-region="filters"] {
+        flex-wrap: nowrap;
+
+        & > :first-child {
+            flex: 1 1 auto;
+            flex-wrap: nowrap;
+            min-width: 0;
+
+            & > [role="search"] {
+                flex: 1 1 10rem;
+                min-width: 10rem;
+            }
+        }
+
+        & > :last-child:not(:first-child) {
+            flex: none;
+        }
+
+        @media (max-width: 400px) {
+            & > :first-child > [role="search"] {
+                min-width: 7rem;
+            }
+        }
+    }
+
+    // Tables: quiet lines, a small header in capitals, and room to breathe.
+    & .table-responsive {
+        margin: 0;
+        transition: opacity var(--dd-ease);
+
+        &[aria-busy="true"] {
+            opacity: 0.6;
+        }
+
+        // A list keeps the same height whatever it holds: with few rows there is empty space below them, with many it scrolls
+        // and the header stays in view.
+        &[data-region="tablewrap"] {
+            block-size: var(--dd-table-h);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            // The room of the scroll bar is kept whether the rows need it or not, so the columns do not move when they do.
+            scrollbar-gutter: stable;
+            // A row brought into view at the top of the box stops below the header, which stays over the rows.
+            scroll-padding-block-start: 3rem;
+
+            // A collapsed border belongs to the table, not to the cell, so it stays behind when a sticky header moves. With
+            // separate borders every line belongs to its cell, and the line under the header moves with it in every browser.
+            & .table {
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            & thead th {
+                position: sticky;
+                inset-block-start: 0;
+                z-index: 1;
+                background-color: var(--dd-surface);
+            }
+
+            // The columns are set by the table, not by what the rows hold, so the placeholders of a loading list and its rows
+            // take the same columns and nothing moves when the rows arrive. On a narrow screen the table keeps room for its
+            // columns and scrolls sideways in its box.
+            & .table {
+                table-layout: fixed;
+                min-width: 48rem;
+            }
+
+            & col[data-column="name"] {
+                width: 28%;
+            }
+
+            & col[data-column="status"] {
+                width: 9rem;
+            }
+
+            & col[data-column="actions"] {
+                width: 6.5rem;
+            }
+
+            & thead th {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            // A row that loads is as tall as the row it stands for: a bar takes the height of a line of text, the second line
+            // of a name (its short name) the height of its small line, and the actions are circles of the size of their buttons.
+            & tbody .placeholder {
+                margin-block: calc((1.5em - 0.875rem) / 2);
+            }
+
+            // The margins between two bars fold into one, so the second bar takes both above it.
+            & tbody .placeholder + .placeholder {
+                height: 0.625rem;
+                margin-block: calc((1.5em - 0.875rem) / 2 + (1.3125em - 0.625rem) / 2) calc((1.3125em - 0.625rem) / 2);
+            }
+
+            & tbody [data-column="actions"] .placeholder {
+                display: inline-block;
+                width: var(--dd-h-sm);
+                height: var(--dd-h-sm);
+                margin-block: 0;
+                margin-inline-start: 0.25rem;
+                border-radius: 50%;
+                vertical-align: middle;
+            }
+
+            // A list that keeps its height closes its last row with a line, also when the rows leave room under it.
+            & tbody tr:last-child > * {
+                border-bottom: 1px solid var(--dd-hairline);
+            }
+        }
+    }
+
+    // The empty and error states take the height of the table and of the pager they replace, so the card does not change height
+    // when a search finds nothing. An empty state that replaces no table keeps its own height.
+    & [data-region="tablewrap"] ~ [data-region="empty"]:not([hidden]),
+    & [data-region="tablewrap"] ~ [data-region="error"]:not([hidden]) {
+        display: grid;
+        min-block-size: calc(var(--dd-table-h) + var(--dd-foot-h, 0px));
+        place-content: center;
+    }
+
+    & .table {
+        margin-bottom: 0;
+        color: var(--dd-ink);
+        font-size: 0.9375rem;
+
+        & th,
+        & td {
+            padding: 0.75rem 1rem;
+            border-color: var(--dd-hairline);
+            vertical-align: middle;
+        }
+
+        // The line under the header is a line of the table, as the lines between the rows.
+        & thead th {
+            border-top: 0;
+            border-bottom: 1px solid var(--dd-hairline);
+            color: var(--dd-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        & tbody th {
+            font-weight: 600;
+        }
+
+        & tbody tr:hover > * {
+            background-color: color-mix(in srgb, var(--dd-primary) 5%, var(--dd-surface));
+        }
+
+        // The line under the header is the header's own: the first row draws no line above it (Bootstrap 4 draws the line of a
+        // cell above the cell). A table that closes its card draws no line under its last row, which the card closes.
+        & tbody tr:first-child > * {
+            border-top-width: 0;
+        }
+
+        & tbody tr:last-child > * {
+            border-bottom-width: 0;
+        }
+
+        & tbody tr.table-active > * {
+            background-color: var(--dd-primary-soft);
+            // Bootstrap 5 paints an active row with a grey inset shadow over its background; the tint is the one colour.
+            box-shadow: none;
+        }
+
+        & [data-column="select"] {
+            width: 2.75rem;
+            padding-right: 0;
+
+            // Bootstrap 4 places a check absolutely, beside a label; in a cell it stands on its own.
+            & .form-check-input {
+                position: static;
+                display: block;
+                width: 1.125rem;
+                height: 1.125rem;
+                margin: 0;
+                cursor: pointer;
+            }
+        }
+
+        & [data-column="actions"] {
+            width: 1%;
+            text-align: right;
+            white-space: nowrap;
+        }
+    }
+
+    & thead th > .btn.btn-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        letter-spacing: inherit;
+        text-transform: inherit;
+        cursor: pointer;
+
+        &::after {
+            content: "";
+            flex: none;
+            width: 0.4375rem;
+            height: 0.4375rem;
+            border: solid currentColor;
+            border-width: 0 2px 2px 0;
+            opacity: 0.35;
+            transform: translateY(-2px) rotate(45deg);
+            transition: transform 200ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms;
+        }
+
+        &:hover {
+            color: var(--dd-ink);
+
+            &::after {
+                opacity: 0.8;
+            }
+        }
+
+        &:focus-visible {
+            outline: 0;
+            border-radius: 0.25rem;
+            box-shadow: 0 0 0 3px var(--dd-ring);
+        }
+    }
+
+    & th[aria-sort] {
+        color: var(--dd-ink);
+
+        & > .btn.btn-link {
+            color: var(--dd-primary-ink);
+
+            &::after {
+                opacity: 1;
+                color: var(--dd-primary);
+            }
+        }
+    }
+
+    & th[aria-sort="ascending"] > .btn.btn-link::after {
+        transform: translateY(2px) rotate(-135deg);
+    }
+
+    // Rows of the right height while a list loads, as the placeholder of Bootstrap, with a quiet shimmer.
+    & .placeholder {
+        display: block;
+        min-height: 0;
+        opacity: 1;
+        cursor: default;
+        height: 0.875rem;
+        border-radius: 0.375rem;
+        background: linear-gradient(90deg, var(--dd-hairline) 0%, var(--dd-surface-3) 50%, var(--dd-hairline) 100%);
+        background-size: 200% 100%;
+        animation: smu-shimmer 1.4s linear infinite;
+    }
+
+    // The foot of a list: the pager, under a line of the table. It rises over the last pixel of the list, so when the last row
+    // reaches it the two lines fall on one pixel and read as one, never as a line twice as thick.
+    & [data-region="foot"] {
+        position: relative;
+        z-index: 2;
+        margin-top: -1px;
+        border-top: 1px solid var(--dd-hairline);
+        background-color: var(--dd-surface);
+    }
+
+    // The alert of a list that did not load sits where its rows were.
+    & .card > .alert {
+        margin: 1rem;
+    }
+}
+
+@keyframes smu-shimmer {
+    from {
+        background-position: 100% 0;
+    }
+
+    to {
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mod-smarturl .placeholder {
+        animation: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .mod-smarturl {
+        & [role="search"] {
+            max-width: none;
+        }
+
+    }
+}
+
+// On a narrow screen every tab is in view without scrolling: the tabs share the width of the page as their names need it, with
+// less room at their sides, and a name that does not fit takes two lines while its count stays beside it. The selectors are
+// doubled, as the tabs are.
+@media (max-width: 575.98px) {
+    .mod-smarturl .nav-tabs.nav-tabs {
+        overflow-x: visible;
+
+        & .nav-item {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        & .nav-link.nav-link {
+            flex-wrap: nowrap;
+            justify-content: center;
+            gap: 0.375rem;
+            width: 100%;
+            padding: 0.625rem 0.375rem;
+            font-size: 0.875rem;
+            line-height: 1.25;
+            text-align: center;
+            white-space: normal;
+
+            & > .badge {
+                flex: none;
+            }
+        }
+    }
+}
+
+// On a phone there is no room for three names with their counts beside them: every tab puts its count under its name, all
+// alike, and the tabs share the width in equal parts. Every tab is as tall as the row and keeps its name and count at the
+// bottom, so the counts stand on one line whether a name takes one line or two.
+@media (max-width: 399.98px) {
+    .mod-smarturl .nav-tabs.nav-tabs {
+        & .nav-item {
+            display: flex;
+            flex: 1 1 0;
+        }
+
+        & .nav-link.nav-link {
+            flex: 1 1 auto;
+            flex-direction: column;
+            justify-content: flex-end;
+            gap: 0.25rem;
+        }
+    }
+}
+
+// Narrow screens: the cells keep one line and the table scrolls sideways inside its box, with its first column fixed so each row
+// keeps its name in view; tabs and chips keep one row that scrolls sideways instead of piling up.
+@media (max-width: 767.98px) {
+    .mod-smarturl {
+        & .table-responsive .table {
+            & th,
+            & td {
+                white-space: nowrap;
+            }
+
+            & th:first-child,
+            & td:first-child {
+                position: sticky;
+                inset-inline-start: 0;
+                z-index: 1;
+                background-color: var(--dd-surface);
+                box-shadow: inset -1px 0 0 var(--dd-hairline, rgba(0, 0, 0, 0.08));
+            }
+
+            & thead th:first-child {
+                z-index: 2;
+            }
+
+            // When the first column is the one of the checkboxes, the name beside it stays in view too: the checkbox keeps a
+            // column of its own width with room after it, and the line that marks the fixed columns moves after the name.
+            & th[data-column="select"],
+            & td[data-column="select"] {
+                width: 2.75rem;
+                min-width: 2.75rem;
+                max-width: 2.75rem;
+                box-shadow: none;
+            }
+
+            & :is(th, td)[data-column="select"] + :is(th, td) {
+                position: sticky;
+                inset-inline-start: 2.75rem;
+                z-index: 1;
+                padding-inline-start: 0.5rem;
+                background-color: var(--dd-surface);
+                box-shadow: inset -1px 0 0 var(--dd-hairline, rgba(0, 0, 0, 0.08));
+            }
+
+            & thead th[data-column="select"] + th {
+                z-index: 2;
+            }
+
+            // A fixed column never takes the whole width: a long name or email ends with an ellipsis, so the rest of the row
+            // always has room to scroll beside it.
+            & th:first-child:not([data-column="select"]),
+            & td:first-child:not([data-column="select"]),
+            & :is(th, td)[data-column="select"] + :is(th, td) {
+                max-width: 12rem;
+                overflow: hidden;
+
+                & .d-flex.flex-column {
+                    min-width: 0;
+
+                    & > * {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+            }
+        }
+
+    }
+}

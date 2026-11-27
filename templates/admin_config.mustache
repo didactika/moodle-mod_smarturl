@@ -1,80 +1,138 @@
 {{!
     This file is part of Moodle - https://moodle.org/
-    Moodle is free software under the GNU General Public License, version 3 or later.
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
     @template mod_smarturl/admin_config
+
+    The catalogue of the site, drawn as the working list of the Didactika design system and as Service manager draws its lists:
+    the header with what the page manages and its actions, a tab for each section with its count, and a card with the toolbar
+    (the search, the status chips with their counts and the button that clears them), the table of the section, its empty
+    state and the pager. The rows and the empty state are rendered by mod_smarturl/admin_config_table
+    and mod_smarturl/admin_config_empty.
+
+    @copyright  2026 Didactika.org
+    @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
     Example context (json):
     {
+      "uniqid": "a1",
       "strings": {
-        "adminconfigsubtitle": "Manage resource fields and categories",
+        "adminconfigsubtitle": "Manage categories, resource fields and URL variables for this site.",
         "status": "Status",
+        "all": "All",
         "enabled": "Enabled",
         "disabled": "Disabled",
         "settings": "Settings",
         "search": "Search",
         "clearfilters": "Clear filters",
-        "pagerlabel": "Rows per page",
+        "pagerlabel": "Items per page",
         "previous": "Previous",
         "next": "Next"
       },
       "sections": [
-        {
-          "key": "categories",
-          "title": "Categories"
-        }
+        {"key": "fields", "title": "Resource fields"},
+        {"key": "categories", "title": "Categories"}
       ],
       "adminUrl": "/mod/smarturl/admin.php",
       "settingsUrl": "/admin/settings.php?section=modsettingsmarturl",
       "payloadjson": "{}"
     }
 }}
-<div class="smu-schema" id="smu-admin-{{uniqid}}" data-payload="{{payloadjson}}">
-    <p class="text-body-secondary">{{strings.adminconfigsubtitle}}</p>
-    <nav class="nav nav-tabs mb-3" aria-label="{{strings.settings}}">
-        {{#sections}}
-        <a class="nav-link" href="{{adminUrl}}?tab={{key}}" data-tab="{{key}}">
-            {{title}} <span class="badge rounded-pill smu-state" data-count></span>
-        </a>
-        {{/sections}}
-    </nav>
-    <div class="alert alert-danger" role="alert" data-error hidden></div>
-    <div class="smu-list-toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
-        <input type="search" class="form-control" data-search aria-label="{{strings.search}}" placeholder="{{strings.search}}">
-        <select class="form-select smu-status-filter" aria-label="{{strings.status}}" data-status>
-            <option value="">{{strings.status}}</option>
-            <option value="active">{{strings.enabled}}</option>
-            <option value="inactive">{{strings.disabled}}</option>
-        </select>
-        <button type="button" class="btn btn-outline-secondary smu-iconpill" data-clear-status hidden
-            aria-label="{{strings.clearfilters}}" title="{{strings.clearfilters}}">{{{clearIcon}}}</button>
-        <div class="smu-list-actions d-flex flex-wrap gap-2">
-            <a href="{{settingsUrl}}" class="btn btn-outline-secondary"><i class="fa fa-gear" aria-hidden="true"></i> {{strings.settings}}</a>
-            <button type="button" class="btn btn-primary" data-add><i class="fa fa-plus" aria-hidden="true"></i> <span></span></button>
-        </div>
-    </div>
-    <div class="card">
-        <div class="table-responsive smu-list-table" data-region="tablewrap">
-            <table class="table table-hover align-middle mb-0">
-                <caption class="visually-hidden"></caption>
-                <thead></thead>
-                <tbody></tbody>
-            </table>
-            <div class="p-4 text-center text-body-secondary" data-region="empty" hidden>
-                <p></p><button type="button" class="btn btn-outline-secondary" data-empty-action></button>
+<div class="mod-smarturl" id="smu-admin-{{uniqid}}" data-region="catalogue" data-payload="{{payloadjson}}">
+    <div class="d-grid gap-3">
+        <header class="d-grid gap-3 pb-3 border-bottom" data-region="page-header">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="icon-box">{{#pix}}monologo, mod_smarturl{{/pix}}</span>
+                    <p class="text-muted mb-0">{{strings.adminconfigsubtitle}}</p>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2" data-region="actions">
+                    <a class="btn btn-outline-secondary" href="{{settingsUrl}}">{{#pix}}i/settings, core{{/pix}} {{strings.settings}}</a>
+                    <button type="button" class="btn btn-primary" data-action="add">{{#pix}}t/add, core{{/pix}} <span data-region="addlabel"></span></button>
+                </div>
             </div>
-        </div>
-        <div class="smu-list-pager border-top px-3 py-2 d-flex align-items-center justify-content-between gap-2 flex-wrap">
-            <label class="d-flex align-items-center gap-2 small mb-0">{{strings.pagerlabel}}
-                <select class="form-select form-select-sm w-auto" data-size></select>
-            </label>
-            <div class="d-flex align-items-center gap-2">
-                <span class="small text-body-secondary" role="status" data-range></span>
-                <button type="button" class="btn btn-link btn-sm" aria-label="{{strings.previous}}" title="{{strings.previous}}" data-prev>
-                    {{{previousIcon}}}
-                </button>
-                <button type="button" class="btn btn-link btn-sm" aria-label="{{strings.next}}" title="{{strings.next}}" data-next>
-                    {{{nextIcon}}}
-                </button>
+        </header>
+
+        <ul class="nav nav-tabs" aria-label="{{strings.settings}}">
+            {{#sections}}
+            <li class="nav-item">
+                <a class="nav-link" href="{{adminUrl}}?tab={{key}}" data-tab="{{key}}">
+                    <span>{{title}}</span> <span class="badge rounded-pill text-bg-secondary" data-count></span>
+                </a>
+            </li>
+            {{/sections}}
+        </ul>
+
+        <div class="d-grid gap-3 mt-2" data-region="list">
+            <div class="d-flex align-items-center justify-content-between gap-3" data-region="filters">
+                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                    <div class="position-relative d-flex align-items-center" role="search" aria-label="{{strings.search}}">
+                        {{#pix}}a/search, core{{/pix}}
+                        <label class="sr-only visually-hidden" for="smu-admin-{{uniqid}}-search">{{strings.search}}</label>
+                        <input class="form-control" type="search" id="smu-admin-{{uniqid}}-search" data-region="search"
+                            placeholder="{{strings.search}}" autocomplete="off">
+                        <button type="button" class="btn btn-link btn-icon btn-sm" data-action="clear-search" hidden
+                            title="{{#str}}clear{{/str}}" aria-label="{{#str}}clear{{/str}}">{{#pix}}e/cancel, core{{/pix}}</button>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <div class="d-flex align-items-center gap-2" role="group" aria-label="{{strings.status}}" data-region="chips">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" aria-pressed="true" data-status="">
+                            {{strings.all}} <span class="badge rounded-pill text-bg-primary" data-count></span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" aria-pressed="false" data-status="active">
+                            {{strings.enabled}} <span class="badge rounded-pill text-bg-primary" data-count></span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" aria-pressed="false" data-status="inactive">
+                            {{strings.disabled}} <span class="badge rounded-pill text-bg-primary" data-count></span>
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-link btn-icon" data-action="clearfilters" disabled
+                        title="{{strings.clearfilters}}" aria-label="{{strings.clearfilters}}">{{#pix}}i/reload, core{{/pix}}</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="alert alert-danger" role="alert" data-region="error" hidden>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <span data-region="errormessage"></span>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-action="retry">{{#str}}retry{{/str}}</button>
+                    </div>
+                </div>
+                <div class="table-responsive" data-region="tablewrap">
+                    <table class="table w-100"></table>
+                </div>
+                <div data-region="empty" hidden></div>
+                <div class="px-3 py-2" data-region="foot">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 small text-muted">
+                        <div class="d-none d-sm-flex align-items-center gap-2">
+                            <label for="smu-admin-{{uniqid}}-perpage" class="mb-0">{{strings.pagerlabel}}</label>
+                            <select class="custom-select form-select form-select-sm custom-select-sm" id="smu-admin-{{uniqid}}-perpage"
+                                data-region="perpage"></select>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center gap-3 ms-auto">
+                            <span class="text-body text-nowrap" role="status" data-region="range"></span>
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn btn-outline-secondary btn-sm btn-icon" data-action="prev"
+                                    title="{{strings.previous}}" aria-label="{{strings.previous}}" disabled>{{#pix}}i/previous, core{{/pix}}</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm btn-icon" data-action="next"
+                                    title="{{strings.next}}" aria-label="{{strings.next}}" disabled>{{#pix}}i/next, core{{/pix}}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

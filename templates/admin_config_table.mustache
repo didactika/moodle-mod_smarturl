@@ -1,0 +1,79 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_smarturl/admin_config_table
+
+    The inside of the table of a catalogue section: its caption, its columns, the header and one row for each item on the page.
+    The columns are the same the placeholders of a loading section have, so the table does not move when the rows arrive. The
+    name of a row opens it; the actions keep one slot each, in one order (edit, delete), so each action is always in the same
+    column.
+
+    @copyright  2026 Didactika.org
+    @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+    Example context (json):
+    {
+      "caption": "Resource fields",
+      "namelabel": "Name",
+      "statuslabel": "Status",
+      "actionslabel": "Actions",
+      "columns": ["Category", "Type"],
+      "rows": [
+        {
+          "id": 4, "name": "Author", "detail": "author", "cells": ["General", "Text"],
+          "enabled": true, "status": "Enabled", "editlabel": "Edit Author", "deletelabel": "Delete Author"
+        }
+      ]
+    }
+}}
+<caption class="sr-only visually-hidden">{{caption}}</caption>
+<colgroup>
+    <col data-column="name">
+    {{#columns}}<col>{{/columns}}
+    <col data-column="status">
+    <col data-column="actions">
+</colgroup>
+<thead>
+    <tr>
+        <th scope="col" data-column="name">{{namelabel}}</th>
+        {{#columns}}<th scope="col">{{.}}</th>{{/columns}}
+        <th scope="col" data-column="status">{{statuslabel}}</th>
+        <th scope="col" class="text-end text-right text-nowrap" data-column="actions"><span class="sr-only visually-hidden">{{actionslabel}}</span></th>
+    </tr>
+</thead>
+<tbody>
+    {{#rows}}
+    <tr data-id="{{id}}">
+        <th scope="row" data-column="name">
+            <span class="d-flex flex-column overflow-hidden">
+                <a class="fw-bold text-truncate" href="#item-{{id}}" data-action="edit" data-id="{{id}}" title="{{name}}">{{name}}</a>
+                {{#detail}}<span class="small text-muted text-truncate"><code>{{detail}}</code></span>{{/detail}}
+            </span>
+        </th>
+        {{#cells}}<td>{{.}}</td>{{/cells}}
+        <td data-column="status">
+            <span class="badge rounded-pill {{#enabled}}text-bg-success{{/enabled}}{{^enabled}}text-bg-secondary{{/enabled}}">{{status}}</span>
+        </td>
+        <td class="text-end text-right" data-column="actions">
+            <button type="button" class="btn btn-link btn-icon btn-sm text-primary" data-action="edit" data-id="{{id}}"
+                title="{{editlabel}}" aria-label="{{editlabel}}">{{#pix}}t/edit, core{{/pix}}</button>
+            <button type="button" class="btn btn-link btn-icon btn-sm text-danger" data-action="delete" data-id="{{id}}"
+                title="{{deletelabel}}" aria-label="{{deletelabel}}">{{#pix}}t/delete, core{{/pix}}</button>
+        </td>
+    </tr>
+    {{/rows}}
+</tbody>

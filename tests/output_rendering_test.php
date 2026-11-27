@@ -81,9 +81,11 @@ final class output_rendering_test extends \advanced_testcase {
         $renderer = $PAGE->get_renderer('mod_smarturl');
 
         $adminhtml = $renderer->render(new admin_config_page('categories'));
-        $this->assertStringContainsString('smu-schema', $adminhtml);
+        $this->assertStringContainsString('data-region="catalogue"', $adminhtml);
+        $this->assertStringContainsString('data-region="filters"', $adminhtml);
         $this->assertStringContainsString('nav nav-tabs', $adminhtml);
         $this->assertStringContainsString('Categories', $adminhtml);
+        $this->assertStringContainsString('No categories yet', $adminhtml);
 
         $builderhtml = $renderer->render(new \mod_smarturl\output\form_builder_widget('params', [], [], false, []));
         $this->assertStringContainsString('smu-form-builder', $builderhtml);
