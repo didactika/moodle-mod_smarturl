@@ -86,7 +86,7 @@ function smarturl_add_instance(\stdClass $data, $mform = null): int {
         'intro' => (string)($data->intro ?? ''),
         'introformat' => (int)($data->introformat ?? FORMAT_HTML),
         'externalurl' => resource_target::normalise((string)$data->externalurl, true),
-        'display_mode' => strtoupper((string)($data->display_mode ?? get_config('mod_smarturl', 'defaultdisplay') ?: 'AUTO')),
+        'display_mode' => strtoupper((string)($data->display_mode ?? 'AUTO')),
         'popup_width' => !empty($data->popup_width) ? (int)$data->popup_width : ((int)get_config(
             'mod_smarturl',
             'defaultpopupwidth',

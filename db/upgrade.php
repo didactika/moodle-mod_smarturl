@@ -67,5 +67,11 @@ function xmldb_smarturl_upgrade(int $oldversion): bool {
         }
         upgrade_mod_savepoint(true, 2026112502, 'smarturl');
     }
+
+    if ($oldversion < 2026112700) {
+        // The combined open mode was replaced by the independent launch, viewer and poster defaults.
+        unset_config('defaultdisplay', 'mod_smarturl');
+        upgrade_mod_savepoint(true, 2026112700, 'smarturl');
+    }
     return true;
 }
