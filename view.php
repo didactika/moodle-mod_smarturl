@@ -69,6 +69,10 @@ $PAGE->activityheader->set_description('');
 $PAGE->activityheader->set_hidecompletion(true);
 $PAGE->set_title($name);
 $PAGE->set_heading($auxiliary ? $name : format_string($course->fullname));
+if (!$auxiliary && ($tab = $PAGE->secondarynav->get('modulepage'))) {
+    $tab->text = viewer_data::navigation_label($target);
+}
+
 
 $page = new \mod_smarturl\output\resource_page($smarturl, $course, $cm, $context, $USER);
 $renderer = $PAGE->get_renderer('mod_smarturl');
@@ -77,12 +81,17 @@ $fields = presentation::select_fields(
     \mod_smarturl\local\metadata\metadata_repository::for_instance((int)$smarturl->id),
     $profile['viewerfields'],
 );
-$tools = $renderer->resource_tools($fields, false, $renderer->completion_tools($PAGE->cm, $USER->id));
+$tools = $renderer->resource_tools([], false, $renderer->completion_tools($PAGE->cm, $USER->id));
+$details = $fields ? html_writer::tag(
+    'section',
+    $OUTPUT->heading(get_string('metadataheading', 'smarturl'), 2, 'h5') . $renderer->resource_details($fields),
+    ['class' => 'smu-view-details'],
+) : '';
 
 echo $OUTPUT->header();
 if ($auxiliary) {
     echo html_writer::div($OUTPUT->heading($name, 1, 'h3'), 'container py-3 pb-0');
 }
 $classes = 'mod-smarturl smu-viewer-layout' . ($auxiliary ? ' smu-auxiliary-viewer container pb-4' : '');
-echo html_writer::div($tools . $body, $classes);
+echo html_writer::div($tools . $body . $details, $classes);
 echo $OUTPUT->footer();

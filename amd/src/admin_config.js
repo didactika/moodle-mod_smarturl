@@ -54,6 +54,7 @@ export const init = id => {
             returnFocus: opener,
         });
         form.addEventListener(form.events.LOADED, () => {
+            form.modal.getRoot().find('.modal-dialog').addClass('smu-fixed-modal');
             const clear = installSelectMenus(form.modal.getRoot()[0]);
             form.modal.getRoot().on(ModalEvents.hidden, clear);
         });

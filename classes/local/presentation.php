@@ -33,7 +33,7 @@ final class presentation {
     ];
 
     /** @var array Boolean configuration keys. */
-    public const FLAGS = ['title', 'icon', 'description', 'play', 'protected', 'gateway'];
+    public const FLAGS = ['title', 'icon', 'description', 'play', 'protected', 'gateway', 'deferred'];
 
     /**
      * Refreshes affected course icons after the administrator changes the setting.
@@ -83,6 +83,7 @@ final class presentation {
             'play' => false,
             'protected' => false,
             'gateway' => false,
+            'deferred' => false,
             'coursefields' => null,
             'viewerfields' => null,
         ];
@@ -158,7 +159,11 @@ final class presentation {
             return $existing->presentation_json ?? null;
         }
         $base = $existing ? self::for_instance($existing) : self::legacy($data->display_mode ?? "AUTO");
-        return json_encode(array_replace($base, self::validate($changes)), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        $updated = array_replace($base, self::validate($changes));
+        if (!empty($changes['deferred'])) {
+            $updated['gateway'] = false;
+        }
+        return json_encode($updated, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
 
     /**

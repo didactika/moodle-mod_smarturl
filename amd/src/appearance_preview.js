@@ -85,21 +85,15 @@ export const init = (id) => {
         const frame = body.querySelector('iframe');
         const surface = body.querySelector('[data-surface]');
         const language = body.querySelector('[data-language]');
-        const resize = () => {
-            const preview = frame.contentDocument?.querySelector('.smu-draft-preview');
-            if (preview) {
-                frame.style.height = Math.min(preview.scrollHeight + 4, window.innerHeight * 0.6) + 'px';
-            }
-        };
-        frame.addEventListener('load', resize);
         const update = () => refresh(frame, surface, language);
         surface.addEventListener('change', update);
         language.addEventListener('change', update);
-        body.querySelector('[data-mobile]').addEventListener('change', ({target}) => {
+        const viewportToggle = body.querySelector('[data-mobile]');
+        viewportToggle.addEventListener('change', ({target}) => {
             frame.classList.toggle('smu-preview-mobile', target.checked);
-            window.requestAnimationFrame(resize);
         });
         modal.getRoot().on(ModalEvents.hidden, clear);
+        modal.getRoot().find('.modal-dialog').addClass('smu-fixed-modal');
         modal.getRoot().find('.modal-footer').addClass('d-none');
         modal.show();
         update();

@@ -102,12 +102,31 @@ class renderer extends plugin_renderer_base {
      * @param array $fields Visible resource metadata.
      * @param bool $course Whether this is a course item.
      * @param string $completion Moodle completion controls.
+     * @param string $description Formatted course resource description.
      * @return string
      */
-    public function resource_tools(array $fields, bool $course = false, string $completion = ''): string {
-        if (!$fields && !$course && $completion === '') {
+    public function resource_tools(array $fields, bool $course = false, string $completion = '', string $description = ''): string {
+        if (!$fields && !$course && $completion === '' && $description === '') {
             return '';
         }
+        $data = [
+            'detailhtml' => $this->resource_details($fields, $description),
+            'details' => get_string('resourceinformation', 'smarturl'),
+            'hasfields' => !empty($fields) || trim($description) !== '',
+            'completion' => $completion,
+            'course' => $course,
+        ];
+        return $this->render_from_template('mod_smarturl/resource_tools', $data);
+    }
+
+    /**
+     * Renders the grouped resource data for an activity or information modal.
+     *
+     * @param array $fields Visible metadata.
+     * @param string $description Formatted resource description.
+     * @return string
+     */
+    public function resource_details(array $fields, string $description = ''): string {
         $groups = [];
         foreach ($fields as $field) {
             $group = $field['group'] ?: get_string('metadataheading', 'smarturl');
@@ -119,18 +138,16 @@ class renderer extends plugin_renderer_base {
             }
             $groups[$group][] = $field;
         }
-        $data = [
+        return $this->render_from_template('mod_smarturl/resource_details', [
             'groups' => array_map(
                 static fn($name, $items) => ['name' => $name, 'items' => $items],
                 array_keys($groups),
                 array_values($groups),
             ),
-            'details' => get_string('metadataheading', 'smarturl'),
-            'hasfields' => !empty($fields),
-            'completion' => $completion,
-            'course' => $course,
-        ];
-        return $this->render_from_template('mod_smarturl/resource_tools', $data);
+            'hasgroups' => !empty($groups),
+            'description' => $description,
+            'descriptionlabel' => get_string('description'),
+        ]);
     }
 
     /**

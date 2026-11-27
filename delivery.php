@@ -23,20 +23,5 @@
  */
 
 require('../../config.php');
-
-use mod_smarturl\local\presentation;
-use mod_smarturl\local\remote_delivery;
-use mod_smarturl\local\url\url_resolver;
-
-$id = required_param('id', PARAM_INT);
-$cm = get_coursemodule_from_id('smarturl', $id, 0, false, MUST_EXIST);
-$course = get_course($cm->course);
-require_course_login($course, true, $cm);
-require_capability('mod/smarturl:view', context_module::instance($id));
-$activity = $DB->get_record('smarturl', ['id' => $cm->instance], '*', MUST_EXIST);
-if (!presentation::for_instance($activity)['gateway']) {
-    throw new moodle_exception('deliveryinvalid', 'smarturl');
-}
-$url = url_resolver::resolve($activity, $course, $USER, $id);
-\core\session\manager::write_close();
-remote_delivery::send($url);
+require_login();
+throw new moodle_exception('deliveryretired', 'smarturl');

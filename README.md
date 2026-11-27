@@ -42,3 +42,17 @@ The module uses the [Didactika Moodle Design System](https://moodle-design.didac
 ## Moodle compatibility
 
 This distribution uses the Moodle 4.5-compatible Mustache and AMD interface. Check the release metadata for its declared Moodle range.
+
+### Extensions
+
+Open **Site administration → Plugins → Activity modules → Smart URL extensions** to enable or disable installed extensions and open their configuration pages. Smart URL recognises player, metadata type, catalogue source and completion rule extensions.
+
+- [YouTube player](https://github.com/didactika/moodle-smarturlplayer_youtube)
+- [ISBN metadata type](https://github.com/didactika/moodle-smarturlmeta_identifier)
+- [Course link catalogue](https://github.com/didactika/moodle-smarturlsource_courseurls)
+
+Choose the extension distribution for the installed Moodle line. Install each one inside its corresponding Smart URL subplugin directory.
+
+### Loading on request
+
+**Load on click** delays resolving the resource in the browser until the learner opens it. Moodle checks access and then hands the request to the source. The destination is visible to the browser after activation.

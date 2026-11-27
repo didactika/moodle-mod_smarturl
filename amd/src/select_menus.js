@@ -99,7 +99,32 @@ export const installSelectMenus = (root) => {
             }
             const searchBox = document.createElement('div');
             searchBox.className = 'smu-menu-search';
-            searchBox.append(search);
+            const row = document.createElement('div');
+            row.setAttribute('role', 'search');
+            const icon = document.createElement('i');
+            icon.className = 'fa fa-search smu-search-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            const clear = document.createElement('button');
+            clear.type = 'button';
+            clear.className = 'btn btn-link btn-icon btn-sm';
+            clear.dataset.action = 'clear-search';
+            clear.hidden = true;
+            const clearLabel = document.documentElement.lang.startsWith('es') ? 'Borrar búsqueda' : 'Clear search';
+            clear.setAttribute('aria-label', clearLabel);
+            clear.title = clearLabel;
+            const cross = document.createElement('i');
+            cross.className = 'fa fa-times';
+            cross.setAttribute('aria-hidden', 'true');
+            clear.append(cross);
+            const field = search;
+            field.addEventListener('input', () => { clear.hidden = field.value === ''; });
+            clear.addEventListener('click', () => {
+                field.value = '';
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.focus();
+            });
+            row.append(icon, search, clear);
+            searchBox.append(row);
             menu.append(searchBox);
         }
         const list = document.createElement('div');

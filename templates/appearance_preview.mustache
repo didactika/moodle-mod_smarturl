@@ -7,7 +7,7 @@
     data-url="{{url}}" data-courseid="{{courseid}}" data-cmid="{{cmid}}" data-sesskey="{{sesskey}}">
     <button type="button" class="btn btn-outline-secondary" data-open><i class="fa fa-eye me-2" aria-hidden="true"></i>{{previewresource}}</button>
     <template>
-        <div class="mod-smarturl">
+        <div class="mod-smarturl smu-preview-pane">
         <div class="smu-preview-toolbar d-flex flex-wrap align-items-center gap-2 pb-3 border-bottom">
             <select class="form-select w-auto" data-surface aria-label="{{previewresource}}">
                 <option value="course">{{previewcourse}}</option>
@@ -18,7 +18,7 @@
                 <option value="">{{previewcurrentlanguage}}</option>
                 {{#languages}}<option value="{{code}}">{{name}}</option>{{/languages}}
             </select>
-            <div class="form-check"><input id="smu-mobile-{{uniqid}}" class="form-check-input" type="checkbox" data-mobile>
+            <div class="form-check form-switch smu-preview-switch"><input id="smu-mobile-{{uniqid}}" class="form-check-input" type="checkbox" data-mobile>
             <label for="smu-mobile-{{uniqid}}" class="form-check-label">{{previewmobile}}</label></div>
         </div>
         <iframe class="smu-preview-frame" name="smu-preview-frame-{{uniqid}}" title="{{previewresource}}"></iframe>

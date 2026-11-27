@@ -27,6 +27,7 @@ export const init = id => {
         const Modal = await loadModal();
         const dialog = await Modal.create({title, removeOnClose: true, returnElement: opener});
         dialog.getBody()[0].replaceChildren(content);
+        dialog.getRoot().find('.modal-dialog').addClass('smu-fixed-modal');
         dialog.getRoot().find('.modal-footer').addClass('d-none');
         dialog.show();
     };
@@ -44,7 +45,9 @@ export const init = id => {
             const icon = document.createElement('i');
             icon.className = 'fa fa-list-check';
             icon.setAttribute('aria-hidden', 'true');
-            toggle.replaceChildren(icon);
+            const text = document.createElement('span');
+            text.textContent = label;
+            toggle.replaceChildren(icon, text);
             const content = completion.querySelector('[data-for="dropdowndialog_content"]');
             if (content) {
                 toggle.removeAttribute('data-toggle');

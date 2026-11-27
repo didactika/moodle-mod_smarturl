@@ -58,6 +58,7 @@ export const init = rootId => {
             wrapper.className = 'mod-smarturl';
             wrapper.append(player);
             modal.getBody()[0].replaceChildren(wrapper);
+            modal.getRoot().find('.modal-dialog').addClass('smu-fixed-modal');
             modal.getRoot().find('.modal-footer').addClass('d-none');
             modal.show();
         }

@@ -1,0 +1,53 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+    @template mod_smarturl/subplugins
+    Example context (json): {"hasgroups":false}
+}}
+<div class="mod-smarturl">
+    <p>{{#str}}manageplugins_help, mod_smarturl{{/str}}</p>
+    {{^hasgroups}}<p>{{#str}}nopluginsinstalled, mod_smarturl{{/str}}</p>{{/hasgroups}}
+    {{#groups}}
+    <section class="card mb-3">
+        <h2 class="card-header h6 mb-0">{{name}}</h2>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr><th scope="col">{{#str}}plugin{{/str}}</th><th scope="col">{{#str}}status{{/str}}</th>
+                    <th scope="col"><span class="visually-hidden">{{#str}}actions{{/str}}</span></th></tr>
+                </thead>
+                <tbody>
+                {{#plugins}}
+                    <tr>
+                        <th scope="row">{{name}}<div class="small text-body-secondary"><code>{{component}}</code></div></th>
+                        <td><span class="badge rounded-pill smu-state {{#active}}smu-state-on{{/active}}">{{status}}</span></td>
+                        <td>
+                            <div class="smu-row-actions">
+                                <form method="post" action="{{action}}">
+                                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                                    <input type="hidden" name="component" value="{{component}}">
+                                    <input type="hidden" name="enabled" value="{{enabled}}">
+                                    <button type="submit" class="btn btn-outline-secondary smu-iconpill"
+                                        title="{{toggle}}" aria-label="{{toggle}} {{name}}">
+                                        <i class="fa {{#active}}fa-eye-slash{{/active}}{{^active}}fa-eye{{/active}}" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                                {{#settingsurl}}
+                                <a href="{{settingsurl}}" class="btn btn-outline-secondary smu-iconpill"
+                                    title="{{#str}}settings{{/str}}" aria-label="{{#str}}settings{{/str}} {{name}}">
+                                    <i class="fa fa-gear" aria-hidden="true"></i>
+                                </a>
+                                {{/settingsurl}}
+                                {{^settingsurl}}
+                                <button type="button" class="btn btn-outline-secondary smu-iconpill" disabled
+                                    aria-label="{{#str}}settings{{/str}}"><i class="fa fa-gear" aria-hidden="true"></i></button>
+                                {{/settingsurl}}
+                            </div>
+                        </td>
+                    </tr>
+                {{/plugins}}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {{/groups}}
+</div>

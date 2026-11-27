@@ -39,8 +39,8 @@ final class viewer_data {
      * @return array
      */
     public static function target(\stdClass $instance, \stdClass $course, \stdClass $user, int $cmid, array $profile): array {
-        if ($profile['gateway']) {
-            return remote_delivery::target(url_resolver::resolve($instance, $course, $user, $cmid), $cmid);
+        if ($profile['gateway'] && !$profile['deferred']) {
+            throw new \moodle_exception('deliveryretired', 'smarturl');
         }
         if ($profile['protected']) {
             return protected_resource::target(\context_module::instance($cmid));
@@ -63,22 +63,23 @@ final class viewer_data {
         $cmid = (int)$context->instanceid;
         $profile = presentation::for_instance($instance);
         $name = format_string(activity_content::title($instance), true, ['context' => $context]);
-        $target = resource_target::with_markup(self::target($instance, $course, $user, $cmid, $profile), $name);
+        $target = self::target($instance, $course, $user, $cmid, $profile);
         $viewer = $profile['viewer'];
         if ($target['kind'] === 'link' || $viewer === 'LINK') {
             $mode = 'OPEN';
-        } else if ($viewer === 'POSTER') {
+        } else if ($viewer === 'POSTER' || ($profile['deferred'] && $viewer !== 'MODAL')) {
             $mode = 'INLINE_IFRAME';
         } else if ($viewer === 'MODAL') {
             $mode = 'MODAL';
         } else {
             $mode = 'EMBED';
         }
-        $postersource = ($profile['protected'] || $profile['gateway']) ? 'UPLOAD' : $profile['poster'];
+        $postersource = ($profile['protected'] || $profile['deferred']) ? 'UPLOAD' : $profile['poster'];
         return [
             'name' => $name,
             'intro' => activity_content::description($instance, $context, $cmid),
             'target' => $target,
+            'player' => self::player_markup($target, $name, $cmid, $profile['deferred']),
             'mode' => $mode,
             'poster' => self::poster($instance, $context, $postersource, $target['poster']),
             'metadata' => presentation::select_fields(
@@ -143,9 +144,50 @@ final class viewer_data {
                 'title' => $title,
                 'loading' => 'lazy',
                 'allowfullscreen' => true,
+                'allow' => 'autoplay; fullscreen',
                 'referrerpolicy' => 'strict-origin-when-cross-origin',
             ]),
             default => '',
         };
+    }
+
+    /**
+     * Produces player markup for a presentation without exposing a deferred origin.
+     *
+     * @param array $target Resource descriptor.
+     * @param string $title Accessible title.
+     * @param int $cmid Activity ID.
+     * @param bool $deferred Delay resolving the browser destination.
+     * @return string
+     */
+    public static function player_markup(array $target, string $title, int $cmid, bool $deferred): string {
+        if ($deferred && $target['kind'] !== 'link') {
+            $local = (new \moodle_url('/mod/smarturl/player.php', ['id' => $cmid]))->out(false);
+            $target = ['kind' => $target['kind'] === 'media' ? 'frame' : $target['kind'], 'url' => $local];
+        } else {
+            $target = resource_target::with_markup($target, $title);
+        }
+        return self::render_target($target, $title);
+    }
+
+    /**
+     * Names a recognised resource type for the activity tab.
+     *
+     * @param array $target Resource descriptor.
+     * @return string
+     */
+    public static function navigation_label(array $target): string {
+        $path = (string)parse_url($target['url'], PHP_URL_PATH);
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $type = match (true) {
+            in_array($extension, ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'csv'], true)
+                => strtoupper($extension),
+            $target['kind'] === 'image' => get_string('nav_image', 'smarturl'),
+            $target['kind'] === 'audio' => get_string('nav_audio', 'smarturl'),
+            $target['kind'] === 'video' || $target['kind'] === 'media' || !empty($target['playable'])
+                => get_string('nav_video', 'smarturl'),
+            default => get_string('modulename', 'smarturl'),
+        };
+        return $type;
     }
 }
