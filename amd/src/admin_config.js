@@ -51,13 +51,12 @@ export const init = id => {
         const form = new ModalForm({
             formClass: 'mod_smarturl\\form\\schema_item',
             args: {section: section.key, id: row?.id || 0, remove: Number(remove)},
-            modalConfig: {title: textNode('span', titleText).innerHTML, large: false},
+            modalConfig: {title: textNode('span', titleText).innerHTML, large: false, scrollable: true},
             saveButtonText: remove ? t.delete : t.savechanges,
             saveButtonClasses: remove ? 'btn-danger' : undefined,
             returnFocus: opener,
         });
         form.addEventListener(form.events.LOADED, () => {
-            form.modal.getRoot().find('.modal-dialog').addClass('smu-fixed-modal');
             const clear = installSelectMenus(form.modal.getRoot()[0]);
             form.modal.getRoot().on(ModalEvents.hidden, clear);
         });

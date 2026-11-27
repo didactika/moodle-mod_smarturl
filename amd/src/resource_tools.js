@@ -25,9 +25,10 @@ export const init = id => {
     const grid = slot?.closest('.activity-grid');
     const show = async(opener, title, content) => {
         const Modal = await loadModal();
-        const dialog = await Modal.create({title, removeOnClose: true, returnElement: opener});
-        dialog.getBody()[0].replaceChildren(content);
-        dialog.getBody()[0].closest('.modal-dialog')?.classList.add('smu-fixed-modal');
+        const dialog = await Modal.create({title, removeOnClose: true, returnElement: opener, scrollable: true});
+        const body = dialog.getBody()[0];
+        body.replaceChildren(content);
+        body.closest('.modal-dialog')?.classList.add('smu-resource-modal');
         dialog.getRoot().find('.modal-footer').addClass('d-none');
         dialog.show();
     };
