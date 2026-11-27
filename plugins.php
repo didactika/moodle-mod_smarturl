@@ -29,6 +29,8 @@ use mod_smarturl\local\subplugins;
 
 admin_externalpage_setup('modsmarturlplugins');
 require_capability('moodle/site:config', context_system::instance());
+$PAGE->set_title(get_string('manageplugins', 'smarturl'));
+$PAGE->set_heading(get_string('manageplugins', 'smarturl'));
 $manager = core_plugin_manager::instance();
 $url = new moodle_url('/mod/smarturl/plugins.php');
 
