@@ -96,8 +96,8 @@ export const init = (rootId) => {
                         r.varName === '__static__' ? r.value.trim() !== '' : r.varName.trim() !== ''
                     ))
                     .map((r) => (r.varName === '__static__'
-                        ? {param: r.key.trim(), mode: 'static', var: '', value: r.value.trim()}
-                        : {param: r.key.trim(), mode: 'def', var: r.varName.trim(), value: ''}))
+                        ? {param: r.key.trim(), mode: 'static', "var": '', value: r.value.trim()}
+                        : {param: r.key.trim(), mode: 'def', "var": r.varName.trim(), value: ''}))
             );
         } else {
             hidden.value = JSON.stringify(

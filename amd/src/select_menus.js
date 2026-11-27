@@ -36,7 +36,7 @@ export const installSelectMenus = (root) => {
         }
         const box = control.getBoundingClientRect();
         const parent = menu.offsetParent;
-        const origin = parent instanceof HTMLElement ? parent.getBoundingClientRect() : { left: 0, top: 0 };
+        const origin = parent instanceof HTMLElement ? parent.getBoundingClientRect() : {left: 0, top: 0};
         menu.style.minWidth = Math.min(box.width, window.innerWidth - 16) + 'px';
         const availableLeft = Math.min(box.left, window.innerWidth - menu.offsetWidth - 8);
         menu.style.left = Math.max(8 - origin.left, availableLeft - origin.left) + 'px';
@@ -69,8 +69,12 @@ export const installSelectMenus = (root) => {
         event.stopPropagation();
         const visible = entries.filter(entry => !entry.disabled && !entry.hidden);
         const index = visible.indexOf(document.activeElement);
-        const next = event.key === 'Home' ? 0 : event.key === 'End' ? visible.length - 1 :
-            (index + (event.key === 'ArrowUp' ? -1 : 1) + visible.length) % visible.length;
+        let next = (index + (event.key === 'ArrowUp' ? -1 : 1) + visible.length) % visible.length;
+        if (event.key === 'Home') {
+            next = 0;
+        } else if (event.key === 'End') {
+            next = visible.length - 1;
+        }
         visible[next]?.focus();
     };
     const open = (select) => {
@@ -117,10 +121,12 @@ export const installSelectMenus = (root) => {
             cross.setAttribute('aria-hidden', 'true');
             clear.append(cross);
             const field = search;
-            field.addEventListener('input', () => { clear.hidden = field.value === ''; });
+            field.addEventListener('input', () => {
+ clear.hidden = field.value === '';
+});
             clear.addEventListener('click', () => {
                 field.value = '';
-                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('input', {bubbles: true}));
                 field.focus();
             });
             row.append(icon, search, clear);
@@ -161,8 +167,8 @@ export const installSelectMenus = (root) => {
                 close(true);
                 if (changed) {
                     select.selectedIndex = option.index;
-                    select.dispatchEvent(new Event('input', { bubbles: true }));
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    select.dispatchEvent(new Event('input', {bubbles: true}));
+                    select.dispatchEvent(new Event('change', {bubbles: true}));
                 }
             });
             entries.push(button);

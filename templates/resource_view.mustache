@@ -7,6 +7,18 @@
     (at your option) any later version.
 
     @template mod_smarturl/resource_view
+
+    Example context (json):
+    {
+      "intro": "<p>About this resource.</p>",
+      "isdirect": true,
+      "gourl": "/mod/smarturl/go.php?id=3",
+      "primarylabel": "Open resource",
+      "strings": {
+        "description": "Description"
+      },
+      "payloadjson": "{}"
+    }
 }}
 <div class="dd-smarturl-app smu-resource-shell" id="smu-viewer-{{uniqid}}" data-payload="{{payloadjson}}">
     <section class="smu-stage">

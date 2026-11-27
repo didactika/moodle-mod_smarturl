@@ -30,6 +30,13 @@ use mod_smarturl\local\url\url_resolver;
  * @package    mod_smarturl
  * @copyright  2026 Didactika.org
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_smarturl\local\url\resource_target
+ * @covers \mod_smarturl\local\presentation
+ * @covers \mod_smarturl\local\activity_content
+ * @covers \mod_smarturl\local\viewer_data
+ * @covers \mod_smarturl\local\metadata\category_manager
+ * @covers \mod_smarturl\external\save_instances
+ * @covers \mod_smarturl\external\get_editor_context
  */
 final class resource_experience_test extends \advanced_testcase {
     /**

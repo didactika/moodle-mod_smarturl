@@ -25,6 +25,7 @@ use mod_smarturl\local\migration\url_migrator;
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_smarturl\local\migration\url_migrator
  */
 final class migration_service_test extends \advanced_testcase {
     /**

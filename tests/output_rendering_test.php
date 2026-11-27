@@ -27,6 +27,9 @@ use mod_smarturl\output\resource_page;
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_smarturl\output\renderer
+ * @covers \mod_smarturl\output\admin_config_page
+ * @covers \mod_smarturl\output\resource_page
  */
 final class output_rendering_test extends \advanced_testcase {
     /**

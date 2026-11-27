@@ -2,6 +2,26 @@
     This file is part of Moodle - https://moodle.org/
     Moodle is free software under the GNU General Public License, version 3 or later.
     @template mod_smarturl/appearance_preview
+
+    Example context (json):
+    {
+      "url": "/mod/smarturl/preview.php",
+      "courseid": 2,
+      "cmid": 3,
+      "previewresource": "Preview appearance",
+      "previewcourse": "On the course page",
+      "previewactivity": "In the activity",
+      "previewauxiliary": "Auxiliary viewer",
+      "translationlanguage": "Language",
+      "previewcurrentlanguage": "Current language",
+      "previewmobile": "Mobile view",
+      "languages": [
+        {
+          "code": "es",
+          "name": "Spanish"
+        }
+      ]
+    }
 }}
 <div class="d-flex flex-wrap align-items-center smu-course-actions" id="smu-preview-{{uniqid}}"
     data-url="{{url}}" data-courseid="{{courseid}}" data-cmid="{{cmid}}" data-sesskey="{{sesskey}}">
@@ -28,5 +48,7 @@
     </template>
 </div>
 {{#js}}
-require(["mod_smarturl/appearance_preview"], function(Preview) { Preview.init("smu-preview-{{uniqid}}"); });
+require(['mod_smarturl/appearance_preview'], function(Preview) {
+    Preview.init('smu-preview-{{uniqid}}');
+});
 {{/js}}

@@ -26,6 +26,8 @@ use mod_smarturl\local\metadata\metadata_type_manager;
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_smarturl\local\metadata\metadata_type_manager
+ * @covers \mod_smarturl\local\metadata\metadata_repository
  */
 final class metadata_manager_test extends \advanced_testcase {
     /**

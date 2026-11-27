@@ -44,7 +44,10 @@ export const init = id => {
 
     const open = (opener, row, remove = false) => {
         error.hidden = true;
-        const titleText = row ? (remove ? t.deletecategoryheading.replace('{$a}', row.name) : t.edit) : section.add;
+        let titleText = section.add;
+        if (row) {
+            titleText = remove ? t.deletecategoryheading.replace('{$a}', row.name) : t.edit;
+        }
         const form = new ModalForm({
             formClass: 'mod_smarturl\\form\\schema_item',
             args: {section: section.key, id: row?.id || 0, remove: Number(remove)},
@@ -190,8 +193,12 @@ export const init = id => {
         page = 0;
         render();
     });
-    previous.addEventListener('click', () => { page--; render(); });
-    next.addEventListener('click', () => { page++; render(); });
+    previous.addEventListener('click', () => {
+ page--; render();
+});
+    next.addEventListener('click', () => {
+ page++; render();
+});
     add.addEventListener('click', () => open(add));
     root.querySelector('[data-clear-status]').addEventListener('click', () => {
         status.value = '';

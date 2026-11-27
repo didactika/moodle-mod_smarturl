@@ -35,6 +35,11 @@ use mod_smarturl\local\policy\policy_manager;
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_smarturl\external\create_instances
+ * @covers \mod_smarturl\external\set_metadata
+ * @covers \mod_smarturl\external\get_instances
+ * @covers \mod_smarturl\external\update_instances
+ * @covers \mod_smarturl\external\delete_instances
  */
 final class external_services_test extends \advanced_testcase {
     /**

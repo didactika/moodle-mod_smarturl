@@ -26,6 +26,7 @@ use mod_smarturl\local\url\url_resolver;
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers \mod_smarturl\local\url\url_resolver
  */
 final class url_resolver_test extends \advanced_testcase {
     /**

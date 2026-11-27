@@ -16,14 +16,14 @@ const loadModal = () => Promise.resolve(Modal);
 export const init = id => {
     const root = document.getElementById(id);
     if (!root) {
-        return () => {};
+        return () => undefined;
     }
     const trigger = root.querySelector('[data-smarturl-details]');
     const button = trigger instanceof HTMLElement ? trigger : null;
     const source = root.querySelector('template');
     const slot = root.querySelector('[data-smarturl-completion-slot]');
     const grid = slot?.closest('.activity-grid');
-    const show = async (opener, title, content) => {
+    const show = async(opener, title, content) => {
         const Modal = await loadModal();
         const dialog = await Modal.create({title, removeOnClose: true, returnElement: opener});
         dialog.getBody()[0].replaceChildren(content);
@@ -59,7 +59,7 @@ export const init = id => {
                     const copy = content.cloneNode(true);
                     if (copy instanceof HTMLElement) {
                         copy.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
-                        void show(toggle, label, copy).catch(() => {});
+                        void show(toggle, label, copy).catch(() => undefined);
                     }
                 });
             }
@@ -74,7 +74,7 @@ export const init = id => {
     if (!button || !source) {
         return () => observer?.disconnect();
     }
-    const click = () => void show(button, button.dataset.title || '', source.content.cloneNode(true)).catch(() => {});
+    const click = () => void show(button, button.dataset.title || '', source.content.cloneNode(true)).catch(() => undefined);
     button.addEventListener('click', click);
     return () => {
         observer?.disconnect();
