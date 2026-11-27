@@ -92,11 +92,9 @@ class mod_smarturl_mod_form extends moodleform_mod {
         $mform->addElement('header', 'appearancehdr', get_string('appearance', 'smarturl'));
         $preview = new \mod_smarturl\output\preview_widget((int)$this->get_course()->id, (int)($this->_cm->id ?? 0));
         $mform->addElement('html', html_writer::div($output->render($preview), 'mod-smarturl mb-3'));
-        $mform->addElement('hidden', 'display_mode', get_config('mod_smarturl', 'defaultdisplay') ?: 'AUTO');
-        $mform->setType('display_mode', PARAM_ALPHANUMEXT);
         $defaults = presentation::for_instance((object)$this->current);
         if (empty($this->current->id)) {
-            $defaults = presentation::legacy(get_config('mod_smarturl', 'defaultdisplay') ?: 'AUTO');
+            $defaults = presentation::legacy('AUTO');
             $defaults['course'] = get_config('mod_smarturl', 'defaultcoursestyle') ?: $defaults['course'];
             foreach (['launch', 'viewer', 'poster'] as $key) {
                 $defaults[$key] = get_config('mod_smarturl', 'default' . $key) ?: $defaults[$key];

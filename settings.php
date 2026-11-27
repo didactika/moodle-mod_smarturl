@@ -66,23 +66,6 @@ if ($ADMIN->fulltree) {
         '',
     ));
 
-    $settings->add(new admin_setting_configselect(
-        'mod_smarturl/defaultdisplay',
-        get_string('defaultdisplaymode', 'smarturl'),
-        '',
-        'AUTO',
-        [
-            'AUTO' => get_string('display_auto', 'smarturl'),
-            'INLINE_IFRAME' => get_string('display_inline_iframe', 'smarturl'),
-            'MODAL' => get_string('display_modal', 'smarturl'),
-            'POPUP' => get_string('display_popup', 'smarturl'),
-            'EMBED' => get_string('display_embed', 'smarturl'),
-            'NEW' => get_string('display_new', 'smarturl'),
-            'OPEN' => get_string('display_open', 'smarturl'),
-            'CARD' => get_string('display_card', 'smarturl'),
-        ]
-    ));
-
     $mimeicons = new admin_setting_configcheckbox(
         'mod_smarturl/usemimeicons',
         get_string('usemimeicons', 'smarturl'),
@@ -100,7 +83,7 @@ if ($ADMIN->fulltree) {
             get_string('course_' . strtolower($option), 'smarturl'), ['LINK', 'CARD', 'IMAGE']))
     ));
     foreach (['launch', 'viewer', 'poster'] as $key) {
-        $choices = ['' => get_string('fieldmode_default', 'smarturl')];
+        $choices = [];
         foreach (\mod_smarturl\local\presentation::OPTIONS[$key] as $choice) {
             $choices[$choice] = get_string($key . '_' . strtolower($choice), 'smarturl');
         }
@@ -108,7 +91,7 @@ if ($ADMIN->fulltree) {
             'mod_smarturl/default' . $key,
             get_string('presentation_' . $key, 'smarturl'),
             '',
-            '',
+            'AUTO',
             $choices
         ));
     }
