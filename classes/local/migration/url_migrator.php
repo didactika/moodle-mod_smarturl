@@ -35,7 +35,7 @@ final class url_migrator {
     /**
      * Runs selective migration or dry-run inspection.
      *
-     * @param array<string, mixed> $options Selection and behavior flags.
+     * @param array $options Selection and behavior flags.
      * @return array<string, mixed> Migration summary report.
      */
     public static function run(array $options): array {

@@ -53,6 +53,7 @@ class get_instances extends external_api {
      * @param int[] $courseids Course IDs.
      * @param int $page Zero-based page index.
      * @param int $perpage Page size (1-200).
+     * @param bool $includedetails Whether to include metadata values.
      * @return array<string, mixed> Paginated result envelope.
      */
     public static function execute(array $courseids, int $page = 0, int $perpage = 50, bool $includedetails = true): array {

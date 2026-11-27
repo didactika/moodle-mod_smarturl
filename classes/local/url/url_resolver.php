@@ -43,7 +43,7 @@ final class url_resolver {
      * Resolves an arbitrary template URL and parameter binding list.
      *
      * @param string $template Raw external URL possibly containing {{shortname}} placeholders.
-     * @param array<int, array<string, mixed>> $bindings Query parameter bindings.
+     * @param array $bindings Query parameter bindings.
      * @param \stdClass $course Course record.
      * @param \stdClass $user User record.
      * @param int $cmid Course module ID.
@@ -164,7 +164,7 @@ final class url_resolver {
     /**
      * Computes string values for every enabled parameter definition.
      *
-     * @param array<int, \stdClass> $defs Enabled definitions.
+     * @param array $defs Enabled definitions.
      * @param \stdClass $course Course record.
      * @param \stdClass $user User record.
      * @param int $cmid Course module ID.

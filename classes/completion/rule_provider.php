@@ -57,7 +57,7 @@ interface rule_provider {
      *
      * @param \cm_info $cm Course module.
      * @param int $userid User ID.
-     * @param array<string, mixed> $config Rule configuration stored in completion_custom_json.
+     * @param array $config Rule configuration stored in completion_custom_json.
      * @return int One of COMPLETION_COMPLETE or COMPLETION_INCOMPLETE.
      */
     public function get_state(\cm_info $cm, int $userid, array $config): int;
@@ -65,7 +65,7 @@ interface rule_provider {
     /**
      * Human-readable requirement description shown on the course page.
      *
-     * @param array<string, mixed> $config Rule configuration.
+     * @param array $config Rule configuration.
      * @return string
      */
     public function get_description(array $config): string;

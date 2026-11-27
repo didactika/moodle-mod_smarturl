@@ -52,6 +52,14 @@ class save_param_def extends external_api {
     /**
      * Saves dynamic URL parameter definition.
      *
+     * @param int $id Existing definition ID, or zero for a new variable.
+     * @param string $shortname Unique variable key.
+     * @param string $name Display name.
+     * @param string $description Variable description.
+     * @param string $sourcetype Source type.
+     * @param string $sourcekey Source field key or fixed value.
+     * @param string $defaultqueryparam Suggested URL parameter name.
+     * @param bool $enabled Whether the variable is enabled.
      * @return array<string, mixed>
      */
     public static function execute(

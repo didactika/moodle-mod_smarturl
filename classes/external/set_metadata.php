@@ -53,7 +53,7 @@ class set_metadata extends external_api {
      * Updates metadata for a Smart URL instance.
      *
      * @param int $cmid Course module ID.
-     * @param array<int, array<string, mixed>> $entries Entries to write.
+     * @param array $entries Entries to write.
      * @param string $mode replace or merge.
      * @return array<string, mixed>
      */

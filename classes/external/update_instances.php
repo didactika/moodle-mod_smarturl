@@ -90,7 +90,7 @@ class update_instances extends external_api {
     /**
      * Updates instances in batch and acknowledges external sync revision.
      *
-     * @param array<int, array<string, mixed>> $instances Update payloads.
+     * @param array $instances Update payloads.
      * @return array<int, array<string, mixed>> Results.
      */
     public static function execute(array $instances): array {

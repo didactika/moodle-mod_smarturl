@@ -102,7 +102,7 @@ final class policy_manager {
      *
      * @param int $smarturlid Instance ID.
      * @param int $cmid Course module ID.
-     * @param array<string, mixed> $input Policy attributes.
+     * @param array $input Policy attributes.
      * @return \stdClass Saved policy record.
      */
     public static function upsert_external(int $smarturlid, int $cmid, array $input): \stdClass {

@@ -50,6 +50,7 @@ class track_view extends external_api {
      * Marks module viewed for the active user.
      *
      * @param int $cmid Course module ID.
+     * @param bool $fromviewer Whether the viewer has already recorded the visit.
      * @return array<string, mixed>
      */
     public static function execute(int $cmid, bool $fromviewer = false): array {

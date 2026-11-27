@@ -44,7 +44,7 @@ final class param_def_manager {
     /**
      * Creates or updates a dynamic URL parameter definition.
      *
-     * @param array<string, mixed> $data Input fields.
+     * @param array $data Input fields.
      * @return \stdClass Saved record.
      */
     public static function save(array $data): \stdClass {

@@ -60,7 +60,7 @@ class preview_url extends external_api {
      *
      * @param string $template URL template.
      * @param int $courseid Course ID.
-     * @param array<int, array<string, mixed>> $bindings Query parameter bindings.
+     * @param array $bindings Query parameter bindings.
      * @return array<string, string>
      */
     public static function execute(string $template, int $courseid = 1, array $bindings = []): array {
