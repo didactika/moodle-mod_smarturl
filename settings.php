@@ -63,7 +63,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading(
         'mod_smarturl/defaultappearance_heading',
         get_string('defaultappearance', 'smarturl'),
-        '',
+        get_string('defaultappearance_desc', 'smarturl'),
     ));
 
     $mimeicons = new admin_setting_configcheckbox(
@@ -74,31 +74,33 @@ if ($ADMIN->fulltree) {
     );
     $mimeicons->set_updatedcallback([\mod_smarturl\local\presentation::class, 'refresh_course_cache']);
     $settings->add($mimeicons);
-    $settings->add(new admin_setting_configselect(
+    $settings->add(new \mod_smarturl\local\help_select_setting(
         'mod_smarturl/defaultcoursestyle',
         get_string('presentation_course', 'smarturl'),
-        get_string('defaultcoursestyle_desc', 'smarturl'),
+        get_string('presentation_course_desc', 'smarturl'),
         'LINK',
         array_combine(['LINK', 'CARD', 'IMAGE'], array_map(static fn($option) =>
-            get_string('course_' . strtolower($option), 'smarturl'), ['LINK', 'CARD', 'IMAGE']))
+            get_string('course_' . strtolower($option), 'smarturl'), ['LINK', 'CARD', 'IMAGE'])),
+        'presentation_course',
     ));
     foreach (['launch', 'viewer', 'poster'] as $key) {
         $choices = [];
         foreach (\mod_smarturl\local\presentation::OPTIONS[$key] as $choice) {
             $choices[$choice] = get_string($key . '_' . strtolower($choice), 'smarturl');
         }
-        $settings->add(new admin_setting_configselect(
+        $settings->add(new \mod_smarturl\local\help_select_setting(
             'mod_smarturl/default' . $key,
             get_string('presentation_' . $key, 'smarturl'),
-            '',
+            get_string('presentation_' . $key . '_desc', 'smarturl'),
             'AUTO',
-            $choices
+            $choices,
+            'presentation_' . $key,
         ));
     }
     $settings->add(new admin_setting_heading(
         'mod_smarturl/window_heading',
         get_string('defaultwindowsize', 'smarturl'),
-        '',
+        get_string('defaultwindowsize_desc', 'smarturl'),
     ));
     foreach (['width' => 1200, 'height' => 800] as $dimension => $value) {
         $settings->add(new admin_setting_configtext(
