@@ -11,15 +11,14 @@ import {installSelectMenus} from './selectMenus';
 interface ModalForm {
     events: {FORM_SUBMITTED: string; LOADED: string};
     addEventListener: (event: string, handler: (event: Event) => void) => void;
-    modal: {getRoot: () => {0: HTMLElement; on: (event: string, listener: () => void) => void;
-        find: (selector: string) => {addClass: (classes: string) => void}}};
+    modal: {getRoot: () => {0: HTMLElement; on: (event: string, listener: () => void) => void}};
     show: () => Promise<void>;
 }
 
 interface Options {
     formClass: string;
     args: Record<string, string | number | boolean>;
-    modalConfig: {title: string; large: boolean};
+    modalConfig: {title: string; large: boolean; scrollable: boolean};
     saveButtonText: string;
     saveButtonClasses?: string;
     returnFocus: HTMLElement;
@@ -36,7 +35,6 @@ export const openSchemaModal = <T>(options: Options, update: (rows: T) => void, 
     void requireAsync<new (config: Options) => ModalForm>('core_form/modalform').then(Modal => {
         const form = new Modal(options);
         form.addEventListener(form.events.LOADED, () => {
-            form.modal.getRoot().find('.modal-dialog').addClass('smu-fixed-modal');
             const clickMenu = installSelectMenus(form.modal.getRoot()[0]);
             form.modal.getRoot().on('modal:hidden', clickMenu);
         });

@@ -18,9 +18,10 @@ const install = /* @__PURE__ */ __name((root) => {
   const grid = slot?.closest(".activity-grid");
   const show = /* @__PURE__ */ __name(async (opener, title, content) => {
     const Modal = await loadModal();
-    const dialog = await Modal.create({ title, removeOnClose: true, returnElement: opener });
-    dialog.getBody()[0].replaceChildren(content);
-    dialog.getBody()[0].closest(".modal-dialog")?.classList.add("smu-fixed-modal");
+    const dialog = await Modal.create({ title, removeOnClose: true, returnElement: opener, scrollable: true });
+    const body = dialog.getBody()[0];
+    body.replaceChildren(content);
+    body.closest(".modal-dialog")?.classList.add("smu-resource-modal");
     dialog.getRoot().find(".modal-footer").addClass("d-none");
     dialog.show();
   }, "show");
@@ -84,7 +85,7 @@ function ResourceTools() {
   }, []);
   return /* @__PURE__ */ jsxDEV("span", { ref: marker, hidden: true }, void 0, false, {
     fileName: "public/mod/smarturl/js/esm/src/ResourceTools.tsx",
-    lineNumber: 90,
+    lineNumber: 91,
     columnNumber: 12
   }, this);
 }

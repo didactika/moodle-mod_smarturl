@@ -37,7 +37,7 @@ const AdminConfig = /* @__PURE__ */ __name((props) => {
     openSchemaModal({
       formClass: "mod_smarturl\\form\\schema_item",
       args: { section: tab, id: row?.id ?? 0, remove: Number(remove) },
-      modalConfig: { title: title.innerHTML, large: false },
+      modalConfig: { title: title.innerHTML, large: false, scrollable: true },
       saveButtonText: remove ? t.delete : t.savechanges,
       saveButtonClasses: remove ? "btn-danger" : void 0,
       returnFocus: opener

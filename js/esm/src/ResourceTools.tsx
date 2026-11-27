@@ -8,7 +8,7 @@ import {useEffect, useRef} from 'react';
 import {requireAsync} from '@moodle/lms/core/amd';
 
 interface CoreModal {
-    create: (options: {title?: string; removeOnClose: boolean; returnElement: HTMLElement}) => Promise<{
+    create: (options: {title?: string; removeOnClose: boolean; returnElement: HTMLElement; scrollable: boolean}) => Promise<{
         getBody: () => {0: HTMLElement};
         getRoot: () => {find: (selector: string) => {addClass: (name: string) => void}};
         show: () => void;
@@ -24,9 +24,10 @@ const install = (root: Element) => {
     const grid = slot?.closest('.activity-grid');
     const show = async (opener: HTMLElement, title: string, content: Node) => {
         const Modal = await loadModal();
-        const dialog = await Modal.create({title, removeOnClose: true, returnElement: opener});
-        dialog.getBody()[0].replaceChildren(content);
-        dialog.getBody()[0].closest('.modal-dialog')?.classList.add('smu-fixed-modal');
+        const dialog = await Modal.create({title, removeOnClose: true, returnElement: opener, scrollable: true});
+        const body = dialog.getBody()[0];
+        body.replaceChildren(content);
+        body.closest('.modal-dialog')?.classList.add('smu-resource-modal');
         dialog.getRoot().find('.modal-footer').addClass('d-none');
         dialog.show();
     };

@@ -1387,7 +1387,11 @@ form:has([data-smarturl-schema-form]) input[type=checkbox],
     grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 }
 
-.smu-fixed-modal .smu-detail-groups {
+.modal .modal-dialog.smu-resource-modal {
+    max-width: 28rem;
+}
+
+.smu-resource-modal .smu-detail-groups {
     grid-template-columns: 1fr;
 }
 
