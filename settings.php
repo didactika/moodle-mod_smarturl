@@ -38,9 +38,21 @@ if ($ADMIN->fulltree) {
     $link = html_writer::link(
         new moodle_url('/mod/smarturl/admin.php'),
         get_string('adminconfiglink', 'smarturl'),
-        ['class' => 'btn btn-outline-primary mb-3']
+        ['class' => 'btn btn-outline-secondary']
     );
-    $settings->add(new admin_setting_heading('mod_smarturl/schema_nav', '', $link));
+    $settings->add(new \mod_smarturl\local\settings_heading(
+        'mod_smarturl/schema_nav',
+        '',
+        html_writer::div(
+            html_writer::div(get_string('settingscatalogue_help', 'smarturl'), 'text-body-secondary') . $link,
+            'd-flex flex-wrap justify-content-between gap-2 align-items-center',
+        ),
+    ));
+    $settings->add(new admin_setting_heading(
+        'mod_smarturl/defaultappearance_heading',
+        get_string('defaultappearance', 'smarturl'),
+        '',
+    ));
 
     $settings->add(new admin_setting_configselect(
         'mod_smarturl/defaultdisplay',
@@ -57,22 +69,6 @@ if ($ADMIN->fulltree) {
             'OPEN' => get_string('display_open', 'smarturl'),
             'CARD' => get_string('display_card', 'smarturl'),
         ]
-    ));
-
-    $settings->add(new admin_setting_configtext(
-        'mod_smarturl/defaultpopupwidth',
-        get_string('defaultpopupwidth', 'smarturl'),
-        '',
-        1200,
-        PARAM_INT
-    ));
-
-    $settings->add(new admin_setting_configtext(
-        'mod_smarturl/defaultpopupheight',
-        get_string('defaultpopupheight', 'smarturl'),
-        '',
-        800,
-        PARAM_INT
     ));
 
     $mimeicons = new admin_setting_configcheckbox(
@@ -102,6 +98,20 @@ if ($ADMIN->fulltree) {
             '',
             '',
             $choices
+        ));
+    }
+    $settings->add(new admin_setting_heading(
+        'mod_smarturl/window_heading',
+        get_string('defaultwindowsize', 'smarturl'),
+        '',
+    ));
+    foreach (['width' => 1200, 'height' => 800] as $dimension => $value) {
+        $settings->add(new admin_setting_configtext(
+            'mod_smarturl/defaultpopup' . $dimension,
+            get_string('defaultpopup' . $dimension, 'smarturl'),
+            '',
+            $value,
+            PARAM_INT,
         ));
     }
     foreach (\core_component::get_plugin_list('smarturlplayer') as $directory) {

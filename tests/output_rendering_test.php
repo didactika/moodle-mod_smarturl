@@ -50,19 +50,19 @@ final class output_rendering_test extends \advanced_testcase {
 
         $PAGE->set_url('/mod/smarturl/view.php', ['id' => $cm->id]);
         $PAGE->set_context($context);
-        $renderer = $PAGE->get_renderer('core');
+        $renderer = $PAGE->get_renderer('mod_smarturl');
 
         $page = new resource_page($record, $course, $cm, $context, $user);
         $this->assertSame('mod_smarturl/ResourceView', $page->get_react_component_name());
         $props = $page->get_react_component_props($renderer);
-        $this->assertSame('https://media.example.org/DD-REACT?u=rstudent', $props->resolvedUrl);
+        $this->assertStringContainsString('https://media.example.org/DD-REACT?u=rstudent', $props->playerHtml);
         $rendered = $renderer->render($page);
         $this->assertStringContainsString('mod_smarturl/ResourceView', $rendered);
 
-        $adminpage = new admin_config_page();
+        $adminpage = new admin_config_page('categories');
         $this->assertSame('mod_smarturl/AdminConfig', $adminpage->get_react_component_name());
         $adminprops = $adminpage->get_react_component_props($renderer);
-        $this->assertNotEmpty($adminprops->metaTypes);
-        $this->assertNotEmpty($adminprops->paramDefs);
+        $this->assertNotEmpty($adminprops->rows['fields']);
+        $this->assertNotEmpty($adminprops->rows['variables']);
     }
 }

@@ -12,7 +12,6 @@
 
 export type MetaDatatype = 'TEXT' | 'BADGE' | 'TAGS' | 'URL' | 'DATE' | 'NUMBER' | 'DURATION' | 'BOOLEAN' | 'MULTILINE';
 export type DisplayPriority = 'PRIMARY' | 'SECONDARY' | 'HIDDEN';
-export type ParamSourceType = 'BUILTIN' | 'USER_PROFILE_FIELD' | 'COURSE_CUSTOM_FIELD' | 'STATIC';
 
 export interface MetadataEntry {
     id: number;
@@ -39,7 +38,7 @@ export interface ResourceViewProps {
     coursename: string;
     name: string;
     intro: string;
-    resolvedUrl: string;
+    playable: boolean;
     playerHtml: string;
     goUrl: string;
     displayMode: string;
@@ -50,44 +49,5 @@ export interface ResourceViewProps {
     durationSeconds: number | null;
     policy: PolicySummary;
     metadata: MetadataEntry[];
-    strings: Record<string, string>;
-}
-
-export interface MetadataTypeRecord {
-    id: number;
-    shortname: string;
-    name: string;
-    description: string | null;
-    group_name: string;
-    categoryid?: number | null;
-    datatype: MetaDatatype | string;
-    display_priority: DisplayPriority | string;
-    searchable: number;
-    filterable: number;
-    enabled: number;
-}
-
-export interface ParamDefRecord {
-    id: number;
-    shortname: string;
-    name: string;
-    description: string | null;
-    source_type: ParamSourceType | string;
-    source_key: string;
-    default_query_param: string | null;
-    enabled: number;
-}
-
-export interface AdminConfigProps {
-    title: string;
-    subtitle: string;
-    settingsUrl: string;
-    metaTypes: MetadataTypeRecord[];
-    paramDefs: ParamDefRecord[];
-    datatypes: string[];
-    priorities: string[];
-    sourceTypes: string[];
-    sourceOptions: Record<string, Record<string, string>>;
-    categories: Array<{id: number; name: string; enabled: number}>;
     strings: Record<string, string>;
 }

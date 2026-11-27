@@ -22,7 +22,7 @@ const ResourceView = (props: ResourceViewProps) => {
 
     return (
         <div className="smu-resource-shell">
-            <div className="smu-resource-bar">
+            {(hasDuration || props.policy.managedBy || props.policy.lockedFields.length > 0 || isEmbedStage) && <div className="smu-resource-bar">
                 <div className="dd-tags">
                     {hasDuration && (
                         <span className="dd-tag">{formatDuration(props.durationSeconds)}</span>
@@ -48,7 +48,7 @@ const ResourceView = (props: ResourceViewProps) => {
                         {props.strings.openresource ?? 'Open in new tab'}
                     </a>
                 )}
-            </div>
+            </div>}
 
             <PlayerStage
                 props={props}
@@ -58,7 +58,7 @@ const ResourceView = (props: ResourceViewProps) => {
             />
 
             {props.intro && (
-                <section className="card card-body smu-description">
+                <section className="smu-description">
                     <h2 className="h5">{props.strings.description}</h2>
                     <div className="description" dangerouslySetInnerHTML={{__html: props.intro}}/>
                 </section>

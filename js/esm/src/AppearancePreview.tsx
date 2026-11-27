@@ -6,7 +6,8 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import {useEffect, useId, useRef, useState} from 'react';
-import {createPortal} from 'react-dom';
+import MoodleModal from './components/common/MoodleModal';
+import {installSelectMenus} from './lib/selectMenus';
 
 interface PreviewProps {
     url: string;
@@ -20,23 +21,13 @@ interface PreviewProps {
     previewauxiliary: string;
     previewmobile: string;
     previewpending: string;
-    preset: string;
-    preset_video: string;
-    preset_document: string;
-    preset_weblink: string;
     translationlanguage: string;
+    previewcurrentlanguage: string;
     closepreview: string;
 }
 
-const presets: Record<string, [string, string, string]> = {
-    video: ['CARD', 'VIEWERTAB', 'POSTER'],
-    document: ['CARD', 'ACTIVITY', 'EMBED'],
-    weblink: ['LINK', 'EXTERNAL', 'LINK'],
-};
-
 const AppearancePreview = (props: PreviewProps) => {
     const trigger = useRef<HTMLButtonElement>(null);
-    const dialog = useRef<HTMLDialogElement>(null);
     const iframe = useRef<HTMLIFrameElement>(null);
     const id = useId();
     const [open, setOpen] = useState(false);
@@ -44,21 +35,12 @@ const AppearancePreview = (props: PreviewProps) => {
     const [language, setLanguage] = useState('');
     const [mobile, setMobile] = useState(false);
 
-    useEffect(() => {
-        if (!open || !dialog.current) {
-            return undefined;
-        }
-        const node = dialog.current;
-        node.showModal();
-        return () => {
-            node.close();
-            trigger.current?.focus();
-        };
-    }, [open]);
+    const [previewPane, setPreviewPane] = useState<HTMLDivElement | null>(null);
+    useEffect(() => previewPane ? installSelectMenus(previewPane) : undefined, [previewPane]);
 
     useEffect(() => {
         const editor = trigger.current?.closest('form');
-        if (!open || !editor || !iframe.current) {
+        if (!open || !editor || !previewPane || !iframe.current) {
             return;
         }
         const tiny = (window as Window & {tinymce?: {triggerSave: () => void}}).tinymce;
@@ -90,7 +72,7 @@ const AppearancePreview = (props: PreviewProps) => {
         document.body.append(form);
         form.submit();
         form.remove();
-    }, [open, surface, language, props.url, props.courseid, props.cmid, props.sesskey]);
+    }, [open, previewPane, surface, language, props.url, props.courseid, props.cmid, props.sesskey]);
 
     useEffect(() => {
         const editor = trigger.current?.closest('form');
@@ -123,9 +105,12 @@ const AppearancePreview = (props: PreviewProps) => {
             const course = field('smu_course')?.value;
             const launch = field('smu_launch')?.value ?? '';
             const useCard = course === 'CARD' || course === 'IMAGE';
-            const showCover = useCard || (!launch.startsWith('EXTERNAL') && field('smu_viewer')?.value === 'POSTER');
+            const viewer = field('smu_viewer')?.value || 'AUTO';
             const href = field('externalurl')?.value ?? '';
             const media = /(?:youtube\.com|youtu\.be|vimeo\.com|\.(?:mp4|webm|mp3|wav|ogg)(?:[?#]|$))/i.test(href);
+            const showCover = useCard || (!launch.startsWith('EXTERNAL') && (viewer !== 'AUTO' || !media) && viewer !== 'EMBED');
+            const popup = ['VIEWERWINDOW', 'EXTERNALWINDOW'].includes(launch);
+            ['popup_width', 'popup_height'].forEach(name => field(name)?.closest('.fitem')?.classList.toggle('d-none', !popup));
             ['smu_poster', 'thumbnail_url', 'poster_filemanager'].forEach(name => {
                 field(name)?.closest('.fitem')?.classList.toggle('d-none', !showCover);
             });
@@ -134,44 +119,23 @@ const AppearancePreview = (props: PreviewProps) => {
         form.addEventListener('change', refresh);
         form.addEventListener('input', refresh);
         refresh();
+        const cleanMenus = installSelectMenus(form);
         return () => {
+            cleanMenus();
             form.removeEventListener('change', refresh);
             form.removeEventListener('input', refresh);
         };
     }, []);
 
-    const applyPreset = (name: string) => {
-        const preset = presets[name];
-        if (preset) {
-            ['course', 'launch', 'viewer'].forEach((option, index) => {
-                const field = trigger.current?.closest('form')?.querySelector<HTMLSelectElement>('[name="smu_' + option + '"]');
-                if (field) {
-                    field.value = preset[index];
-                    field.dispatchEvent(new Event('change', {bubbles: true}));
-                }
-            });
-        }
-    };
-
     return <>
         <div className="d-flex flex-wrap align-items-center gap-2">
-            <select className="form-select w-auto" value="" aria-label={props.preset} onChange={e => applyPreset(e.target.value)}>
-                <option value="">{props.preset}</option>
-                <option value="video">{props.preset_video}</option>
-                <option value="document">{props.preset_document}</option>
-                <option value="weblink">{props.preset_weblink}</option>
-            </select>
             <button ref={trigger} className="btn btn-outline-secondary" type="button" onClick={() => setOpen(true)}>
-                {props.previewresource}
+                <i className="fa fa-eye me-2" aria-hidden="true"/>{props.previewresource}
             </button>
         </div>
-        {open && createPortal(<dialog ref={dialog} className="smu-preview-dialog" aria-labelledby={id + '-title'}
-            onCancel={e => { e.preventDefault(); setOpen(false); }}>
-            <header className="card-header d-flex align-items-center justify-content-between">
-                <h2 className="h5 mb-0" id={id + '-title'}>{props.previewresource}</h2>
-                <button className="btn-close" aria-label={props.closepreview} type="button" onClick={() => setOpen(false)}/>
-            </header>
-            <div className="card-body d-flex flex-wrap align-items-center gap-2">
+        {open && <MoodleModal title={props.previewresource} large onClose={() => setOpen(false)}>
+            <div ref={setPreviewPane} className="mod-smarturl">
+            <div className="smu-preview-toolbar d-flex flex-wrap align-items-center gap-2 pb-3 border-bottom">
                 <select className="form-select w-auto" aria-label={props.previewresource} value={surface}
                     onChange={e => setSurface(e.target.value)}>
                     <option value="course">{props.previewcourse}</option>
@@ -180,7 +144,7 @@ const AppearancePreview = (props: PreviewProps) => {
                 </select>
                 <select className="form-select w-auto" aria-label={props.translationlanguage} value={language}
                     onChange={e => setLanguage(e.target.value)}>
-                    <option value="">{props.translationlanguage}</option>
+                    <option value="">{props.previewcurrentlanguage}</option>
                     {props.languages.map(lang => <option key={lang.code} value={lang.code}>{lang.name}</option>)}
                 </select>
                 <label className="d-flex align-items-center gap-2">
@@ -190,7 +154,8 @@ const AppearancePreview = (props: PreviewProps) => {
             </div>
             <iframe ref={iframe} name={'smu-preview' + id} title={props.previewresource}
                 className={mobile ? 'smu-preview-frame smu-preview-mobile' : 'smu-preview-frame'}/>
-        </dialog>, document.body)}
+            </div>
+        </MoodleModal>}
     </>;
 };
 

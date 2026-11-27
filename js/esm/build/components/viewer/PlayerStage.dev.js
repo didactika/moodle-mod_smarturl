@@ -12,25 +12,20 @@ import { jsxDEV } from "react/jsx-dev-runtime";
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import MoodleModal from "../common/MoodleModal";
 import { trackView } from "../../services/api";
 const PlayerStage = /* @__PURE__ */ __name(({ props, modalOpen, onCloseModal, onOpenModal }) => {
   const [mounted, setMounted] = useState(props.displayMode === "EMBED");
-  const dialog = useRef(null);
-  const trigger = useRef(null);
   const modal = props.displayMode === "MODAL";
   const canPreview = props.playerHtml && (modal || props.displayMode === "INLINE_IFRAME");
-  useEffect(() => {
-    if (!modalOpen || !dialog.current) {
-      return void 0;
-    }
-    const node = dialog.current;
-    node.showModal();
-    return () => {
-      node.close();
-      trigger.current?.focus();
-    };
-  }, [modalOpen]);
+  const icon = /* @__PURE__ */ jsxDEV("i", { className: props.playable ? "fa fa-play" : "fa fa-external-link", "aria-hidden": "true" }, void 0, false, {
+    fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+    lineNumber: 28,
+    columnNumber: 18
+  });
+  const circle = "btn btn-primary smu-launch-circle" + (props.thumbnailUrl ? " smu-play-overlay" : "");
+  const label = props.playable ? props.strings.playresource : canPreview ? modal ? props.strings.launchmodal : props.strings.launchiframe : props.strings.openresource;
   const player = /* @__PURE__ */ jsxDEV(
     "div",
     {
@@ -42,109 +37,64 @@ const PlayerStage = /* @__PURE__ */ __name(({ props, modalOpen, onCloseModal, on
     false,
     {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-      lineNumber: 42,
+      lineNumber: 32,
       columnNumber: 20
     }
   );
-  const external = /* @__PURE__ */ jsxDEV("a", { href: props.goUrl, target: "_blank", rel: "noopener noreferrer", className: "btn btn-outline-secondary", children: props.strings.openresource }, void 0, false, {
-    fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-    lineNumber: 46,
-    columnNumber: 22
-  });
   return /* @__PURE__ */ jsxDEV("section", { className: "smu-stage", children: [
-    mounted && props.playerHtml ? player : /* @__PURE__ */ jsxDEV("div", { className: "card", children: [
+    mounted && props.playerHtml ? player : /* @__PURE__ */ jsxDEV("div", { className: props.thumbnailUrl ? "smu-cover-stage" : "smu-empty-stage", children: [
       props.thumbnailUrl && /* @__PURE__ */ jsxDEV("img", { src: props.thumbnailUrl, alt: "", className: "smu-viewer-cover" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 53,
-        columnNumber: 40
+        lineNumber: 38,
+        columnNumber: 36
       }),
-      /* @__PURE__ */ jsxDEV("div", { className: "card-body d-flex flex-wrap gap-2", children: canPreview ? /* @__PURE__ */ jsxDEV(
-        "button",
+      canPreview ? /* @__PURE__ */ jsxDEV("button", { type: "button", className: circle, "aria-label": label, title: label, onClick: () => {
+        void trackView(props.cmid).catch(() => void 0);
+        if (modal) {
+          onOpenModal();
+        } else {
+          setMounted(true);
+        }
+      }, children: icon }, void 0, false, {
+        fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+        lineNumber: 39,
+        columnNumber: 27
+      }) : /* @__PURE__ */ jsxDEV(
+        "a",
         {
-          ref: trigger,
-          type: "button",
-          className: "btn btn-primary",
-          onClick: () => {
-            void trackView(props.cmid).catch(() => void 0);
-            if (modal) {
-              onOpenModal();
-            } else {
-              setMounted(true);
-            }
-          },
-          children: modal ? props.strings.launchmodal : props.strings.launchiframe
+          href: props.goUrl,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: circle,
+          title: label,
+          "aria-label": label,
+          children: icon
         },
         void 0,
         false,
         {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-          lineNumber: 56,
-          columnNumber: 25
+          lineNumber: 46,
+          columnNumber: 34
         }
-      ) : external }, void 0, false, {
-        fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 54,
-        columnNumber: 17
-      })
+      )
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-      lineNumber: 52,
-      columnNumber: 13
+      lineNumber: 37,
+      columnNumber: 49
     }),
-    modalOpen && /* @__PURE__ */ jsxDEV(
-      "dialog",
-      {
-        ref: dialog,
-        className: "smu-player-dialog",
-        "aria-label": props.name,
-        onCancel: (event) => {
-          event.preventDefault();
-          onCloseModal();
-        },
-        children: /* @__PURE__ */ jsxDEV("div", { className: "card", children: [
-          /* @__PURE__ */ jsxDEV("header", { className: "card-header d-flex align-items-center justify-content-between gap-2", children: [
-            /* @__PURE__ */ jsxDEV("strong", { children: props.name }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-              lineNumber: 80,
-              columnNumber: 25
-            }),
-            /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn-close", "aria-label": props.strings.closepreview, onClick: onCloseModal }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-              lineNumber: 81,
-              columnNumber: 25
-            })
-          ] }, void 0, true, {
-            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-            lineNumber: 79,
-            columnNumber: 21
-          }),
-          /* @__PURE__ */ jsxDEV("div", { className: "card-body", children: player }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-            lineNumber: 83,
-            columnNumber: 21
-          }),
-          /* @__PURE__ */ jsxDEV("footer", { className: "card-footer", children: external }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-            lineNumber: 84,
-            columnNumber: 21
-          })
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-          lineNumber: 78,
-          columnNumber: 17
-        })
-      },
-      void 0,
-      false,
-      {
-        fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-        lineNumber: 73,
-        columnNumber: 13
-      }
-    )
+    modalOpen && /* @__PURE__ */ jsxDEV(MoodleModal, { title: props.name, large: true, onClose: onCloseModal, children: /* @__PURE__ */ jsxDEV("div", { className: "mod-smarturl", children: player }, void 0, false, {
+      fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+      lineNumber: 50,
+      columnNumber: 13
+    }) }, void 0, false, {
+      fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
+      lineNumber: 49,
+      columnNumber: 23
+    })
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/components/viewer/PlayerStage.tsx",
-    lineNumber: 50,
+    lineNumber: 36,
     columnNumber: 12
   });
 }, "PlayerStage");

@@ -48,24 +48,6 @@ const createEmptyRow = (): BuilderRow => ({
     value: '',
 });
 
-const placeholderForDatatype = (datatype?: string): string => {
-    switch (datatype) {
-        case 'TAGS':
-            return 'tag-one, tag-two';
-        case 'URL':
-            return 'https://example.org/...';
-        case 'DATE':
-            return 'YYYY-MM-DD';
-        case 'BOOLEAN':
-            return 'true / false';
-        case 'NUMBER':
-        case 'DURATION':
-            return 'e.g. 120';
-        default:
-            return 'Enter value...';
-    }
-};
-
 const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderProps) => {
     const knownKeys = useMemo(() => new Set(catalog.map((c) => c.shortname)), [catalog]);
 
@@ -231,7 +213,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                             <button
                                 key={item.shortname}
                                 type="button"
-                                className="smu-token-chip"
+                                className="btn btn-sm btn-outline-secondary"
                                 disabled={locked}
                                 onClick={() => insertTokenIntoUrl(item.shortname)}
                                 title={item.name}
@@ -256,6 +238,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                                     <input
                                         type="text"
                                         className="form-control smu-builder-input"
+                                        aria-label={strings.paramqueryname}
                                         placeholder={strings.paramqueryname ?? 'Parameter name (e.g. uid)'}
                                         value={row.key}
                                         disabled={locked}
@@ -263,6 +246,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                                     />
                                     <select
                                         className="form-select smu-builder-select"
+                                        aria-label={strings.paramchoose}
                                         value={row.varName}
                                         disabled={locked}
                                         onChange={(e) => {
@@ -286,6 +270,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                                         <input
                                             type="text"
                                             className="form-control smu-builder-input"
+                                            aria-label={strings.paramstatic}
                                             placeholder={strings.paramstatic ?? 'Fixed value'}
                                             value={row.value}
                                             disabled={locked}
@@ -297,6 +282,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                                 <>
                                     <select
                                         className="form-select smu-builder-select"
+                                        aria-label={strings.choose}
                                         value={row.key}
                                         disabled={locked}
                                         onChange={(e) => updateRow(row.id, {key: e.target.value})}
@@ -317,6 +303,7 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                                         <input
                                             type="text"
                                             className="form-control smu-builder-input"
+                                            aria-label={strings.customkey}
                                             placeholder={strings.customkey ?? 'custom_key'}
                                             value={row.customKey}
                                             disabled={locked}
@@ -345,23 +332,23 @@ const FormBuilder = ({kind, initialRows, catalog, locked, strings}: FormBuilderP
                             <div className="smu-row-actions">
                                 <button
                                     type="button"
-                                    className="smu-icon-btn smu-icon-add"
+                                    className="btn btn-outline-secondary smu-iconpill tone-primary"
                                     disabled={locked}
                                     aria-label={strings.addrow ?? 'Add row'}
                                     title={strings.addrow ?? 'Add row'}
                                     onClick={() => insertRowAfter(row.id)}
                                 >
-                                    +
+                                    <i className="fa fa-plus" aria-hidden="true"/>
                                 </button>
                                 <button
                                     type="button"
-                                    className="smu-icon-btn smu-icon-remove"
+                                    className="btn btn-outline-secondary smu-iconpill tone-danger"
                                     disabled={locked}
                                     aria-label={strings.removerow ?? 'Remove row'}
                                     title={strings.removerow ?? 'Remove row'}
                                     onClick={() => removeRow(row.id)}
                                 >
-                                    &times;
+                                    <i className="fa fa-trash" aria-hidden="true"/>
                                 </button>
                             </div>
                         </div>

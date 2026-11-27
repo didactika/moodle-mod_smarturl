@@ -1,458 +1,188 @@
 /**
  * This file is part of Moodle - https://moodle.org/
- * Moodle is free software under the GNU General Public License, version 3 or later.
- *
- * Didactika schema & dynamic URL parameter studio mounted via core/react_autoinit on Moodle 5.3+.
  *
  * @module     mod_smarturl/AdminConfig
  * @copyright  2026 Didactika.org
- * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import {useState} from 'react';
-import PageHeader from './components/common/PageHeader';
-import * as api from './services/api';
-import type {AdminConfigProps, MetadataTypeRecord, ParamDefRecord} from './types';
+import {useEffect, useRef, useState} from 'react';
+import {installSelectMenus} from './lib/selectMenus';
+import {openSchemaModal} from './lib/schemaModal';
+import {useDebouncedValue} from './hooks/useDebouncedValue';
 
-const AdminConfig = (props: AdminConfigProps) => {
-    const [tab, setTab] = useState<'meta' | 'params'>('meta');
-    const [metaTypes, setMetaTypes] = useState<MetadataTypeRecord[]>(props.metaTypes);
-    const [paramDefs, setParamDefs] = useState<ParamDefRecord[]>(props.paramDefs);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+type Tab = 'fields' | 'categories' | 'variables';
+type Row = {id: number; name: string; detail: string; columns: string[]; enabled: boolean};
+type Rows = Record<Tab, Row[]>;
+interface Props {
+    sections: {key: Tab; title: string; add: string; columns: string[]}[];
+    tab: Tab;
+    rows: Rows;
+    settingsUrl: string;
+    adminUrl: string;
+    strings: Record<string, string>;
+}
+
+const Icon = ({name}: {name: string}) => <i className={'fa fa-' + name} aria-hidden="true"/>;
+
+const AdminConfig = (props: Props) => {
+    const {strings: t} = props;
+    const [tab, setTab] = useState(props.tab);
+    const [rows, setRows] = useState(props.rows);
     const [query, setQuery] = useState('');
-    const [pendingDelete, setPendingDelete] = useState<{id: number; name: string; tab: 'meta' | 'params'} | null>(null);
+    const [status, setStatus] = useState('');
+    const [perPage, setPerPage] = useState(12);
     const [page, setPage] = useState(0);
-    const perPage = 20;
-    const matches = <T extends {name: string; shortname: string}>(items: T[]) => items.filter(item =>
-        [item.name, item.shortname].some(value => value.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())));
-    const filteredFields = matches(metaTypes);
-    const filteredVariables = matches(paramDefs);
-    const count = tab === 'meta' ? filteredFields.length : filteredVariables.length;
-    const offset = Math.min(page * perPage, Math.max(0, Math.floor((count - 1) / perPage) * perPage));
+    const [failure, setFailure] = useState('');
+    const root = useRef<HTMLDivElement>(null);
+    const filterBox = useRef<HTMLDetailsElement>(null);
+    const queryApplied = useDebouncedValue(query.trim().toLocaleLowerCase(), 400);
+    const section = props.sections.find(candidate => candidate.key === tab) ?? props.sections[0];
 
-    // Metadata type form state.
-    const [mtForm, setMtForm] = useState({
-        id: 0,
-        shortname: '',
-        name: '',
-        categoryid: props.categories[0]?.id ?? 0,
-        datatype: 'TEXT',
-        display_priority: 'SECONDARY',
-        searchable: true,
-        filterable: true,
-        enabled: true,
-    });
+    useEffect(() => root.current ? installSelectMenus(root.current) : undefined, []);
+    useEffect(() => {
+        const outside = (event: PointerEvent) => {
+            const target = event.target;
+            if (target instanceof Element && !filterBox.current?.contains(target) && !target.closest('.smu-select-menu')) {
+                filterBox.current?.removeAttribute('open');
+            }
+        };
+        document.addEventListener('pointerdown', outside);
+        return () => document.removeEventListener('pointerdown', outside);
+    }, []);
 
-    // Dynamic URL parameter form state.
-    const [pdForm, setPdForm] = useState({
-        id: 0,
-        shortname: '',
-        name: '',
-        source_type: 'BUILTIN',
-        source_key: '',
-        default_query_param: '',
-        enabled: true,
-    });
-
-    // Live URL tester state.
-    const [testTemplate, setTestTemplate] = useState('https://cdn.example.org/watch/{{course_shortname}}?u={{user_username}}');
-    const [testResult, setTestResult] = useState<string | null>(null);
-
-    const submitMetaType = (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrorMsg(null);
-        api.saveMetaType(mtForm).then((saved) => {
-            setMetaTypes((prev) => {
-                const rest = prev.filter((item) => item.id !== saved.id);
-                return [...rest, saved];
-            });
-            setMtForm({
-                id: 0,
-                shortname: '',
-                name: '',
-                categoryid: props.categories[0]?.id ?? 0,
-                datatype: 'TEXT',
-                display_priority: 'SECONDARY',
-                searchable: true,
-                filterable: true,
-                enabled: true,
-            });
-            return null;
-        }, (err: unknown) => {
-            setErrorMsg(err instanceof Error ? err.message : 'Failed to save metadata type');
-            return null;
-        });
+    const open = (opener: HTMLElement, row?: Row, remove = false) => {
+        setFailure('');
+        const title = document.createElement('span');
+        title.textContent = row ? (remove ? t.deletecategoryheading.replace('{$a}', row.name) : t.edit) : section.add;
+        openSchemaModal<Rows>({
+            formClass: 'mod_smarturl\\form\\schema_item',
+            args: {section: tab, id: row?.id ?? 0, remove: Number(remove)},
+            modalConfig: {title: title.innerHTML, large: false},
+            saveButtonText: remove ? t.delete : t.savechanges,
+            saveButtonClasses: remove ? 'btn-danger' : undefined,
+            returnFocus: opener,
+        }, setRows, setFailure);
     };
+    const matches = rows[tab].filter(row => (!status || row.enabled === (status === 'active'))
+        && [row.name, row.detail, ...row.columns].some(text => text.toLocaleLowerCase().includes(queryApplied)));
+    const total = matches.length;
+    const options = [12, 24, 48, 96].filter(size => size < total);
+    if (total <= 500) {
+        options.push(0);
+    }
+    const size = options.includes(perPage) ? perPage : options.at(-1) ?? 12;
+    const span = size || Math.max(1, total);
+    const current = Math.min(page, Math.max(0, Math.ceil(total / span) - 1));
+    const offset = current * span;
+    const range = t.pagerange.replace('{$a->from}', String(total ? offset + 1 : 0))
+        .replace('{$a->to}', String(Math.min(offset + span, total))).replace('{$a->total}', String(total));
+    const clear = () => { setQuery(''); setStatus(''); setPage(0); };
 
-    const removeMetaType = (id: number) => {
-        api.deleteMetaType(id).then(() => {
-            setMetaTypes((prev) => prev.filter((item) => item.id !== id));
-            return null;
-        }, () => { setErrorMsg(props.strings.savefailed); return null; });
-    };
-
-    const submitParamDef = (e: React.FormEvent) => {
-        e.preventDefault();
-        setErrorMsg(null);
-        api.saveParamDef(pdForm).then((saved) => {
-            setParamDefs((prev) => {
-                const rest = prev.filter((item) => item.id !== saved.id);
-                return [...rest, saved];
-            });
-            setPdForm({
-                id: 0,
-                shortname: '',
-                name: '',
-                source_type: 'BUILTIN',
-                source_key: '',
-                default_query_param: '',
-                enabled: true,
-            });
-            return null;
-        }, (err: unknown) => {
-            setErrorMsg(err instanceof Error ? err.message : 'Failed to save parameter definition');
-            return null;
-        });
-    };
-
-    const removeParamDef = (id: number) => {
-        api.deleteParamDef(id).then(() => {
-            setParamDefs((prev) => prev.filter((item) => item.id !== id));
-            return null;
-        }, () => { setErrorMsg(props.strings.savefailed); return null; });
-    };
-
-    const runPreview = () => {
-        const bindings = paramDefs
-            .filter((pd) => pd.enabled && pd.default_query_param)
-            .slice(0, 4)
-            .map((pd) => ({
-                param: pd.default_query_param ?? '',
-                mode: 'def',
-                var: pd.shortname,
-                value: '',
-            }));
-        api.previewUrl(testTemplate, 1, bindings).then((res) => {
-            setTestResult(res.resolved);
-            return null;
-        }, () => { setErrorMsg(props.strings.savefailed); return null; });
-    };
-
-    return (
-        <div className="smu-admin-layout">
-            {pendingDelete && <div className="alert alert-warning" role="alert">
-                <p>{props.strings.confirmdelete.replace('{$a}', pendingDelete.name)}</p>
-                <button className="btn btn-danger me-2" type="button" onClick={() => {
-                    if (pendingDelete.tab === 'meta') { removeMetaType(pendingDelete.id); } else { removeParamDef(pendingDelete.id); }
-                    setPendingDelete(null);
-                }}>{props.strings.delete}</button>
-                <button className="btn btn-outline-secondary" type="button" onClick={() => setPendingDelete(null)}>
-                    {props.strings.cancel}
-                </button>
-            </div>}
-            <PageHeader
-                title={props.title}
-                subtitle={props.subtitle}
-                iconLabel=""
-                actions={(
-                    <a href={props.settingsUrl} className="btn btn-outline-secondary">
-                        {props.strings.settings}
-                    </a>
-                )}
-            />
-
-            {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
-
-            <div className="nav nav-tabs" role="group">
-                <button type="button" aria-pressed={tab === 'meta'} className={tab === 'meta' ? 'nav-link active' : 'nav-link'} onClick={() => { setTab('meta'); setPage(0); }}>
-                    {props.strings.metadatatypes ?? 'Metadata types'} ({metaTypes.length})
-                </button>
-                <button type="button" aria-pressed={tab === 'params'} className={tab === 'params' ? 'nav-link active' : 'nav-link'} onClick={() => { setTab('params'); setPage(0); }}>
-                    {props.strings.paramdefs ?? 'Dynamic URL parameters'} ({paramDefs.length})
+    return <div className="smu-schema" ref={root}>
+        <p className="text-body-secondary">{t.adminconfigsubtitle}</p>
+        <nav className="nav nav-tabs mb-3" aria-label={t.settings}>
+            {props.sections.map(item => <a key={item.key} href={props.adminUrl + '?tab=' + item.key}
+                className={'nav-link' + (item.key === tab ? ' active' : '')} aria-current={item.key === tab ? 'page' : undefined}
+                onClick={event => {
+                    if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+                        event.preventDefault();
+                        setTab(item.key);
+                        clear();
+                        window.history.replaceState(null, '', event.currentTarget.href);
+                    }
+                }}>{item.title} <span className="badge rounded-pill smu-state">{rows[item.key].length}</span></a>)}
+        </nav>
+        {failure && <div className="alert alert-danger" role="alert">{failure}</div>}
+        <div className="smu-list-toolbar d-flex align-items-center flex-wrap gap-2 mb-3">
+            <input className="form-control" type="search" aria-label={t.search} placeholder={t.search} value={query}
+                onChange={event => { setQuery(event.target.value); setPage(0); }}/>
+            <details ref={filterBox} className="dropdown smu-filter"
+                onKeyDown={event => {
+                    if (event.key === 'Escape') {
+                        event.currentTarget.open = false;
+                        event.currentTarget.querySelector('summary')?.focus();
+                    }
+                }}>
+                <summary className="btn btn-outline-secondary"><Icon name="filter"/> {t.filters}
+                    {status && <span className="badge rounded-pill smu-state ms-2">1</span>}
+                </summary>
+                <div className="dropdown-menu show p-3">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>{t.filters}</strong>
+                        <button type="button" className="btn btn-link btn-sm" title={t.clearfilters} aria-label={t.clearfilters}
+                            onClick={clear}><Icon name="rotate-left"/></button>
+                    </div>
+                    <label htmlFor="smu-catalogue-status" className="form-label small text-uppercase">{t.status}</label>
+                    <select id="smu-catalogue-status" className="form-select" value={status}
+                        onChange={event => { setStatus(event.target.value); setPage(0); }}>
+                        <option value="">{t.all}</option><option value="active">{t.enabled}</option>
+                        <option value="inactive">{t.disabled}</option>
+                    </select>
+                </div>
+            </details>
+            <div className="smu-list-actions d-flex flex-wrap gap-2">
+                <a href={props.settingsUrl} className="btn btn-outline-secondary"><Icon name="gear"/> {t.settings}</a>
+                <button type="button" className="btn btn-primary" onClick={event => open(event.currentTarget)}>
+                    <Icon name="plus"/> {section.add}
                 </button>
             </div>
-
-            <div className="table-toolbar d-flex flex-wrap gap-2" role="search">
-                <input className="form-control w-auto" type="search" value={query} aria-label={props.strings.search}
-                    placeholder={props.strings.search} onChange={event => { setQuery(event.target.value); setPage(0); }}/>
-                <button className="btn btn-outline-secondary" type="button" onClick={() => { setQuery(''); setPage(0); }}>
-                    {props.strings.clearfilters}
-                </button>
-                <span className="align-self-center text-muted" role="status">{count || props.strings.emptyresults}</span>
-            </div>
-
-            {tab === 'meta' ? (
-                <div className="d-grid gap-3">
-                    <form className="smu-card" onSubmit={submitMetaType}>
-                        <h3>{props.strings.addmetatype ?? 'Add metadata type'}</h3>
-                        <div className="smu-form-grid">
-                            <div>
-                                <label className="form-label">{props.strings.shortname ?? 'Shortname'}</label>
-                                <input
-                                    className="form-control"
-                                    required
-                                    value={mtForm.shortname}
-                                    onChange={(e) => setMtForm({...mtForm, shortname: e.currentTarget.value})}
-                                    placeholder="curriculum_code"
-                                />
-                            </div>
-                            <div>
-                                <label className="form-label">{props.strings.name}</label>
-                                <input
-                                    className="form-control"
-                                    required
-                                    value={mtForm.name}
-                                    onChange={(e) => setMtForm({...mtForm, name: e.currentTarget.value})}
-                                    placeholder="Curriculum code"
-                                />
-                            </div>
-                            <div>
-                                <label className="form-label">{props.strings.groupname ?? 'Group'}</label>
-                                <select className="form-select" value={mtForm.categoryid}
-                                    onChange={event => setMtForm({...mtForm, categoryid: Number(event.target.value)})}>
-                                    <option value={0}>{props.strings.groupname}</option>
-                                    {props.categories.map(category =>
-                                        <option key={category.id} value={category.id}>{category.name}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="form-label">{props.strings.datatype ?? 'Data type'}</label>
-                                <select
-                                    className="form-select"
-                                    value={mtForm.datatype}
-                                    onChange={(e) => setMtForm({...mtForm, datatype: e.currentTarget.value})}
-                                >
-                                    {props.datatypes.map((dt) => <option key={dt} value={dt}>{dt}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="form-label">{props.strings.priority ?? 'Priority'}</label>
-                                <select
-                                    className="form-select"
-                                    value={mtForm.display_priority}
-                                    onChange={(e) => setMtForm({...mtForm, display_priority: e.currentTarget.value})}
-                                >
-                                    {props.priorities.map((pr) => <option key={pr} value={pr}>{pr}</option>)}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-wrap gap-3 mt-3 align-items-center">
-                            <label className="form-check-label d-flex align-items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    checked={mtForm.searchable}
-                                    onChange={(e) => setMtForm({...mtForm, searchable: e.currentTarget.checked})}
-                                />
-                                {props.strings.searchable ?? 'Searchable'}
-                            </label>
-                            <label className="form-check-label d-flex align-items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="form-check-input"
-                                    checked={mtForm.filterable}
-                                    onChange={(e) => setMtForm({...mtForm, filterable: e.currentTarget.checked})}
-                                />
-                                {props.strings.filterable ?? 'Filterable'}
-                            </label>
-                            <button type="submit" className="btn btn-primary ms-auto">
-                                {props.strings.savechanges ?? 'Save changes'}
-                            </button>
-                        </div>
-                    </form>
-
-                    <div className="card table-responsive" data-region="tablewrap">
-                        <table className="table table-hover align-middle mb-0">
-                            <caption className="visually-hidden">{props.strings.metadatatypes}</caption>
-                            <thead>
-                                <tr>
-                                    <th scope="col">{props.strings.shortname ?? 'Shortname'}</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">{props.strings.groupname ?? 'Group'}</th>
-                                    <th scope="col">{props.strings.datatype ?? 'Data type'}</th>
-                                    <th scope="col">{props.strings.priority ?? 'Priority'}</th>
-                                    <th scope="col" aria-label={props.strings.edit}/>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredFields.slice(offset, offset + perPage).map((mt) => (
-                                    <tr key={mt.id}>
-                                        <td><code>{mt.shortname}</code></td>
-                                        <td>{mt.name}</td>
-                                        <td><span className="badge text-bg-light">{mt.group_name}</span></td>
-                                        <td><span className="badge text-bg-secondary">{mt.datatype}</span></td>
-                                        <td>{mt.display_priority}</td>
-                                        <td className="text-end">
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-secondary btn-sm me-1"
-                                                onClick={() => setMtForm({
-                                                    id: mt.id,
-                                                    shortname: mt.shortname,
-                                                    name: mt.name,
-                                                    categoryid: mt.categoryid ?? 0,
-                                                    datatype: mt.datatype,
-                                                    display_priority: mt.display_priority,
-                                                    searchable: Boolean(mt.searchable),
-                                                    filterable: Boolean(mt.filterable),
-                                                    enabled: Boolean(mt.enabled),
-                                                })}
-                                            >
-                                                {props.strings.edit ?? 'Edit'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-danger btn-sm"
-                                                onClick={() => setPendingDelete({...mt, tab: 'meta'})}
-                                            >
-                                                {props.strings.delete ?? 'Delete'}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            ) : (
-                <div className="d-grid gap-3">
-                    <form className="smu-card" onSubmit={submitParamDef}>
-                        <h3>{props.strings.addparamdef ?? 'Add dynamic parameter'}</h3>
-                        <div className="smu-form-grid">
-                            <div>
-                                <label className="form-label">{props.strings.shortname ?? 'Shortname'}</label>
-                                <input
-                                    className="form-control"
-                                    required
-                                    value={pdForm.shortname}
-                                    onChange={(e) => setPdForm({...pdForm, shortname: e.currentTarget.value})}
-                                    placeholder="campus_code"
-                                />
-                            </div>
-                            <div>
-                                <label className="form-label">Name</label>
-                                <input
-                                    className="form-control"
-                                    required
-                                    value={pdForm.name}
-                                    onChange={(e) => setPdForm({...pdForm, name: e.currentTarget.value})}
-                                    placeholder="Campus profile field"
-                                />
-                            </div>
-                            <div>
-                                <label className="form-label">{props.strings.sourcetype ?? 'Source type'}</label>
-                                <select
-                                    className="form-select"
-                                    value={pdForm.source_type}
-                                    onChange={(e) => setPdForm({...pdForm, source_type: e.currentTarget.value, source_key: ''})}
-                                >
-                                    {props.sourceTypes.map((st) => <option key={st} value={st}>{st}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="form-label">{props.strings.sourcekey ?? 'Source key / value'}</label>
-                                <input
-                                    className="form-control"
-                                    required
-                                    value={pdForm.source_key}
-                                    onChange={(e) => setPdForm({...pdForm, source_key: e.currentTarget.value})}
-                                    placeholder="user.username or profile_shortname"
-                                />
-                            </div>
-                            <div>
-                                <label className="form-label">{props.strings.defaultqueryparam ?? 'Suggested query param'}</label>
-                                <input
-                                    className="form-control"
-                                    value={pdForm.default_query_param}
-                                    onChange={(e) => setPdForm({...pdForm, default_query_param: e.currentTarget.value})}
-                                    placeholder="campus"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-3 text-end">
-                            <button type="submit" className="btn btn-primary">
-                                {props.strings.savechanges ?? 'Save changes'}
-                            </button>
-                        </div>
-                    </form>
-
-                    <div className="smu-card">
-                        <h3>{props.strings.testresolution ?? 'Test URL resolution'}</h3>
-                        <div className="d-flex flex-wrap gap-2">
-                            <input
-                                className="form-control flex-grow-1"
-                                value={testTemplate}
-                                onChange={(e) => setTestTemplate(e.currentTarget.value)}
-                            />
-                            <button type="button" className="btn btn-outline-primary" onClick={runPreview}>
-                                {props.strings.testresolution ?? 'Test URL resolution'}
-                            </button>
-                        </div>
-                        {testResult !== null && (
-                            <div className="smu-preview-box mt-2">{testResult}</div>
-                        )}
-                    </div>
-
-                    <div className="card table-responsive" data-region="tablewrap">
-                        <table className="table table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">{props.strings.shortname ?? 'Shortname'}</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">{props.strings.sourcetype ?? 'Source type'}</th>
-                                    <th scope="col">{props.strings.sourcekey ?? 'Source key'}</th>
-                                    <th scope="col">{props.strings.defaultqueryparam ?? 'Query param'}</th>
-                                    <th scope="col" aria-label={props.strings.edit}/>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredVariables.slice(offset, offset + perPage).map((pd) => (
-                                    <tr key={pd.id}>
-                                        <td><code>{`{{${pd.shortname}}}`}</code></td>
-                                        <td>{pd.name}</td>
-                                        <td><span className="badge text-bg-light">{pd.source_type}</span></td>
-                                        <td><code>{pd.source_key}</code></td>
-                                        <td>{pd.default_query_param ?? '—'}</td>
-                                        <td className="text-end">
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-secondary btn-sm me-1"
-                                                onClick={() => setPdForm({
-                                                    id: pd.id,
-                                                    shortname: pd.shortname,
-                                                    name: pd.name,
-                                                    source_type: pd.source_type,
-                                                    source_key: pd.source_key,
-                                                    default_query_param: pd.default_query_param ?? '',
-                                                    enabled: Boolean(pd.enabled),
-                                                })}
-                                            >
-                                                {props.strings.edit ?? 'Edit'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-danger btn-sm"
-                                                onClick={() => setPendingDelete({...pd, tab: 'params'})}
-                                            >
-                                                {props.strings.delete ?? 'Delete'}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-            {count > perPage && <div className="table-foot d-flex justify-content-end align-items-center gap-2">
-                <span role="status">{offset + 1}–{Math.min(offset + perPage, count)} / {count}</span>
-                <button className="btn btn-outline-secondary" type="button" disabled={!offset}
-                    onClick={() => setPage(Math.floor(offset / perPage) - 1)} aria-label={props.strings.previous}>‹</button>
-                <button className="btn btn-outline-secondary" type="button" disabled={offset + perPage >= count}
-                    onClick={() => setPage(Math.floor(offset / perPage) + 1)} aria-label={props.strings.next}>›</button>
-            </div>}
         </div>
-    );
+        <div className="card">
+            <div className="table-responsive smu-list-table" data-region="tablewrap">
+                <table className="table table-hover align-middle mb-0">
+                    <caption className="visually-hidden">{section.title}</caption>
+                    <thead><tr>
+                        <th scope="col">{t.name}</th>
+                        {section.columns.map(column => <th scope="col" key={column}>{column}</th>)}
+                        <th scope="col" className="smu-fit">{t.status}</th>
+                        <th scope="col" className="smu-fit"><span className="visually-hidden">{t.actions}</span></th>
+                    </tr></thead>
+                    <tbody>{matches.slice(offset, offset + span).map(row => <tr key={row.id}>
+                        <th scope="row">
+                            <a href={'#item-' + row.id} onClick={event => { event.preventDefault(); open(event.currentTarget, row); }}>
+                                {row.name}
+                            </a>
+                            {row.detail && <div className="small text-body-secondary"><code>{row.detail}</code></div>}
+                        </th>
+                        {row.columns.map((column, index) => <td key={index}>{column}</td>)}
+                        <td><span className={'badge rounded-pill smu-state' + (row.enabled ? ' smu-state-on' : '')}>
+                            {row.enabled ? t.enabled : t.disabled}
+                        </span></td>
+                        <td><div className="smu-row-actions">
+                            <button type="button" className="btn btn-outline-secondary smu-iconpill tone-primary"
+                                aria-label={t.edit + ' ' + row.name} title={t.edit} onClick={event => open(event.currentTarget, row)}>
+                                <Icon name="pen"/>
+                            </button>
+                            <button type="button" className="btn btn-outline-secondary smu-iconpill tone-danger"
+                                aria-label={t.delete + ' ' + row.name} title={t.delete} onClick={event => open(event.currentTarget, row, true)}>
+                                <Icon name="trash"/>
+                            </button>
+                        </div></td>
+                    </tr>)}</tbody>
+                </table>
+                {!total && <div className="p-4 text-center text-body-secondary" data-region="empty">
+                    <p>{query || status ? t.emptyresults : t.listempty}</p>
+                    <button type="button" className="btn btn-outline-secondary" onClick={event =>
+                        query || status ? clear() : open(event.currentTarget)}>{query || status ? t.clearfilters : section.add}</button>
+                </div>}
+            </div>
+            <div className="smu-list-pager border-top px-3 py-2 d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <label className="d-flex align-items-center gap-2 small">{t.pagerlabel}
+                    <select className="form-select form-select-sm w-auto" value={size}
+                        onChange={event => { setPerPage(Number(event.target.value)); setPage(0); }}>
+                        {options.map(option => <option key={option} value={option}>{option || t.all}</option>)}
+                    </select>
+                </label>
+                <div className="d-flex align-items-center gap-2">
+                    <span className="small text-body-secondary" role="status">{range}</span>
+                    <button type="button" className="btn btn-link btn-sm" aria-label={t.previous} title={t.previous}
+                        disabled={offset === 0} onClick={() => setPage(current - 1)}><Icon name="chevron-left"/></button>
+                    <button type="button" className="btn btn-link btn-sm" aria-label={t.next} title={t.next}
+                        disabled={offset + span >= total} onClick={() => setPage(current + 1)}><Icon name="chevron-right"/></button>
+                </div>
+            </div>
+        </div>
+    </div>;
 };
 
 export default AdminConfig;

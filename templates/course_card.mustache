@@ -1,0 +1,15 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+    @template mod_smarturl/course_card
+    Example context (json):
+    {"cover":"","hasbody":true,"badges":[],"actions":"Open"}
+}}
+<div class="card overflow-hidden">
+    {{{cover}}}
+    {{#hasbody}}
+    <div class="card-body p-2">
+        {{#badges}}{{{.}}} {{/badges}}
+        {{#actions}}<div class="d-flex flex-wrap smu-course-actions">{{{actions}}}</div>{{/actions}}
+    </div>
+    {{/hasbody}}
+</div>

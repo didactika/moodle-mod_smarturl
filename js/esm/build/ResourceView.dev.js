@@ -21,7 +21,7 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
   const hasDuration = typeof props.durationSeconds === "number" && props.durationSeconds > 0;
   const isEmbedStage = props.displayMode === "EMBED";
   return /* @__PURE__ */ jsxDEV("div", { className: "smu-resource-shell", children: [
-    /* @__PURE__ */ jsxDEV("div", { className: "smu-resource-bar", children: [
+    (hasDuration || props.policy.managedBy || props.policy.lockedFields.length > 0 || isEmbedStage) && /* @__PURE__ */ jsxDEV("div", { className: "smu-resource-bar", children: [
       /* @__PURE__ */ jsxDEV("div", { className: "dd-tags", children: [
         hasDuration && /* @__PURE__ */ jsxDEV("span", { className: "dd-tag", children: formatDuration(props.durationSeconds) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
@@ -71,7 +71,7 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
       lineNumber: 25,
-      columnNumber: 13
+      columnNumber: 113
     }),
     /* @__PURE__ */ jsxDEV(
       PlayerStage,
@@ -89,7 +89,7 @@ const ResourceView = /* @__PURE__ */ __name((props) => {
         columnNumber: 13
       }
     ),
-    props.intro && /* @__PURE__ */ jsxDEV("section", { className: "card card-body smu-description", children: [
+    props.intro && /* @__PURE__ */ jsxDEV("section", { className: "smu-description", children: [
       /* @__PURE__ */ jsxDEV("h2", { className: "h5", children: props.strings.description }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/ResourceView.tsx",
         lineNumber: 62,

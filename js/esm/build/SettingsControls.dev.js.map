@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "sources": ["../src/SettingsControls.tsx"],
+  "sourceRoot": "../../../../../../sources/public/mod/smarturl/js/esm/build",
+  "sourcesContent": ["/**\n * This file is part of Moodle - https://moodle.org/\n *\n * @module     mod_smarturl/SettingsControls\n * @copyright  2026 Didactika.org\n * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later\n */\nimport {useEffect} from 'react';\nimport {installSettingsMenus} from './lib/selectMenus';\n\nexport default function SettingsControls() {\n    useEffect(installSettingsMenus, []);\n    return null;\n}\n"],
+  "mappings": ";;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAOA,SAAQ,iBAAgB;AACxB,SAAQ,4BAA2B;AAEpB,SAAR,mBAAoC;AACvC,YAAU,sBAAsB,CAAC,CAAC;AAClC,SAAO;AACX;AAHwB;",
+  "names": []
+}

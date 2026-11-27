@@ -3,14 +3,15 @@
  * Moodle is free software under the GNU General Public License, version 3 or later.
  *
  * High-volume metadata explorer with debounced search, group filter chips (dd-chips),
- * cards (dd-dl) / compact table switcher (dd-segmented), and JSON export.
+ * cards and a compact table.
  *
  * @module     mod_smarturl/components/viewer/MetadataExplorer
  * @copyright  2026 Didactika.org
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
+import {installSelectMenus} from '../../lib/selectMenus';
 import {useDebouncedValue} from '../../hooks/useDebouncedValue';
 import {computeGroupFacets, filterByQuery, groupEntries} from '../../lib/metadata';
 import type {MetadataEntry} from '../../types';
@@ -28,7 +29,8 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
     const [activeGroup, setActiveGroup] = useState<string>('');
     const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
     const [showAll, setShowAll] = useState(false);
-    const [copied, setCopied] = useState(false);
+    const controls = useRef<HTMLElement>(null);
+    useEffect(() => controls.current ? installSelectMenus(controls.current) : undefined, []);
 
     const debouncedQuery = useDebouncedValue(searchText, 250);
 
@@ -57,27 +59,13 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
         [pagedEntries]
     );
 
-    const copyJson = () => {
-        const payload = visibleEntries.reduce<Record<string, string>>((acc, item) => {
-            acc[item.key] = item.value;
-            return acc;
-        }, {});
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(JSON.stringify(payload, null, 2)).then(() => {
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 1800);
-                return null;
-            }, () => null);
-        }
-    };
-
     const clearAll = () => {
         setSearchText('');
         setActiveGroup('');
     };
 
     return (
-        <section aria-labelledby="smu-metadata-title">
+        <section ref={controls} aria-labelledby="smu-metadata-title">
             <div className="smu-meta-toolbar">
                 <div className="smu-meta-toprow">
                     <h2 id="smu-metadata-title" className="h5 mb-0">
@@ -85,9 +73,10 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
                     </h2>
 
                     <div className="d-flex flex-wrap align-items-center gap-2">
-                        <div className="dd-segmented" role="group" aria-label="View mode">
+                        <div className="btn-group" role="group" aria-label={strings.metadataheading}>
                             <button
                                 type="button"
+                                className={"btn btn-outline-secondary btn-sm" + (viewMode === "cards" ? " active" : "")}
                                 aria-pressed={viewMode === 'cards'}
                                 onClick={() => setViewMode('cards')}
                             >
@@ -95,16 +84,13 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
                             </button>
                             <button
                                 type="button"
+                                className={"btn btn-outline-secondary btn-sm" + (viewMode === "table" ? " active" : "")}
                                 aria-pressed={viewMode === 'table'}
                                 onClick={() => setViewMode('table')}
                             >
                                 {strings.viewtable ?? 'Compact table'}
                             </button>
                         </div>
-
-                        {strings.copyjson && <button type="button" className="btn btn-outline-secondary btn-sm" onClick={copyJson}>
-                            {copied ? (strings.copied ?? 'Copied') : strings.copyjson}
-                        </button>}
                     </div>
                 </div>
 

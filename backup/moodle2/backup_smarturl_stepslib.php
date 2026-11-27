@@ -65,6 +65,7 @@ class backup_smarturl_activity_structure_step extends backup_activity_structure_
 
         $smarturl->annotate_files('mod_smarturl', 'intro', null);
         $smarturl->annotate_files('mod_smarturl', 'poster', null);
+        $smarturl->annotate_files('mod_smarturl', 'resource', null);
         $smarturl->annotate_files('mod_smarturl', 'translation', null);
 
         $this->add_subplugin_structure('smarturlcomp', $smarturl, true);

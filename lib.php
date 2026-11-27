@@ -27,6 +27,7 @@ use mod_smarturl\completion\rule_registry;
 use mod_smarturl\local\activity_content;
 use mod_smarturl\local\metadata\metadata_repository;
 use mod_smarturl\local\presentation;
+use mod_smarturl\local\protected_resource;
 use mod_smarturl\local\viewer_data;
 use mod_smarturl\local\url\resource_target;
 use mod_smarturl\local\policy\availability_composer;
@@ -106,6 +107,12 @@ function smarturl_add_instance(\stdClass $data, $mform = null): int {
         'timemodified' => $now,
     ];
 
+    if (
+        presentation::for_instance($record)['protected'] && (!$mform || empty($data->coursemodule)
+            || !protected_resource::draft((int)($data->smu_resourcefile ?? 0)))
+    ) {
+        throw new \moodle_exception('protectedmissing', 'smarturl');
+    }
     $id = $DB->insert_record('smarturl', $record);
 
     if (!empty($data->coursemodule)) {
@@ -128,6 +135,9 @@ function smarturl_add_instance(\stdClass $data, $mform = null): int {
                 0,
                 ['subdirs' => 0, 'maxfiles' => 1]
             );
+        }
+        if (presentation::for_instance($record)['protected']) {
+            file_save_draft_area_files($data->smu_resourcefile, $context->id, 'mod_smarturl', protected_resource::AREA, 0);
         }
         $DB->set_field('smarturl_policy', 'cmid', $cmid, ['smarturlid' => $id]);
     }
@@ -183,8 +193,19 @@ function smarturl_update_instance(\stdClass $data, $mform = null): bool {
         $record->parameters_json = smarturl_extract_parameters_json($data, $existing->parameters_json);
     }
 
+    $resourcefile = 0;
     if ($can('display')) {
         $record->presentation_json = presentation::from_submission($data, $existing);
+        $wasprotected = presentation::for_instance($existing)['protected'];
+        $protected = presentation::for_instance($record)['protected'];
+        if ($protected && $mform && $cmid > 0 && property_exists($data, 'smu_resourcefile')) {
+            if (!protected_resource::draft((int)$data->smu_resourcefile)) {
+                throw new \moodle_exception('protectedmissing', 'smarturl');
+            }
+            $resourcefile = (int)$data->smu_resourcefile;
+        } else if ($protected && !$wasprotected) {
+            throw new \moodle_exception('protectedmissing', 'smarturl');
+        }
         if (isset($data->display_mode)) {
             $record->display_mode = strtoupper((string)$data->display_mode);
         }
@@ -209,7 +230,14 @@ function smarturl_update_instance(\stdClass $data, $mform = null): bool {
         $record->completion_custom_json = $customjson;
     }
 
-    $DB->update_record('smarturl', $record);
+    if ($resourcefile) {
+        $transaction = $DB->start_delegated_transaction();
+        file_save_draft_area_files($resourcefile, $context->id, 'mod_smarturl', protected_resource::AREA, 0);
+        $DB->update_record('smarturl', $record);
+        $transaction->allow_commit();
+    } else {
+        $DB->update_record('smarturl', $record);
+    }
 
     if ($can('general') && $mform && $cmid > 0 && !empty($data->poster_filemanager)) {
         file_save_draft_area_files(
@@ -359,10 +387,11 @@ function smarturl_get_coursemodule_info(\stdClass $coursemodule) {
 
     $info = new cached_cm_info();
     $info->name = $smarturl->name;
-    $usemimeicons = get_config('mod_smarturl', 'usemimeicons');
-    $info->icon = $usemimeicons === false || $usemimeicons ? smarturl_guess_icon((string)$smarturl->externalurl) : null;
-
     $profile = presentation::for_instance($smarturl);
+    $usemimeicons = get_config('mod_smarturl', 'usemimeicons');
+    $info->icon = !$profile['protected'] && ($usemimeicons === false || $usemimeicons)
+        ? smarturl_guess_icon((string)$smarturl->externalurl) : null;
+
     if (empty($smarturl->presentation_json) && !empty($coursemodule->showdescription)) {
         $info->content = format_module_intro('smarturl', $smarturl, $coursemodule->id, false);
     }
@@ -422,7 +451,7 @@ function smarturl_cm_info_dynamic(cm_info $cm): void {
  * @param cm_info $cm Course module info.
  */
 function smarturl_cm_info_view(cm_info $cm): void {
-    global $DB, $COURSE, $USER;
+    global $DB, $COURSE, $USER, $PAGE;
 
     if (!$cm->uservisible || !has_capability('mod/smarturl:view', $cm->context)) {
         return;
@@ -468,8 +497,8 @@ function smarturl_cm_info_view(cm_info $cm): void {
     $badges = [];
     foreach ($fields as $entry) {
         $badges[] = html_writer::span(
-            s($entry['label'] . ': ' . $entry['value']),
-            'badge bg-light text-dark border rounded-pill',
+            s($entry['label'] . ' · ' . $entry['value']),
+            'badge rounded-pill smu-meta-badge',
         );
     }
     $parts = [];
@@ -477,42 +506,52 @@ function smarturl_cm_info_view(cm_info $cm): void {
         $course = (int)$COURSE->id === (int)$instance->course ? $COURSE : $DB->get_record('course', ['id' => $cm->course]);
         try {
             $target = viewer_data::target($instance, $course, $USER, (int)$cm->id, $profile);
-        } catch (\invalid_parameter_exception) {
+        } catch (\moodle_exception) {
             $target = ['kind' => 'link', 'poster' => null];
         }
-        $poster = viewer_data::poster($instance, $cm->context, $profile['poster'], $target['poster']);
+        $source = $profile['protected'] ? 'UPLOAD' : $profile['poster'];
+        $poster = viewer_data::poster($instance, $cm->context, $source, $target['poster']);
         if ($profile['course'] !== 'LINK') {
             $picture = $poster ? html_writer::empty_tag('img', [
                 'src' => $poster, 'class' => 'smu-course-cover', 'alt' => '', 'loading' => 'lazy',
             ]) : '';
             $media = !empty($target['playable']) || in_array($target['kind'], ['media', 'video', 'audio'], true);
             if ($picture && $profile['play'] && $media) {
-                global $OUTPUT;
-                $play = $OUTPUT->pix_icon('i/play', '') . html_writer::span(get_string('playresource', 'smarturl'));
+                $play = html_writer::tag('i', '', ['class' => 'fa fa-play', 'aria-hidden' => 'true']);
                 $picture = html_writer::div(
-                    $picture . html_writer::span($play, 'btn btn-primary smu-play-overlay'),
-                    'position-relative',
+                    $picture . html_writer::span($play, 'btn btn-primary smu-launch-circle smu-play-overlay'),
+                    'smu-cover-stage',
                 );
             }
+            $cover = '';
             if ($picture) {
-                $parts[] = html_writer::link($action, $picture, $attributes + ['aria-label' => $name . ' · ' . $actionlabel]);
+                $cover = html_writer::link($action, $picture, $attributes + [
+                    'class' => 'smu-course-cover-link',
+                    'aria-label' => $name . ' · ' . $actionlabel,
+                ]);
             }
-            if ($profile['course'] === 'CARD' || !$picture) {
-                $buttons = html_writer::link($action, $actionlabel, $attributes + ['class' => 'btn btn-primary btn-sm']);
-                $buttons .= html_writer::link(
+            $actions = '';
+            if (!$picture) {
+                $actions = html_writer::link($action, $actionlabel, $attributes + ['class' => 'btn btn-primary btn-sm']);
+            }
+            if ($profile['course'] === 'CARD' && !$action->compare($viewurl, URL_MATCH_EXACT)) {
+                $actions .= html_writer::link(
                     $detailsurl,
                     get_string('viewdetails', 'smarturl'),
-                    ['class' => 'btn btn-outline-secondary btn-sm']
+                    ['class' => 'btn btn-outline-secondary btn-sm'],
                 );
-                $parts[] = html_writer::div(implode(' ', $badges) .
-                    html_writer::div($buttons, 'd-flex flex-wrap smu-course-actions'), 'smu-course-card-body');
             }
+            $parts[] = $PAGE->get_renderer('mod_smarturl')->course_card([
+                'cover' => $cover,
+                'hasbody' => $actions !== '' || !empty($badges),
+                'badges' => $badges,
+                'actions' => $actions,
+            ]);
         }
         if ($launch === 'INLINE' && $target['kind'] !== 'link') {
             $embed = viewer_data::render_target(resource_target::with_markup($target, $name), $name);
-            global $OUTPUT;
             $preview = new \mod_smarturl\output\course_preview((int)$cm->id, $embed);
-            $parts[] = $OUTPUT->render($preview);
+            $parts[] = $PAGE->get_renderer('mod_smarturl')->render($preview);
         }
     } else if ($badges) {
         $badges[] = html_writer::link($detailsurl, get_string('viewdetails', 'smarturl'), ['class' => 'smu-course-meta-link']);
@@ -542,7 +581,8 @@ function smarturl_cm_info_view(cm_info $cm): void {
  * @return bool
  */
 function smarturl_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []): bool {
-    if ($context->contextlevel !== CONTEXT_MODULE || !in_array($filearea, ['poster', 'translation'], true)) {
+    $areas = ['poster', 'translation', protected_resource::AREA];
+    if ($context->contextlevel !== CONTEXT_MODULE || !in_array($filearea, $areas, true)) {
         return false;
     }
     require_login($course, true, $cm);
@@ -557,7 +597,16 @@ function smarturl_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
     if (!$file || $file->is_directory()) {
         return false;
     }
-    send_stored_file($file, null, 0, $forcedownload, $options);
+    if ($filearea === protected_resource::AREA) {
+        global $DB;
+        $instance = $DB->get_record('smarturl', ['id' => $cm->instance], 'presentation_json, display_mode', MUST_EXIST);
+        if (!presentation::for_instance($instance)['protected'] || !protected_resource::kind($file)) {
+            return false;
+        }
+        send_stored_file($file, 0, 0, $forcedownload, $options);
+    } else {
+        send_stored_file($file, null, 0, $forcedownload, $options);
+    }
     return true;
 }
 

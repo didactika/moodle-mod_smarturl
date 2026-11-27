@@ -12,12 +12,10 @@
     "AdminConfig.tsx",
     "FormBuilder.tsx",
     "AppearancePreview.tsx",
-    "CoursePreview.tsx"
+    "CoursePreview.tsx",
+    "SettingsControls.tsx",
+    "components/common/MoodleModal.tsx"
   ],
-  "components/common/PageHeader": {
-    "eject": "risky",
-    "wrap": "risky"
-  },
   "components/viewer/MetadataExplorer": {
     "eject": "risky",
     "wrap": "risky"
@@ -39,6 +37,14 @@
     "wrap": "risky"
   },
   "ResourceView": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "SettingsControls": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/common/MoodleModal": {
     "eject": "risky",
     "wrap": "risky"
   }
