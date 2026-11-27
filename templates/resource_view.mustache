@@ -59,6 +59,8 @@
 
     {{#hasmetadata}}
     <section class="smu-explorer" aria-label="{{strings.metadataheading}}">
+        {{^showfilter}}<h2 class="h5 mb-3">{{strings.metadataheading}}</h2>{{/showfilter}}
+        {{#showfilter}}
         <div class="smu-meta-toolbar">
             <div class="smu-meta-toprow">
                 <h3 class="smu-section-title mb-0">{{strings.metadataheading}} ({{metadatacount}})</h3>
@@ -76,6 +78,7 @@
             </div>
             <div class="dd-chips" data-region="group-chips"></div>
         </div>
+        {{/showfilter}}
         <div data-region="results-host"></div>
     </section>
     {{/hasmetadata}}

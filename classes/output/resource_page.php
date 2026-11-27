@@ -160,6 +160,7 @@ class resource_page implements named_templatable, \renderable {
             'haslocked' => count($locked) > 0,
             'lockedbadge' => get_string('lockedbadge', 'smarturl'),
             'hasmetadata' => count($metadata) > 0,
+            'showfilter' => count($metadata) > 6,
             'metadatacount' => count($metadata),
             'strings' => $payload['strings'],
             'payloadjson' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
