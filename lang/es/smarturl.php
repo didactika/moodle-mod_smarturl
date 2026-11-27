@@ -128,6 +128,7 @@ $string['metadatatypes'] = 'Campos del recurso';
 $string['modulename'] = 'Smart URL';
 $string['modulename_help'] = 'Añade un enlace a una web, un vídeo, un audio o un documento. Elige cómo se abre y añade detalles del recurso.';
 $string['modulenameplural'] = 'Smart URL';
+$string['morepages'] = 'Más ajustes de Smart URL';
 $string['movecategoryfields'] = 'Mover los campos a';
 $string['nav_audio'] = 'Audio';
 $string['nav_image'] = 'Imagen';

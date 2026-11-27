@@ -51,8 +51,9 @@ final class subplugins {
      * Registers standalone settings pages for installed extensions that supply settings.php.
      *
      * @param \admin_root $adminroot Site administration.
+     * @param string $parent Admin category that receives the pages.
      */
-    public static function register_settings(\admin_root $adminroot): void {
+    public static function register_settings(\admin_root $adminroot, string $parent = 'modsettings'): void {
         foreach (self::TYPES as $type) {
             foreach (\core_plugin_manager::instance()->get_plugins_of_type($type) as $plugin) {
                 $file = $plugin->rootdir . '/settings.php';
@@ -65,7 +66,7 @@ final class subplugins {
                     $ADMIN = $adminroot;
                     require($file);
                 }
-                $adminroot->add('modsettings', $settings);
+                $adminroot->add($parent, $settings);
             }
         }
     }
