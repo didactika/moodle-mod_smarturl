@@ -151,6 +151,7 @@ $string['metadatatypes'] = 'Resource fields';
 $string['modulename'] = 'Smart URL';
 $string['modulename_help'] = 'Add a link to a website, video, audio file or document. Choose how it opens and add details about the resource.';
 $string['modulenameplural'] = 'Smart URLs';
+$string['morepages'] = 'More Smart URL settings';
 $string['movecategoryfields'] = 'Move fields to';
 $string['nav_audio'] = 'Audio';
 $string['nav_image'] = 'Image';

@@ -26,41 +26,29 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $ADMIN->add('modsettings', new admin_externalpage(
-        'modsmarturlplugins',
-        get_string('manageplugins', 'smarturl'),
-        new moodle_url('/mod/smarturl/plugins.php'),
-    ));
-    \mod_smarturl\local\subplugins::register_settings($ADMIN);
+    // Group every Smart URL page under one category, like other activities with several pages.
+    $hidden = $module->is_enabled() === false;
+    $ADMIN->add('modsettings', new admin_category('modsmarturlfolder', new lang_string('pluginname', 'smarturl'), $hidden));
+    $settings = new admin_settingpage($section, get_string('generalsettings', 'admin'), 'moodle/site:config', $hidden);
+    $ADMIN->add('modsmarturlfolder', $settings);
 
-    $ADMIN->add('modsettings', new admin_externalpage(
+    $ADMIN->add('modsmarturlfolder', new admin_externalpage(
         'modsmarturlschema',
         get_string('adminconfiglink', 'smarturl'),
         new moodle_url('/mod/smarturl/admin.php'),
         'mod/smarturl:manageschema'
     ));
+    $ADMIN->add('modsmarturlfolder', new admin_externalpage(
+        'modsmarturlplugins',
+        get_string('manageplugins', 'smarturl'),
+        new moodle_url('/mod/smarturl/plugins.php'),
+    ));
+    \mod_smarturl\local\subplugins::register_settings($ADMIN, 'modsmarturlfolder');
 }
 
 if ($ADMIN->fulltree) {
-    $link = html_writer::link(
-        new moodle_url('/mod/smarturl/admin.php'),
-        get_string('adminconfiglink', 'smarturl'),
-        ['class' => 'btn btn-outline-secondary']
-    );
-    $link .= html_writer::link(
-        new moodle_url('/mod/smarturl/plugins.php'),
-        get_string('manageplugins', 'smarturl'),
-        ['class' => 'btn btn-outline-secondary ms-2'],
-    );
+    // This heading also loads the design-system select menus for the page.
     $settings->add(new \mod_smarturl\local\settings_heading(
-        'mod_smarturl/schema_nav',
-        '',
-        html_writer::div(
-            html_writer::div(get_string('settingscatalogue_help', 'smarturl'), 'text-body-secondary') . $link,
-            'd-flex flex-wrap justify-content-between gap-2 align-items-center',
-        ),
-    ));
-    $settings->add(new admin_setting_heading(
         'mod_smarturl/defaultappearance_heading',
         get_string('defaultappearance', 'smarturl'),
         get_string('defaultappearance_desc', 'smarturl'),
@@ -111,4 +99,21 @@ if ($ADMIN->fulltree) {
             PARAM_INT,
         ));
     }
+    $pages = [
+        'adminconfiglink' => ['/mod/smarturl/admin.php', 'settingscatalogue_help'],
+        'manageplugins' => ['/mod/smarturl/plugins.php', 'manageplugins_help'],
+    ];
+    $items = [];
+    foreach ($pages as $title => [$url, $description]) {
+        $items[] = html_writer::link(new moodle_url($url), get_string($title, 'smarturl'))
+            . ': ' . get_string($description, 'smarturl');
+    }
+    $settings->add(new admin_setting_heading(
+        'mod_smarturl/morepages_heading',
+        get_string('morepages', 'smarturl'),
+        html_writer::alist($items),
+    ));
 }
+
+// The page is already in the Smart URL category, so Moodle must not add it again.
+$settings = null;
