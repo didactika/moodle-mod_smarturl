@@ -27,6 +27,9 @@ use mod_smarturl\output\resource_page;
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\output\renderer::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\output\admin_config_page::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\output\resource_page::class)]
 final class output_rendering_test extends \advanced_testcase {
     /**
      * Verifies ResourceView and AdminConfig renderables export expected props and mount markup.

@@ -26,6 +26,7 @@ use mod_smarturl\local\migration\url_migrator;
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\migration\url_migrator::class)]
 final class migration_service_test extends \advanced_testcase {
     /**
      * Tests that selective migration converts only matching URLs, migrates completions, rewires availability, and emits events.

@@ -27,6 +27,8 @@ use mod_smarturl\local\metadata\metadata_type_manager;
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\metadata\metadata_type_manager::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\metadata\metadata_repository::class)]
 final class metadata_manager_test extends \advanced_testcase {
     /**
      * Tests metadata type CRUD and storing/querying 60+ metadata entries efficiently.

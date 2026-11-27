@@ -31,6 +31,13 @@ use mod_smarturl\local\url\url_resolver;
  * @copyright  2026 Didactika.org
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\url\resource_target::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\presentation::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\activity_content::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\viewer_data::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\metadata\category_manager::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\external\save_instances::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\external\get_editor_context::class)]
 final class resource_experience_test extends \advanced_testcase {
     /**
      * Checks the resource formats and the canonical player URL.

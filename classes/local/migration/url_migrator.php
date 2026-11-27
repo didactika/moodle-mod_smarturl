@@ -298,7 +298,7 @@ final class url_migrator {
      * @return array{mode: string, popupwidth: int, popupheight: int}
      */
     private static function map_display(int $display, string $optionsraw): array {
-        $opts = @unserialize($optionsraw);
+        $opts = unserialize_array($optionsraw);
         $opts = is_array($opts) ? $opts : [];
         $mode = match ($display) {
             1 => 'EMBED',
@@ -324,7 +324,7 @@ final class url_migrator {
         if (trim($raw) === '') {
             return null;
         }
-        $legacy = @unserialize($raw);
+        $legacy = unserialize_array($raw);
         if (!is_array($legacy) || empty($legacy)) {
             return null;
         }

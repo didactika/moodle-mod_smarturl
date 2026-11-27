@@ -27,6 +27,9 @@ use mod_smarturl\local\policy\policy_manager;
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\policy\policy_manager::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\policy\availability_composer::class)]
+#[\PHPUnit\Framework\Attributes\CoversFunction('smarturl_get_coursemodule_info')]
 final class policy_and_availability_test extends \advanced_testcase {
     /**
      * Tests composing and extracting two-branch availability trees cleanly.

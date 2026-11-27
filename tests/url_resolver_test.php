@@ -27,6 +27,7 @@ use mod_smarturl\local\url\url_resolver;
  * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_smarturl\local\url\url_resolver::class)]
 final class url_resolver_test extends \advanced_testcase {
     /**
      * Tests placeholder interpolation, query bindings, user profile fields, and course custom fields.
