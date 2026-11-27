@@ -92,7 +92,7 @@ class create_instances extends external_api {
     /**
      * Creates Smart URL instances in batch.
      *
-     * @param array<int, array<string, mixed>> $instances Requested instances.
+     * @param array $instances Requested instances.
      * @return array<int, array<string, mixed>> Creation results.
      */
     public static function execute(array $instances): array {

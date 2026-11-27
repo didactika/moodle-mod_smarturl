@@ -49,7 +49,7 @@ class restore_smarturl_activity_structure_step extends restore_activity_structur
     /**
      * Restores base smarturl record.
      *
-     * @param array<string, mixed> $data Backup row data.
+     * @param array $data Backup row data.
      */
     protected function process_smarturl($data): void {
         global $DB;
@@ -63,7 +63,7 @@ class restore_smarturl_activity_structure_step extends restore_activity_structur
     /**
      * Buffers metadata entry until files/cmid are finalized.
      *
-     * @param array<string, mixed> $data Backup metadata entry.
+     * @param array $data Backup metadata entry.
      */
     protected function process_metavalue($data): void {
         $data = (object)$data;
@@ -79,7 +79,7 @@ class restore_smarturl_activity_structure_step extends restore_activity_structur
     /**
      * Buffers policy record.
      *
-     * @param array<string, mixed> $data Backup policy row.
+     * @param array $data Backup policy row.
      */
     protected function process_policy($data): void {
         $this->policybuffer = (object)$data;

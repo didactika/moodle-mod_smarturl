@@ -29,7 +29,7 @@ final class metadata_repository {
      * Replaces all metadata entries of one Smart URL instance atomically.
      *
      * @param int $smarturlid Activity instance ID.
-     * @param array<int, array{key: string, value: string}> $entries Key/value metadata entries.
+     * @param array $entries Key/value metadata entries.
      */
     public static function replace_for_instance(int $smarturlid, array $entries): void {
         global $DB;

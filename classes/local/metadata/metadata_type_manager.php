@@ -52,7 +52,7 @@ final class metadata_type_manager {
     /**
      * Creates or updates a metadata type definition.
      *
-     * @param array<string, mixed> $data Input fields.
+     * @param array $data Input fields.
      * @return \stdClass Saved record.
      */
     public static function save(array $data): \stdClass {

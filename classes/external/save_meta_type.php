@@ -55,6 +55,17 @@ class save_meta_type extends external_api {
     /**
      * Saves metadata type.
      *
+     * @param int $id Existing definition ID, or zero for a new field.
+     * @param string $shortname Unique field key.
+     * @param string $name Display name.
+     * @param string $description Field description.
+     * @param string $groupname Legacy group name.
+     * @param string $datatype Field data type.
+     * @param string $displaypriority Default display priority.
+     * @param bool $searchable Whether the field is searchable.
+     * @param bool $filterable Whether the field is available as a filter.
+     * @param bool $enabled Whether the field is enabled.
+     * @param int $categoryid Category ID, or zero for no category.
      * @return array<string, mixed>
      */
     public static function execute(

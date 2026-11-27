@@ -31,10 +31,10 @@ class form_builder_widget implements react_component_renderable, \renderable {
      * Constructor.
      *
      * @param string $kind Builder mode (`params` or `metadata`).
-     * @param array<int, array<string, mixed>> $initialrows Existing rows.
-     * @param array<int, array<string, mixed>> $catalog Parameter definitions or metadata types.
+     * @param array $initialrows Existing rows.
+     * @param array $catalog Parameter definitions or metadata types.
      * @param bool $locked Whether editing is locked by permissions or policy.
-     * @param array<string, string> $strings Localized UI strings.
+     * @param array $strings Localized UI strings.
      */
     public function __construct(
         /** @var string Type of form rows. */

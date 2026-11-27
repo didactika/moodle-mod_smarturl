@@ -269,13 +269,18 @@ jobs:
         run: |
           source "$NVM_DIR/nvm.sh"
           nvm use "$(cat moodle/.nvmrc)"
-          component=$(php -r 'define("MOODLE_INTERNAL", true); $plugin = new stdClass(); require $argv[1]; echo $plugin->component;' plugin/version.php)
+          path=$(php -r '
+            define("CLI_SCRIPT", true);
+            require "moodle/config.php";
+            $plugin = new stdClass();
+            require "plugin/version.php";
+            echo core_component::get_component_directory($plugin->component);
+          ')
           cd moodle
-          path=$(php -r 'define("CLI_SCRIPT", true); require "config.php"; echo core_component::get_component_directory($argv[1]);' "$component")
           test -f "$path/tsconfig.json"
           npx --no-install grunt jsconfig
           npx --no-install tsc --project "$path/tsconfig.json"
-          npx --no-install grunt esm --root="$path"
+          npx --no-install grunt esm --root="$(realpath --relative-to=. "$path")"
 
       # Only for a plugin that writes its styles as SCSS and compiles them with its own tools/build-styles.mjs, which takes
       # the root of a Moodle checkout and, with --check, fails when styles.css is not what the SCSS produces.

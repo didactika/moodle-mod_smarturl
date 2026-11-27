@@ -35,7 +35,7 @@ final class evaluate_completion_rule {
      * @param \cm_info $cm Course module.
      * @param int $userid User ID.
      * @param string $rulekey Rule key.
-     * @param array<string, mixed> $config Rule configuration.
+     * @param array $config Rule configuration.
      */
     public function __construct(
         /** @var \cm_info Course module. */
