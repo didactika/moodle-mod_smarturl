@@ -52,11 +52,15 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
     setActiveGroup("");
   }, "clearAll");
   return /* @__PURE__ */ jsxDEV("section", { ref: controls, "aria-labelledby": "smu-metadata-title", children: [
-    /* @__PURE__ */ jsxDEV("div", { className: "smu-meta-toolbar", children: [
+    entries.length <= 6 ? /* @__PURE__ */ jsxDEV("h2", { id: "smu-metadata-title", className: "h5 mb-3", children: strings.metadataheading }, void 0, false, {
+      fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
+      lineNumber: 69,
+      columnNumber: 36
+    }) : /* @__PURE__ */ jsxDEV("div", { className: "smu-meta-toolbar", children: [
       /* @__PURE__ */ jsxDEV("div", { className: "smu-meta-toprow", children: [
         /* @__PURE__ */ jsxDEV("h2", { id: "smu-metadata-title", className: "h5 mb-0", children: strings.metadataheading ?? "Resource metadata" }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 71,
+          lineNumber: 72,
           columnNumber: 21
         }),
         /* @__PURE__ */ jsxDEV("div", { className: "d-flex flex-wrap align-items-center gap-2", children: /* @__PURE__ */ jsxDEV("div", { className: "btn-group", role: "group", "aria-label": strings.metadataheading, children: [
@@ -73,7 +77,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-              lineNumber: 77,
+              lineNumber: 78,
               columnNumber: 29
             }
           ),
@@ -90,22 +94,22 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-              lineNumber: 85,
+              lineNumber: 86,
               columnNumber: 29
             }
           )
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 76,
+          lineNumber: 77,
           columnNumber: 25
         }) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 75,
+          lineNumber: 76,
           columnNumber: 21
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 70,
+        lineNumber: 71,
         columnNumber: 17
       }),
       /* @__PURE__ */ jsxDEV("div", { className: "smu-meta-toprow", children: [
@@ -118,7 +122,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
             children: [
               /* @__PURE__ */ jsxDEV("label", { htmlFor: "smu-meta-search-input", className: "visually-hidden", children: strings.metadatasearch ?? "Search metadata" }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-                lineNumber: 103,
+                lineNumber: 104,
                 columnNumber: 25
               }),
               /* @__PURE__ */ jsxDEV(
@@ -135,7 +139,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
                 false,
                 {
                   fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-                  lineNumber: 106,
+                  lineNumber: 107,
                   columnNumber: 25
                 }
               )
@@ -145,7 +149,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
           true,
           {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 98,
+            lineNumber: 99,
             columnNumber: 21
           }
         ),
@@ -155,12 +159,12 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
           entries.length
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 116,
+          lineNumber: 117,
           columnNumber: 21
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 97,
+        lineNumber: 98,
         columnNumber: 17
       }),
       groupFacets.length > 0 && /* @__PURE__ */ jsxDEV("div", { className: "d-flex flex-wrap align-items-center gap-2", children: [
@@ -174,7 +178,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
             children: [
               /* @__PURE__ */ jsxDEV("option", { value: "", children: strings.allgroups }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-                lineNumber: 125,
+                lineNumber: 126,
                 columnNumber: 29
               }),
               activeGroup && !groupFacets.some((facet) => facet.name === activeGroup) && /* @__PURE__ */ jsxDEV("option", { value: activeGroup, children: [
@@ -182,7 +186,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
                 " (0)"
               ] }, void 0, true, {
                 fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-                lineNumber: 127,
+                lineNumber: 128,
                 columnNumber: 36
               }),
               groupFacets.map((facet) => /* @__PURE__ */ jsxDEV("option", { value: facet.name, children: [
@@ -192,7 +196,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
                 ")"
               ] }, facet.name, true, {
                 fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-                lineNumber: 128,
+                lineNumber: 129,
                 columnNumber: 55
               }))
             ]
@@ -201,7 +205,7 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
           true,
           {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 123,
+            lineNumber: 124,
             columnNumber: 25
           }
         ),
@@ -217,160 +221,160 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
           false,
           {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 132,
+            lineNumber: 133,
             columnNumber: 57
           }
         )
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 122,
+        lineNumber: 123,
         columnNumber: 21
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 69,
-      columnNumber: 13
+      lineNumber: 70,
+      columnNumber: 19
     }),
     visibleEntries.length === 0 ? /* @__PURE__ */ jsxDEV("div", { className: "dd-empty", children: [
       /* @__PURE__ */ jsxDEV("h3", { className: "dd-empty-title", children: strings.emptymetadata ?? "No metadata matches your search" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 141,
+        lineNumber: 142,
         columnNumber: 21
       }),
       /* @__PURE__ */ jsxDEV("p", { className: "dd-empty-text", children: strings.emptymetadata_hint ?? "Try clearing active group filters or changing your search query." }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 142,
+        lineNumber: 143,
         columnNumber: 21
       }),
       (debouncedQuery || activeGroup) && /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-primary btn-sm", onClick: clearAll, children: strings.clearfilters ?? "Clear all" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 146,
+        lineNumber: 147,
         columnNumber: 25
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 140,
+      lineNumber: 141,
       columnNumber: 17
     }) : viewMode === "cards" ? /* @__PURE__ */ jsxDEV("div", { className: "smu-meta-grid", children: groupedCards.map(([groupName, items]) => /* @__PURE__ */ jsxDEV("article", { className: "smu-card", children: [
       /* @__PURE__ */ jsxDEV("h3", { children: groupName }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 155,
+        lineNumber: 156,
         columnNumber: 29
       }),
       /* @__PURE__ */ jsxDEV("dl", { className: "dd-dl", children: items.map((item) => /* @__PURE__ */ jsxDEV("div", { style: { display: "contents" }, children: [
         /* @__PURE__ */ jsxDEV("dt", { title: item.key, children: item.label }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 159,
+          lineNumber: 160,
           columnNumber: 41
         }),
         /* @__PURE__ */ jsxDEV("dd", { children: /* @__PURE__ */ jsxDEV(MetadataValue, { entry: item }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 160,
+          lineNumber: 161,
           columnNumber: 45
         }) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 160,
+          lineNumber: 161,
           columnNumber: 41
         })
       ] }, item.id, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 158,
+        lineNumber: 159,
         columnNumber: 37
       })) }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 156,
+        lineNumber: 157,
         columnNumber: 29
       })
     ] }, groupName, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 154,
+      lineNumber: 155,
       columnNumber: 25
     })) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 152,
+      lineNumber: 153,
       columnNumber: 17
     }) : /* @__PURE__ */ jsxDEV("div", { className: "table-responsive smu-card", children: /* @__PURE__ */ jsxDEV("table", { className: "table table-hover align-middle mb-0", children: [
       /* @__PURE__ */ jsxDEV("caption", { className: "visually-hidden", children: strings.metadataheading }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 170,
+        lineNumber: 171,
         columnNumber: 25
       }),
       /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { children: [
         /* @__PURE__ */ jsxDEV("th", { scope: "col", children: strings.groupname }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 173,
+          lineNumber: 174,
           columnNumber: 33
         }),
         /* @__PURE__ */ jsxDEV("th", { scope: "col", children: strings.metadatatypes }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 174,
+          lineNumber: 175,
           columnNumber: 33
         }),
         /* @__PURE__ */ jsxDEV("th", { scope: "col", children: strings.metavalue }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 175,
+          lineNumber: 176,
           columnNumber: 33
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 172,
+        lineNumber: 173,
         columnNumber: 29
       }) }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 171,
+        lineNumber: 172,
         columnNumber: 25
       }),
       /* @__PURE__ */ jsxDEV("tbody", { children: pagedEntries.map((item) => /* @__PURE__ */ jsxDEV("tr", { children: [
         /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "badge text-bg-light", children: item.group }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 181,
+          lineNumber: 182,
           columnNumber: 41
         }) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 181,
+          lineNumber: 182,
           columnNumber: 37
         }),
         /* @__PURE__ */ jsxDEV("td", { children: [
           /* @__PURE__ */ jsxDEV("div", { className: "fw-semibold", children: item.label }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 183,
+            lineNumber: 184,
             columnNumber: 41
           }),
           /* @__PURE__ */ jsxDEV("div", { className: "text-muted small", children: item.key }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-            lineNumber: 184,
+            lineNumber: 185,
             columnNumber: 41
           })
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 182,
+          lineNumber: 183,
           columnNumber: 37
         }),
         /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV(MetadataValue, { entry: item }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 186,
+          lineNumber: 187,
           columnNumber: 41
         }) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-          lineNumber: 186,
+          lineNumber: 187,
           columnNumber: 37
         })
       ] }, item.id, true, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 180,
+        lineNumber: 181,
         columnNumber: 33
       })) }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 178,
+        lineNumber: 179,
         columnNumber: 25
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 169,
+      lineNumber: 170,
       columnNumber: 21
     }) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 168,
+      lineNumber: 169,
       columnNumber: 17
     }),
     visibleEntries.length > COLLAPSED_LIMIT && /* @__PURE__ */ jsxDEV("div", { className: "mt-3 text-center", children: /* @__PURE__ */ jsxDEV(
@@ -385,12 +389,12 @@ const MetadataExplorer = /* @__PURE__ */ __name(({ entries, strings }) => {
       false,
       {
         fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-        lineNumber: 196,
+        lineNumber: 197,
         columnNumber: 21
       }
     ) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/components/viewer/MetadataExplorer.tsx",
-      lineNumber: 195,
+      lineNumber: 196,
       columnNumber: 17
     })
   ] }, void 0, true, {

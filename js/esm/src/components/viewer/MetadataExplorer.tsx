@@ -66,7 +66,8 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
 
     return (
         <section ref={controls} aria-labelledby="smu-metadata-title">
-            <div className="smu-meta-toolbar">
+            {entries.length <= 6 ? <h2 id="smu-metadata-title" className="h5 mb-3">{strings.metadataheading}</h2>
+                : <div className="smu-meta-toolbar">
                 <div className="smu-meta-toprow">
                     <h2 id="smu-metadata-title" className="h5 mb-0">
                         {strings.metadataheading ?? 'Resource metadata'}
@@ -134,7 +135,7 @@ const MetadataExplorer = ({entries, strings}: MetadataExplorerProps) => {
                     </div>
                 )}
 
-            </div>
+            </div>}
 
             {visibleEntries.length === 0 ? (
                 <div className="dd-empty">
