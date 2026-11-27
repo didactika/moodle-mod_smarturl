@@ -70,7 +70,6 @@ class resource_page implements named_templatable, \renderable {
      */
     public function export_for_template(\renderer_base $output): array {
         $view = viewer_data::prepare($this->smarturl, $this->course, $this->user, $this->context);
-        $resolvedurl = $view['target']['url'];
         $canedit = has_capability('moodle/course:manageactivities', $this->context);
         $policy = $canedit ? policy_manager::get_by_cmid((int)$this->cm->id) : null;
         $metadata = $view['metadata'];
@@ -97,7 +96,7 @@ class resource_page implements named_templatable, \renderable {
         $payload = [
             'cmid' => (int)$this->cm->id,
             'name' => $view['name'],
-            'resolvedUrl' => $resolvedurl,
+            'playable' => !empty($view['target']['playable']) || in_array($view['target']['kind'], ['video', 'audio'], true),
             'playerHtml' => viewer_data::render_target($view['target'], $view['name']),
             'goUrl' => (new \moodle_url('/mod/smarturl/go.php', ['id' => $this->cm->id, 'fromviewer' => 1]))->out(false),
             'displayMode' => $displaymode,
@@ -106,6 +105,7 @@ class resource_page implements named_templatable, \renderable {
             'popupHeight' => (int)($this->smarturl->popup_height ?: 800),
             'metadata' => $metadata,
             'strings' => [
+                'playresource' => get_string('playresource', 'smarturl'),
                 'openresource' => get_string('openexternal', 'smarturl'),
                 'launchiframe' => get_string('launchiframe', 'smarturl'),
                 'launchmodal' => get_string('launchmodal', 'smarturl'),
@@ -122,8 +122,6 @@ class resource_page implements named_templatable, \renderable {
                 'clearfilters' => get_string('clearfilters', 'smarturl'),
                 'viewcards' => get_string('viewcards', 'smarturl'),
                 'viewtable' => get_string('viewtable', 'smarturl'),
-                'copyjson' => $canedit ? get_string('copyjson', 'smarturl') : '',
-                'copied' => get_string('copied', 'smarturl'),
                 'emptymetadata' => get_string('emptymetadata', 'smarturl'),
                 'emptymetadata_hint' => get_string('emptymetadata_hint', 'smarturl'),
                 'showmore' => get_string('showmore', 'smarturl'),
@@ -142,8 +140,8 @@ class resource_page implements named_templatable, \renderable {
             'cmid' => (int)$this->cm->id,
             'name' => $payload['name'],
             'intro' => $view['intro'],
+            'playable' => !empty($view['target']['playable']) || in_array($view['target']['kind'], ['video', 'audio'], true),
             'playerhtml' => viewer_data::render_target($view['target'], $view['name']),
-            'resolvedurl' => $resolvedurl,
             'gourl' => $payload['goUrl'],
             'displaylabel' => $displaylabels[$displaymode] ?? $displaymode,
             'primarylabel' => $primarylabel,

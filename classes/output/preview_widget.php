@@ -74,10 +74,7 @@ final class preview_widget implements named_templatable, \renderable {
             'previewauxiliary' => get_string('previewauxiliary', 'smarturl'),
             'previewmobile' => get_string('previewmobile', 'smarturl'),
             'previewpending' => get_string('previewpending', 'smarturl'),
-            'preset' => get_string('preset', 'smarturl'),
-            'preset_video' => get_string('preset_video', 'smarturl'),
-            'preset_document' => get_string('preset_document', 'smarturl'),
-            'preset_weblink' => get_string('preset_weblink', 'smarturl'),
+            'previewcurrentlanguage' => get_string('previewcurrentlanguage', 'smarturl'),
             'translationlanguage' => get_string('translationlanguage', 'smarturl'),
             'closepreview' => get_string('closepreview', 'smarturl'),
         ];

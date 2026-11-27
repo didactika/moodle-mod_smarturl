@@ -158,7 +158,7 @@ export const init = (rootId) => {
 
         if (kind === 'params' && catalog.length > 0) {
             const chips = catalog.map((c) =>
-                `<button type="button" class="smu-token-chip" data-token="${esc(c.shortname)}"${dis}>` +
+                `<button type="button" class="btn btn-sm btn-outline-secondary" data-token="${esc(c.shortname)}"${dis}>` +
                 `+ {{${esc(c.shortname)}}}</button>`
             ).join('');
             html += `<div class="smu-token-bar">` +
@@ -176,7 +176,7 @@ export const init = (rootId) => {
                 ).join('');
                 fields = `<input type="text" class="form-control smu-builder-input" data-idx="${idx}" data-field="key" ` +
                     `placeholder="${esc(strings.paramqueryname || 'Parameter name')}" value="${esc(row.key)}"${dis}>` +
-                    `<select class="custom-select smu-builder-select" data-idx="${idx}" data-field="varName"${dis}>` +
+                    `<select class="form-select smu-builder-select" data-idx="${idx}" data-field="varName"${dis}>` +
                     `<option value="">${esc(strings.paramchoose || 'Choose variable...')}</option>${opts}` +
                     `<option value="__static__"${row.varName === '__static__' ? ' selected' : ''}>` +
                     `${esc(strings.paramstatic || 'Custom fixed value')}</option></select>`;
@@ -194,7 +194,7 @@ export const init = (rootId) => {
                     ).join('') +
                     `</optgroup>`
                 ).join('');
-                fields = `<select class="custom-select smu-builder-select" data-idx="${idx}" data-field="key"${dis}>` +
+                fields = `<select class="form-select smu-builder-select" data-idx="${idx}" data-field="key"${dis}>` +
                     `<option value="">${esc(strings.choose || 'Choose...')}</option>${opts}` +
                     `<option value="__custom__"${row.key === '__custom__' ? ' selected' : ''}>` +
                     `${esc(strings.customkey || 'Custom key...')}</option></select>`;
@@ -209,10 +209,10 @@ export const init = (rootId) => {
 
             return `<div class="smu-builder-row">${fields}` +
                 `<div class="smu-row-actions">` +
-                `<button type="button" class="smu-icon-btn smu-icon-add" data-add="${idx}" ` +
-                `title="${esc(strings.addrow || 'Add row')}"${dis}>+</button>` +
-                `<button type="button" class="smu-icon-btn smu-icon-remove" data-del="${idx}" ` +
-                `title="${esc(strings.removerow || 'Remove row')}"${dis}>&times;</button>` +
+                `<button type="button" class="btn btn-outline-secondary smu-iconpill tone-primary" data-add="${idx}" ` +
+                `title="${esc(strings.addrow || 'Add row')}"${dis}><i class="fa fa-plus" aria-hidden="true"></i></button>` +
+                `<button type="button" class="btn btn-outline-secondary smu-iconpill tone-danger" data-del="${idx}" ` +
+                `title="${esc(strings.removerow || 'Remove row')}"${dis}><i class="fa fa-trash" aria-hidden="true"></i></button>` +
                 `</div></div>`;
         }).join('');
 

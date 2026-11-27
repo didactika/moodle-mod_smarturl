@@ -93,6 +93,7 @@ class restore_smarturl_activity_structure_step extends restore_activity_structur
 
         $this->add_related_files('mod_smarturl', 'intro', null);
         $this->add_related_files('mod_smarturl', 'poster', null);
+        $this->add_related_files('mod_smarturl', 'resource', null);
         $this->add_related_files('mod_smarturl', 'translation', null);
 
         $smarturlid = (int)$this->get_new_parentid('smarturl');

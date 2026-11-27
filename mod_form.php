@@ -27,6 +27,7 @@ use mod_smarturl\local\policy\availability_composer;
 use mod_smarturl\local\activity_content;
 use mod_smarturl\local\policy\policy_manager;
 use mod_smarturl\local\presentation;
+use mod_smarturl\local\protected_resource;
 use mod_smarturl\local\url\resource_target;
 use mod_smarturl\local\url\url_resolver;
 use mod_smarturl\output\form_builder_widget;
@@ -47,7 +48,9 @@ class mod_smarturl_mod_form extends moodleform_mod {
      * Defines all standard and Smart URL fields.
      */
     public function definition(): void {
-        global $OUTPUT;
+        global $PAGE;
+
+        $output = $PAGE->get_renderer('mod_smarturl');
 
         $mform = $this->_form;
 
@@ -93,6 +96,12 @@ class mod_smarturl_mod_form extends moodleform_mod {
         $mform->addHelpButton('externalurl', 'externalurl', 'smarturl');
         $mform->addRule('externalurl', null, 'required', null, 'client');
 
+        $mform->addElement('advcheckbox', 'smu_protected', get_string('presentation_protected', 'smarturl'));
+        $mform->addHelpButton('smu_protected', 'presentation_protected', 'smarturl');
+        $mform->addElement('filemanager', 'smu_resourcefile', get_string('protectedfile', 'smarturl'), null, [
+            'subdirs' => 0, 'maxfiles' => 1, 'accepted_types' => protected_resource::TYPES,
+        ]);
+        $mform->hideIf('smu_resourcefile', 'smu_protected', 'notchecked');
         $this->standard_intro_elements();
 
         // Presentation controls use the Moodle form contract on both maintenance lines.
@@ -107,15 +116,23 @@ class mod_smarturl_mod_form extends moodleform_mod {
                 $defaults[$key] = get_config('mod_smarturl', 'default' . $key) ?: $defaults[$key];
             }
         }
-        foreach (presentation::OPTIONS as $key => $choices) {
+        $present = static function (string $key) use ($mform, $defaults): void {
+            $choices = presentation::OPTIONS[$key];
             $options = [];
             foreach ($choices as $choice) {
                 $options[$choice] = get_string($key . '_' . strtolower($choice), 'smarturl');
             }
             $mform->addElement('select', 'smu_' . $key, get_string('presentation_' . $key, 'smarturl'), $options);
             $mform->setDefault('smu_' . $key, $defaults[$key]);
-        }
+        };
+        $mform->addElement('html', html_writer::tag('h3', get_string('courseappearance', 'smarturl'), ['class' => 'h5 mt-3']));
+        $present('course');
+        $present('launch');
         foreach (presentation::FLAGS as $key) {
+            if ($key === 'protected') {
+                $mform->setDefault('smu_protected', (int)$defaults['protected']);
+                continue;
+            }
             $mform->addElement('advcheckbox', 'smu_' . $key, get_string('presentation_' . $key, 'smarturl'));
             $mform->setDefault('smu_' . $key, (int)$defaults[$key]);
         }
@@ -128,6 +145,14 @@ class mod_smarturl_mod_form extends moodleform_mod {
             $fields[$definition->shortname] = format_string($definition->name, true);
         }
         foreach (['coursefields', 'viewerfields'] as $key) {
+            if ($key === 'viewerfields') {
+                $mform->addElement('html', html_writer::tag(
+                    'h3',
+                    get_string('viewerappearance', 'smarturl'),
+                    ['class' => 'h5 mt-4'],
+                ));
+                $present('viewer');
+            }
             $selected = $defaults[$key];
             $fieldoptions = $fields + array_combine($selected ?? [], $selected ?? []);
             $mform->addElement('select', 'smu_' . $key . 'mode', get_string($key . 'mode', 'smarturl'), [
@@ -148,7 +173,6 @@ class mod_smarturl_mod_form extends moodleform_mod {
             $mform->addElement('text', $field, get_string('popup' . $dimension, 'smarturl'), ['size' => 6]);
             $mform->setType($field, PARAM_INT);
             $mform->setDefault($field, (int)get_config('mod_smarturl', 'defaultpopup' . $dimension) ?: $value);
-            $mform->hideIf($field, 'smu_launch', 'notin', ['VIEWERWINDOW', 'EXTERNALWINDOW']);
         }
         $mform->addElement('select', 'aspect_ratio', get_string('aspectratio', 'smarturl'), array_combine(
             ['16:9', '4:3', '1:1', '21:9'],
@@ -157,6 +181,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
         $mform->setDefault('aspect_ratio', '16:9');
         $mform->hideIf('aspect_ratio', 'smu_viewer', 'eq', 'LINK');
 
+        $present('poster');
         $mform->addElement('text', 'thumbnail_url', get_string('thumbnailurl', 'smarturl'), ['size' => 80]);
         $mform->setType('thumbnail_url', PARAM_URL);
         $mform->hideIf('thumbnail_url', 'smu_poster', 'neq', 'URL');
@@ -171,7 +196,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
         $mform->hideIf('duration_seconds', 'smu_viewer', 'eq', 'LINK');
 
         $preview = new \mod_smarturl\output\preview_widget((int)$this->get_course()->id, (int)($this->_cm->id ?? 0));
-        $mform->addElement('html', html_writer::div($OUTPUT->render($preview), 'mod-smarturl my-2'));
+        $mform->addElement('html', html_writer::div($output->render($preview), 'mod-smarturl my-2'));
 
         // Dynamic URL Parameters (single-line Didactika builder, starts with 1 row).
         $mform->addElement('header', 'dynamicparamshdr', get_string('dynamicparams', 'smarturl'));
@@ -208,7 +233,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
                 'previewlabel' => get_string('param_preview', 'smarturl'),
             ]
         );
-        $mform->addElement('html', html_writer::div($OUTPUT->render($paramswidget), 'mod-smarturl my-2'));
+        $mform->addElement('html', html_writer::div($output->render($paramswidget), 'mod-smarturl my-2'));
 
         // Structured Metadata (single-line Didactika builder, starts with 1 row).
         $mform->addElement('header', 'metadatahdr', get_string('metadatasection', 'smarturl'));
@@ -242,7 +267,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
                 'removerow' => get_string('param_remove', 'smarturl'),
             ]
         );
-        $mform->addElement('html', html_writer::div($OUTPUT->render($metawidget), 'mod-smarturl my-2'));
+        $mform->addElement('html', html_writer::div($output->render($metawidget), 'mod-smarturl my-2'));
 
         $mform->addElement('header', 'translationshdr', get_string('translate', 'smarturl'));
         $mform->setExpanded('translationshdr', false);
@@ -348,6 +373,9 @@ class mod_smarturl_mod_form extends moodleform_mod {
                 ['subdirs' => 0, 'maxfiles' => 1],
             );
             $defaultvalues['poster_filemanager'] = $draftitemid;
+            $resourceitemid = file_get_submitted_draft_itemid('smu_resourcefile');
+            file_prepare_draft_area($resourceitemid, $this->context->id, 'mod_smarturl', protected_resource::AREA, 0);
+            $defaultvalues['smu_resourcefile'] = $resourceitemid;
 
             $entries = metadata_repository::for_instance((int)$defaultvalues['id'], true);
             $defaultvalues['metadata_json'] = json_encode(array_map(static fn($e) => [
@@ -398,7 +426,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
 
         if (!policy_manager::can_edit_field('display', $policy, $ctx, $uid)) {
             $fields = ['display_mode', 'popup_width', 'popup_height', 'aspect_ratio', 'duration_seconds',
-                'smu_coursefields', 'smu_coursefieldsmode', 'smu_viewerfields', 'smu_viewerfieldsmode'];
+                'smu_coursefields', 'smu_coursefieldsmode', 'smu_viewerfields', 'smu_viewerfieldsmode', 'smu_resourcefile'];
             foreach (array_merge(array_keys(presentation::OPTIONS), presentation::FLAGS) as $key) {
                 $fields[] = 'smu_' . $key;
             }
@@ -442,6 +470,12 @@ class mod_smarturl_mod_form extends moodleform_mod {
      */
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
+        if (
+            !empty($data['smu_protected']) && isset($data['smu_resourcefile'])
+                && !protected_resource::draft((int)$data['smu_resourcefile'])
+        ) {
+            $errors['smu_resourcefile'] = get_string('protectedmissing', 'smarturl');
+        }
         if (!empty($data['externalurl'])) {
             try {
                 resource_target::normalise($data['externalurl'], true);

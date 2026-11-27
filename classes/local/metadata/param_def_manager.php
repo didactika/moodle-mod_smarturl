@@ -102,15 +102,21 @@ final class param_def_manager {
         global $DB;
         $builtins = ['course.id', 'course.shortname', 'course.idnumber', 'course.fullname', 'user.id',
             'user.username', 'user.email', 'user.idnumber', 'user.firstname', 'user.lastname', 'user.lang',
-            'user.roles', 'cm.id', 'site.url'];
+            'user.roles', 'cm.id', 'site.url', 'site.shortname', 'course.category', 'course.format', 'course.lang'];
         $user = $DB->get_records('user_info_field', [], 'name ASC', 'id, shortname, name');
         $handler = \core_customfield\handler::get_handler('core_course', 'course');
         $course = [];
         foreach ($handler->get_fields() as $field) {
             $course[$field->get('shortname')] = $field->get('name');
         }
+        $labels = [];
+        foreach ($builtins as $key) {
+            $identifier = 'variable_' . str_replace('.', '_', $key);
+            $label = get_string_manager()->string_exists($identifier, 'smarturl') ? get_string($identifier, 'smarturl') : $key;
+            $labels[$key] = $label;
+        }
         return [
-            'BUILTIN' => array_combine($builtins, $builtins),
+            'BUILTIN' => $labels,
             'USER_PROFILE_FIELD' => array_column(array_values($user), 'name', 'shortname'),
             'COURSE_CUSTOM_FIELD' => $course,
         ];

@@ -1,225 +1,218 @@
 /**
  * This file is part of Moodle - https://moodle.org/
- * Moodle is free software under the GNU General Public License, version 3 or later.
  *
- * @module mod_smarturl/admin_config
- * @copyright 2026 Didactika.org
- * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @module     mod_smarturl/admin_config
+ * @copyright  2026 Didactika.org
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import Ajax from 'core/ajax';
-
-const ws = (methodname, args) => Ajax.call([{methodname, args}])[0];
+import ModalForm from 'core_form/modalform';
+import ModalEvents from 'core/modal_events';
+import {installSelectMenus} from './select_menus';
 
 /**
- * Mounts the site-wide resource catalogue.
+ * Mounts the catalogue tables and Moodle modal forms.
  *
- * @param {string} id Root element ID.
+ * @param {string} id Container ID.
  */
 export const init = id => {
     const root = document.getElementById(id);
-    const payload = JSON.parse(root.dataset.payload);
-    const strings = payload.strings;
-    const error = root.querySelector('[data-region="error-banner"]');
+    const data = JSON.parse(root.dataset.payload);
+    const t = data.strings;
+    const tabs = [...root.querySelectorAll('[data-tab]')];
+    const table = root.querySelector('table');
+    const filter = root.querySelector('details');
     const search = root.querySelector('[data-search]');
-    const meta = {
-        records: payload.metaTypes,
-        form: root.querySelector('[data-form="meta-type"]'),
-        table: root.querySelector('[data-region="meta-tbody"]'),
-        keys: ['shortname', 'name', 'group_name', 'datatype', 'display_priority', 'enabled'],
-        type: 'meta_type',
-    };
-    const params = {
-        records: payload.paramDefs,
-        form: root.querySelector('[data-form="param-def"]'),
-        table: root.querySelector('[data-region="param-tbody"]'),
-        keys: ['shortname', 'name', 'source_type', 'source_key', 'enabled'],
-        type: 'param_def',
-    };
+    const status = root.querySelector('[data-status]');
+    const pager = root.querySelector('[data-size]');
+    const error = root.querySelector('[data-error]');
+    const previous = root.querySelector('[data-prev]');
+    const next = root.querySelector('[data-next]');
+    const add = root.querySelector('[data-add]');
+    const empty = root.querySelector('[data-region="empty"]');
+    let section = data.sections.find(item => item.key === data.tab);
+    let rows = data.rows;
+    let page = 0;
+    let perPage = 12;
+    let query = '';
+    let delay;
 
-    const pageSize = 20;
-    meta.page = 0;
-    params.page = 0;
-
-    const showError = err => {
-        error.textContent = err?.message || strings.savefailed;
-        error.hidden = false;
+    const textNode = (tag, text, classes = '') => {
+        const node = document.createElement(tag);
+        node.textContent = text;
+        node.className = classes;
+        return node;
     };
 
-    const selectSource = params.form.querySelector('[data-source-options]');
-    const source = params.form.elements.source_key;
-    const configureSource = () => {
-        const options = payload.sourceOptions[params.form.elements.source_type.value];
-        source.hidden = Boolean(options);
-        source.required = !options;
-        selectSource.hidden = !options;
-        selectSource.required = Boolean(options);
-        selectSource.replaceChildren(new Option(strings.sourcekey, ''));
-        if (options) {
-            Object.entries(options).forEach(([key, label]) => selectSource.add(new Option(label, key)));
-            if (source.value && !(source.value in options)) {
-                selectSource.add(new Option(source.value, source.value));
-            }
-            selectSource.value = source.value;
-        }
+    const open = (opener, row, remove = false) => {
+        error.hidden = true;
+        const titleText = row ? (remove ? t.deletecategoryheading.replace('{$a}', row.name) : t.edit) : section.add;
+        const form = new ModalForm({
+            formClass: 'mod_smarturl\\form\\schema_item',
+            args: {section: section.key, id: row?.id || 0, remove: Number(remove)},
+            modalConfig: {title: textNode('span', titleText).innerHTML, large: false},
+            saveButtonText: remove ? t.delete : t.savechanges,
+            saveButtonClasses: remove ? 'btn-danger' : undefined,
+            returnFocus: opener,
+        });
+        form.addEventListener(form.events.LOADED, () => {
+            const clear = installSelectMenus(form.modal.getRoot()[0]);
+            form.modal.getRoot().on(ModalEvents.hidden, clear);
+        });
+        form.addEventListener(form.events.FORM_SUBMITTED, event => {
+            rows = event.detail;
+            render();
+        });
+        form.show().catch(failure => {
+            error.textContent = failure.message;
+            error.hidden = false;
+            return null;
+        });
     };
 
-    const action = (label, classes, callback) => {
-        const button = document.createElement('button');
-        button.className = 'btn btn-sm ' + classes;
+    const iconButton = (row, icon, label, tone, remove) => {
+        const button = textNode('button', '', 'btn btn-outline-secondary smu-iconpill tone-' + tone);
         button.type = 'button';
-        button.textContent = label;
-        button.addEventListener('click', callback);
+        button.title = label;
+        button.setAttribute('aria-label', label + ' ' + row.name);
+        const glyph = textNode('i', '', 'fa fa-' + icon);
+        glyph.setAttribute('aria-hidden', 'true');
+        button.append(glyph);
+        button.addEventListener('click', () => open(button, row, remove));
         return button;
     };
 
-    const edit = ({form}, record) => {
-        Object.entries(record).forEach(([name, value]) => {
-            const field = form.elements[name];
-            if (field) {
-                if (field.type === 'checkbox') {
-                    field.checked = Boolean(Number(value));
-                } else {
-                    field.value = value ?? '';
-                }
-            }
-        });
-        configureSource();
-        form.elements.shortname.focus();
-    };
-
-    const render = config => {
-        const query = search.value.trim().toLocaleLowerCase();
-        const records = config.records.filter(row => [row.name, row.shortname].some(value =>
-            value.toLocaleLowerCase().includes(query)));
-        config.page = Math.min(config.page, Math.max(0, Math.ceil(records.length / pageSize) - 1));
-        const start = config.page * pageSize;
-        const pager = config.form.closest('section').querySelector('[data-pager]');
-        pager.hidden = records.length <= pageSize;
-        pager.querySelector('[data-range]').textContent = (start + 1) + '–' + Math.min(start + pageSize, records.length)
-            + ' / ' + records.length;
-        pager.querySelector('[data-prev]').disabled = !config.page;
-        pager.querySelector('[data-next]').disabled = start + pageSize >= records.length;
-        config.table.replaceChildren();
-        records.slice(start, start + pageSize).forEach(record => {
-            const row = config.table.insertRow();
-            config.keys.forEach(key => {
-                const cell = row.insertCell();
-                cell.textContent = key === 'enabled' ? (Number(record[key]) ? strings.enabled : strings.disabled) : record[key];
-            });
-            const commands = row.insertCell();
-            commands.append(action(strings.edit, 'btn-outline-secondary mr-1', () => edit(config, record)));
-            commands.append(action(strings.delete, 'btn-outline-danger', () => {
-                if (window.confirm(strings.confirmdelete.replace('{$a}', record.name))) {
-                    ws('mod_smarturl_delete_' + config.type, {id: Number(record.id)}).then(() => {
-                        config.records = config.records.filter(item => Number(item.id) !== Number(record.id));
-                        render(config);
-                        return null;
-                    }).catch(showError);
-                }
-            }));
-        });
-        if (!records.length) {
-            const cell = config.table.insertRow().insertCell();
-            cell.colSpan = config.keys.length + 1;
-            cell.className = 'text-muted text-center';
-            cell.textContent = strings.emptyresults;
+    const render = () => {
+        const matching = rows[section.key].filter(row => (!status.value || row.enabled === (status.value === 'active'))
+            && [row.name, row.detail, ...row.columns].some(value => value.toLocaleLowerCase().includes(query)));
+        const count = matching.length;
+        const sizes = [12, 24, 48, 96].filter(size => size < count);
+        if (count <= 500) {
+            sizes.push(0);
         }
-    };
-
-    const save = config => {
-        config.form.addEventListener('submit', event => {
-            event.preventDefault();
-            error.hidden = true;
-            const data = new FormData(config.form);
-            const args = {
-                id: Number(data.get('id')),
-                name: String(data.get('name')),
-                shortname: String(data.get('shortname')),
-                enabled: config.form.elements.enabled.checked,
-            };
-            if (config === meta) {
-                Object.assign(args, {
-                    categoryid: Number(data.get('categoryid')),
-                    datatype: String(data.get('datatype')),
-                    display_priority: String(data.get('display_priority')),
-                    searchable: config.form.elements.searchable.checked,
-                    filterable: config.form.elements.filterable.checked,
-                });
-            } else {
-                Object.assign(args, {
-                    source_type: String(data.get('source_type')),
-                    source_key: String(data.get('source_key')),
-                    default_query_param: String(data.get('default_query_param') || ''),
-                });
+        const size = sizes.includes(perPage) ? perPage : sizes.at(-1);
+        const span = size || Math.max(1, count);
+        page = Math.min(page, Math.max(0, Math.ceil(count / span) - 1));
+        const offset = page * span;
+        pager.replaceChildren(...sizes.map(number => new Option(number || t.all, number)));
+        pager.value = String(size);
+        previous.disabled = !offset;
+        next.disabled = offset + span >= count;
+        root.querySelector('[data-range]').textContent = t.pagerange.replace('{$a->from}', count ? offset + 1 : 0)
+            .replace('{$a->to}', Math.min(offset + span, count)).replace('{$a->total}', count);
+        root.querySelector('[data-filter-count]').hidden = !status.value;
+        add.querySelector('span').textContent = section.add;
+        table.caption.textContent = section.title;
+        const heading = document.createElement('tr');
+        [t.name, ...section.columns, t.status, t.actions].forEach((title, index, titles) => {
+            const th = textNode('th', '', index >= titles.length - 2 ? 'smu-fit' : '');
+            th.scope = 'col';
+            th.append(textNode('span', title, index === titles.length - 1 ? 'visually-hidden' : ''));
+            heading.append(th);
+        });
+        table.tHead.replaceChildren(heading);
+        const body = table.tBodies[0];
+        body.replaceChildren();
+        matching.slice(offset, offset + span).forEach(record => {
+            const row = body.insertRow();
+            const name = textNode('th', '');
+            name.scope = 'row';
+            const link = textNode('a', record.name);
+            link.href = '#item-' + record.id;
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                open(link, record);
+            });
+            name.append(link);
+            if (record.detail) {
+                const description = textNode('div', '', 'small text-body-secondary');
+                description.append(textNode('code', record.detail));
+                name.append(description);
             }
-            ws('mod_smarturl_save_' + config.type, args).then(record => {
-                config.records = [...config.records.filter(item => Number(item.id) !== Number(record.id)), record];
-                config.form.reset();
-                configureSource();
-                render(config);
-                return null;
-            }).catch(showError);
+            row.append(name);
+            record.columns.forEach(value => {
+                row.insertCell().textContent = value;
+            });
+            row.insertCell().append(textNode('span', record.enabled ? t.enabled : t.disabled,
+                'badge rounded-pill smu-state' + (record.enabled ? ' smu-state-on' : '')));
+            const actions = textNode('div', '', 'smu-row-actions');
+            actions.append(
+                iconButton(record, 'pen', t.edit, 'primary', false),
+                iconButton(record, 'trash', t.delete, 'danger', true)
+            );
+            row.insertCell().append(actions);
+        });
+        const narrowed = Boolean(query || status.value);
+        empty.hidden = count > 0;
+        empty.querySelector('p').textContent = narrowed ? t.emptyresults : t.listempty;
+        empty.querySelector('button').textContent = narrowed ? t.clearfilters : section.add;
+        tabs.forEach(tab => {
+            const current = section.key === tab.dataset.tab;
+            tab.querySelector('[data-count]').textContent = rows[tab.dataset.tab].length;
+            tab.classList.toggle('active', current);
+            if (current) {
+                tab.setAttribute('aria-current', 'page');
+            } else {
+                tab.removeAttribute('aria-current');
+            }
         });
     };
 
-    root.querySelectorAll('[data-action="tab"]').forEach(button => {
-        button.addEventListener('click', () => {
-            root.querySelectorAll('[data-action="tab"]').forEach(other => {
-                const active = other === button;
-                other.classList.toggle('is-active', active);
-                other.setAttribute('aria-selected', String(active));
-            });
-            root.querySelectorAll('[data-panel]').forEach(panel => {
-                panel.hidden = panel.dataset.panel !== button.dataset.tab;
-            });
-        });
-    });
-    params.form.elements.source_type.addEventListener('change', () => {
-        source.value = '';
-        configureSource();
-    });
-    selectSource.addEventListener('change', () => {
-        source.value = selectSource.value;
-    });
+    const clear = () => {
+        clearTimeout(delay);
+        search.value = '';
+        query = '';
+        status.value = '';
+        page = 0;
+        render();
+    };
+    tabs.forEach(tab => tab.addEventListener('click', event => {
+        if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+            event.preventDefault();
+            section = data.sections.find(item => item.key === tab.dataset.tab);
+            clear();
+            window.history.replaceState(null, '', tab.href);
+        }
+    }));
     search.addEventListener('input', () => {
-        meta.page = 0;
-        params.page = 0;
-        render(meta);
-        render(params);
+        clearTimeout(delay);
+        delay = setTimeout(() => {
+            query = search.value.trim().toLocaleLowerCase();
+            page = 0;
+            render();
+        }, 400);
     });
-
-    const preview = root.querySelector('[data-form="preview"]');
-    preview.addEventListener('submit', event => {
-        event.preventDefault();
-        const fields = new FormData(preview);
-        const output = root.querySelector('[data-region="preview-out"]');
-        ws('mod_smarturl_preview_url', {
-            template: String(fields.get('template')),
-            bindings: fields.get('bind_param') ? [{
-                param: String(fields.get('bind_param')),
-                mode: 'static',
-                var: '',
-                value: String(fields.get('bind_val')),
-            }] : [],
-        }).then(result => {
-            output.querySelector('code').textContent = result.resolved;
-            output.hidden = false;
-            return null;
-        }).catch(showError);
+    status.addEventListener('change', () => {
+        page = 0;
+        render();
     });
-
-    [meta, params].forEach(config => {
-        const pager = config.form.closest('section').querySelector('[data-pager]');
-        pager.querySelector('[data-prev]').addEventListener('click', () => {
-            config.page--;
-            render(config);
-        });
-        pager.querySelector('[data-next]').addEventListener('click', () => {
-            config.page++;
-            render(config);
-        });
-        save(config);
-        render(config);
+    pager.addEventListener('change', () => {
+        perPage = Number(pager.value);
+        page = 0;
+        render();
     });
-    configureSource();
+    previous.addEventListener('click', () => { page--; render(); });
+    next.addEventListener('click', () => { page++; render(); });
+    add.addEventListener('click', () => open(add));
+    root.querySelector('[data-clear]').addEventListener('click', clear);
+    const emptyAction = empty.querySelector('button');
+    emptyAction.addEventListener('click', () => {
+        if (query || status.value) {
+            clear();
+        } else {
+            open(emptyAction);
+        }
+    });
+    document.addEventListener('pointerdown', event => {
+        if (!filter.contains(event.target) && !event.target.closest?.('.smu-select-menu')) {
+            filter.open = false;
+        }
+    });
+    filter.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            filter.open = false;
+            filter.querySelector('summary').focus();
+        }
+    });
+    installSelectMenus(root);
+    render();
 };

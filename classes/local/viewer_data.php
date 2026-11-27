@@ -39,6 +39,9 @@ final class viewer_data {
      * @return array
      */
     public static function target(\stdClass $instance, \stdClass $course, \stdClass $user, int $cmid, array $profile): array {
+        if ($profile['protected']) {
+            return protected_resource::target(\context_module::instance($cmid));
+        }
         $url = url_resolver::resolve($instance, $course, $user, $cmid);
         $allowframe = $profile['launch'] === 'INLINE' || in_array($profile['viewer'], ['EMBED', 'MODAL'], true);
         return resource_target::describe($url, $allowframe);
@@ -73,7 +76,7 @@ final class viewer_data {
             'intro' => activity_content::description($instance, $context, $cmid),
             'target' => $target,
             'mode' => $mode,
-            'poster' => self::poster($instance, $context, $profile['poster'], $target['poster']),
+            'poster' => self::poster($instance, $context, $profile['protected'] ? 'UPLOAD' : $profile['poster'], $target['poster']),
             'metadata' => presentation::select_fields(
                 metadata_repository::for_instance((int)$instance->id),
                 $profile['viewerfields']

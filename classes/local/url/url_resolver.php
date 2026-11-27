@@ -235,13 +235,16 @@ final class url_resolver {
      * @return string
      */
     private static function resolve_builtin(string $key, \stdClass $course, \stdClass $user, int $cmid): string {
-        global $CFG;
+        global $CFG, $SITE;
 
         return match ($key) {
             'course.id' => (string)($course->id ?? ''),
             'course.shortname' => (string)($course->shortname ?? ''),
             'course.idnumber' => (string)($course->idnumber ?? ''),
             'course.fullname' => (string)($course->fullname ?? ''),
+            'course.category' => (string)($course->category ?? ''),
+            'course.format' => (string)($course->format ?? ''),
+            'course.lang' => (string)(($course->lang ?? '') ?: current_language()),
             'user.id' => (string)($user->id ?? ''),
             'user.username' => (string)($user->username ?? ''),
             'user.email' => (string)($user->email ?? ''),
@@ -251,6 +254,7 @@ final class url_resolver {
             'user.lang' => (string)($user->lang ?? current_language()),
             'cm.id' => $cmid > 0 ? (string)$cmid : '',
             'site.url' => (string)($CFG->wwwroot ?? ''),
+            'site.shortname' => (string)($SITE->shortname ?? ''),
             default => '',
         };
     }

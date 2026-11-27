@@ -1,161 +1,70 @@
 {{!
     This file is part of Moodle - https://moodle.org/
-
-    Moodle is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
+    Moodle is free software under the GNU General Public License, version 3 or later.
     @template mod_smarturl/admin_config
 }}
-<div class="dd-smarturl-app smu-admin" id="smu-admin-{{uniqid}}" data-payload="{{payloadjson}}">
-    <header class="dd-page-header">
-        <div>
-            <h2 class="dd-page-header-title">{{title}}</h2>
-            <p class="dd-page-header-sub">{{subtitle}}</p>
-        </div>
-        <div class="dd-page-header-actions">
-            <a class="btn btn-outline-secondary" href="{{settingsurl}}">{{strings.paramdefs}} / Settings</a>
-        </div>
-    </header>
-
-    <div class="dd-segmented smu-admin-tabs" role="tablist">
-        <button type="button" class="is-active" role="tab" data-action="tab" data-tab="metadata">{{strings.metadatatypes}}</button>
-        <button type="button" role="tab" data-action="tab" data-tab="params">{{strings.paramdefs}}</button>
-        <button type="button" role="tab" data-action="tab" data-tab="preview">{{strings.testresolution}}</button>
-    </div>
-
-    <div class="alert alert-danger" role="alert" hidden data-region="error-banner"></div>
-    <div class="table-toolbar py-2" role="search">
+<div class="smu-schema" id="smu-admin-{{uniqid}}" data-payload="{{payloadjson}}">
+    <p class="text-body-secondary">{{strings.adminconfigsubtitle}}</p>
+    <nav class="nav nav-tabs mb-3" aria-label="{{strings.settings}}">
+        {{#sections}}
+        <a class="nav-link" href="{{adminUrl}}?tab={{key}}" data-tab="{{key}}">
+            {{title}} <span class="badge rounded-pill smu-state" data-count></span>
+        </a>
+        {{/sections}}
+    </nav>
+    <div class="alert alert-danger" role="alert" data-error hidden></div>
+    <div class="smu-list-toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
         <input type="search" class="form-control" data-search aria-label="{{strings.search}}" placeholder="{{strings.search}}">
+        <details class="dropdown smu-filter">
+            <summary class="btn btn-outline-secondary">
+                <i class="fa fa-filter" aria-hidden="true"></i> {{strings.filters}}
+                <span class="badge rounded-pill smu-state ms-2" data-filter-count hidden>1</span>
+            </summary>
+            <div class="dropdown-menu show p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <strong>{{strings.filters}}</strong>
+                    <button type="button" class="btn btn-link btn-sm" data-clear aria-label="{{strings.clearfilters}}"
+                        title="{{strings.clearfilters}}"><i class="fa fa-rotate-left" aria-hidden="true"></i></button>
+                </div>
+                <label class="form-label small text-uppercase" for="smu-status-{{uniqid}}">{{strings.status}}</label>
+                <select class="form-select" id="smu-status-{{uniqid}}" data-status>
+                    <option value="">{{strings.all}}</option>
+                    <option value="active">{{strings.enabled}}</option>
+                    <option value="inactive">{{strings.disabled}}</option>
+                </select>
+            </div>
+        </details>
+        <div class="smu-list-actions d-flex flex-wrap gap-2">
+            <a href="{{settingsUrl}}" class="btn btn-outline-secondary"><i class="fa fa-gear" aria-hidden="true"></i> {{strings.settings}}</a>
+            <button type="button" class="btn btn-primary" data-add><i class="fa fa-plus" aria-hidden="true"></i> <span></span></button>
+        </div>
     </div>
-
-    <section class="smu-admin-panel" data-panel="metadata">
-        <form class="smu-admin-form" data-form="meta-type">
-            <input type="hidden" name="id" value="0">
-            <div class="smu-form-grid">
-                <label>{{strings.shortname}}
-                    <input class="form-control" name="shortname" required placeholder="e.g. curriculum_code">
-                </label>
-                <label>Name
-                    <input class="form-control" name="name" required placeholder="e.g. Curriculum code">
-                </label>
-                <label>{{strings.groupname}}
-                    <select class="custom-select" name="categoryid">
-                        <option value="0">{{strings.groupname}}</option>
-                        {{#categories}}<option value="{{id}}">{{name}}</option>{{/categories}}
-                    </select>
-                </label>
-                <label>{{strings.datatype}}
-                    <select class="form-control" name="datatype">
-                        {{#datatypes}}<option value="{{value}}">{{value}}</option>{{/datatypes}}
-                    </select>
-                </label>
-                <label>{{strings.priority}}
-                    <select class="form-control" name="display_priority">
-                        {{#priorities}}<option value="{{value}}">{{value}}</option>{{/priorities}}
-                    </select>
-                </label>
-                <div class="smu-check-row">
-                    <label><input type="checkbox" name="searchable" checked> {{strings.searchable}}</label>
-                    <label><input type="checkbox" name="filterable" checked> {{strings.filterable}}</label>
-                    <label><input type="checkbox" name="enabled" checked> {{strings.enabled}}</label>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-primary">{{strings.addmetatype}}</button>
-        </form>
-        <div class="table-responsive" data-region="tablewrap">
-            <table class="table table-hover smu-table mb-0">
-                <thead>
-                    <tr>
-                        <th scope="col">{{strings.shortname}}</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">{{strings.groupname}}</th>
-                        <th scope="col">{{strings.datatype}}</th>
-                        <th scope="col">{{strings.priority}}</th>
-                        <th scope="col">{{strings.enabled}}</th>
-                        <th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody data-region="meta-tbody"></tbody>
+    <div class="card">
+        <div class="table-responsive smu-list-table" data-region="tablewrap">
+            <table class="table table-hover align-middle mb-0">
+                <caption class="visually-hidden"></caption>
+                <thead></thead>
+                <tbody></tbody>
             </table>
-        </div>
-        <div class="card-footer text-right" data-pager hidden>
-            <span class="mr-2 align-middle" data-range role="status"></span>
-            <button class="btn btn-outline-secondary btn-sm mr-1" type="button" data-prev aria-label="{{strings.previous}}">‹</button>
-            <button class="btn btn-outline-secondary btn-sm" type="button" data-next aria-label="{{strings.next}}">›</button>
-        </div>
-    </section>
-
-    <section class="smu-admin-panel" data-panel="params" hidden>
-        <form class="smu-admin-form" data-form="param-def">
-            <input type="hidden" name="id" value="0">
-            <div class="smu-form-grid">
-                <label>{{strings.shortname}}
-                    <input class="form-control" name="shortname" required placeholder="e.g. campus_code">
-                </label>
-                <label>Name
-                    <input class="form-control" name="name" required placeholder="e.g. User campus field">
-                </label>
-                <label>{{strings.sourcetype}}
-                    <select class="form-control" name="source_type">
-                        {{#sourcetypes}}<option value="{{value}}">{{value}}</option>{{/sourcetypes}}
-                    </select>
-                </label>
-                <label>{{strings.sourcekey}}
-                    <input class="form-control" name="source_key" data-source-key required>
-                    <select class="custom-select" data-source-options aria-label="{{strings.sourcekey}}" hidden></select>
-                </label>
-                <label>{{strings.defaultqueryparam}}
-                    <input class="form-control" name="default_query_param" placeholder="optional query param">
-                </label>
-                <div class="smu-check-row">
-                    <label><input type="checkbox" name="enabled" checked> {{strings.enabled}}</label>
-                </div>
+            <div class="p-4 text-center text-body-secondary" data-region="empty" hidden>
+                <p></p><button type="button" class="btn btn-outline-secondary" data-empty-action></button>
             </div>
-            <button type="submit" class="btn btn-primary">{{strings.addparamdef}}</button>
-        </form>
-        <div class="table-responsive" data-region="tablewrap">
-            <table class="table table-hover smu-table mb-0">
-                <thead>
-                    <tr>
-                        <th scope="col">{{strings.shortname}}</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">{{strings.sourcetype}}</th>
-                        <th scope="col">{{strings.sourcekey}}</th>
-                        <th scope="col">{{strings.enabled}}</th>
-                        <th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody data-region="param-tbody"></tbody>
-            </table>
         </div>
-        <div class="card-footer text-right" data-pager hidden>
-            <span class="mr-2 align-middle" data-range role="status"></span>
-            <button class="btn btn-outline-secondary btn-sm mr-1" type="button" data-prev aria-label="{{strings.previous}}">‹</button>
-            <button class="btn btn-outline-secondary btn-sm" type="button" data-next aria-label="{{strings.next}}">›</button>
+        <div class="smu-list-pager border-top px-3 py-2 d-flex align-items-center justify-content-between gap-2 flex-wrap">
+            <label class="d-flex align-items-center gap-2 small mb-0">{{strings.pagerlabel}}
+                <select class="form-select form-select-sm w-auto" data-size></select>
+            </label>
+            <div class="d-flex align-items-center gap-2">
+                <span class="small text-body-secondary" role="status" data-range></span>
+                <button type="button" class="btn btn-link btn-sm" aria-label="{{strings.previous}}" title="{{strings.previous}}" data-prev>
+                    <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn btn-link btn-sm" aria-label="{{strings.next}}" title="{{strings.next}}" data-next>
+                    <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
-    </section>
-
-    <section class="smu-admin-panel" data-panel="preview" hidden>
-        <form class="smu-admin-form" data-form="preview">
-            <div class="smu-form-grid">
-                <label>Template URL
-                    <input class="form-control" name="template" value="https://video.example.org/watch/{{=<% %>=}}{{course_shortname}}<%={{ }}=%>?u={{=<% %>=}}{{user_username}}<%={{ }}=%>">
-                </label>
-                <label>Query Param
-                    <input class="form-control" name="bind_param" value="env">
-                </label>
-                <label>Static Value
-                    <input class="form-control" name="bind_val" value="demo">
-                </label>
-            </div>
-            <button type="submit" class="btn btn-primary">{{strings.testresolution}}</button>
-            <div class="smu-preview-out" hidden data-region="preview-out">
-                <code></code>
-            </div>
-        </form>
-    </section>
+    </div>
 </div>
 {{#js}}
 require(['mod_smarturl/admin_config'], function(AdminConfig) {

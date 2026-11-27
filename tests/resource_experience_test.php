@@ -184,4 +184,52 @@ final class resource_experience_test extends \advanced_testcase {
             'handout.txt'
         ));
     }
+
+    /**
+     * Serves a copied file without emitting the original URL and preserves it in duplicate activities.
+     */
+    public function test_protected_copy_uses_moodle_file_url(): void {
+        global $CFG, $DB, $USER;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        require_once($CFG->dirroot . '/course/lib.php');
+        $course = $this->getDataGenerator()->create_course();
+        $origin = 'https://origin.example.org/private-document.pdf';
+        $activity = $this->getDataGenerator()->create_module('smarturl', [
+            'course' => $course->id,
+            'externalurl' => $origin,
+        ]);
+        $context = \context_module::instance($activity->cmid);
+        $draftid = file_get_unused_draft_itemid();
+        get_file_storage()->create_file_from_string([
+            'contextid' => \context_user::instance($USER->id)->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => $draftid,
+            'filepath' => '/',
+            'filename' => 'handout.pdf',
+        ], '%PDF-1.7');
+        smarturl_update_instance((object)[
+            'instance' => $activity->id,
+            'coursemodule' => $activity->cmid,
+            'smu_protected' => 1,
+            'smu_resourcefile' => $draftid,
+        ], new \stdClass());
+
+        $record = $DB->get_record('smarturl', ['id' => $activity->id], '*', MUST_EXIST);
+        $this->assertSame($origin, $record->externalurl);
+        $target = \mod_smarturl\local\viewer_data::prepare($record, $course, $USER, $context);
+        $this->assertStringContainsString('pluginfile.php', $target['target']['url']);
+        $this->assertStringNotContainsString('origin.example.org', json_encode($target));
+        $this->assertSame('frame', $target['target']['kind']);
+
+        $duplicate = duplicate_module($course, get_fast_modinfo($course)->get_cm($activity->cmid));
+        $this->assertNotNull($duplicate);
+        $copy = \mod_smarturl\local\protected_resource::target($duplicate->context);
+        $this->assertStringContainsString('/' . $duplicate->context->id . '/mod_smarturl/resource/', $copy['url']);
+
+        get_file_storage()->delete_area_files($context->id, 'mod_smarturl', 'resource');
+        $this->expectException(\moodle_exception::class);
+        \mod_smarturl\local\viewer_data::prepare($record, $course, $USER, $context);
+    }
 }

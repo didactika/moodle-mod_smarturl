@@ -26,41 +26,32 @@
         {{/isembed}}
 
         {{^isembed}}
-        <div class="card">{{#hasthumbnail}}<img class="smu-viewer-cover" src="{{thumbnailurl}}" alt="">{{/hasthumbnail}}
-            <div class="card-body">
-                <div class="smu-facade-actions">
-                    {{#ismodal}}
-                    <button type="button" class="btn btn-primary" data-action="open-modal">{{strings.launchmodal}}</button>
-                    {{/ismodal}}
-                    {{#isinline}}
-                    <button type="button" class="btn btn-primary" data-action="launch-inline">{{strings.launchiframe}}</button>
-                    {{/isinline}}
-                    {{#isdirect}}
-                    <a class="btn btn-primary" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{primarylabel}}</a>
-                    {{/isdirect}}
-                </div>
-            </div>
+        <div class="{{#hasthumbnail}}smu-cover-stage{{/hasthumbnail}}{{^hasthumbnail}}smu-empty-stage{{/hasthumbnail}}">
+            {{#hasthumbnail}}<img class="smu-viewer-cover" src="{{thumbnailurl}}" alt="">{{/hasthumbnail}}
+            {{#ismodal}}
+            <button type="button" class="btn btn-primary smu-launch-circle {{#hasthumbnail}}smu-play-overlay{{/hasthumbnail}}"
+                aria-label="{{strings.launchmodal}}" title="{{strings.launchmodal}}" data-action="open-modal">
+                <i class="fa {{#playable}}fa-play{{/playable}}{{^playable}}fa-external-link{{/playable}}" aria-hidden="true"></i>
+            </button>
+            {{/ismodal}}
+            {{#isinline}}
+            <button type="button" class="btn btn-primary smu-launch-circle {{#hasthumbnail}}smu-play-overlay{{/hasthumbnail}}"
+                aria-label="{{strings.launchiframe}}" title="{{strings.launchiframe}}" data-action="launch-inline">
+                <i class="fa {{#playable}}fa-play{{/playable}}{{^playable}}fa-external-link{{/playable}}" aria-hidden="true"></i>
+            </button>
+            {{/isinline}}
+            {{#isdirect}}
+            <a class="btn btn-primary smu-launch-circle {{#hasthumbnail}}smu-play-overlay{{/hasthumbnail}}"
+                href="{{gourl}}" target="_blank" rel="noopener noreferrer" aria-label="{{primarylabel}}" title="{{primarylabel}}">
+                <i class="fa {{#playable}}fa-play{{/playable}}{{^playable}}fa-external-link{{/playable}}" aria-hidden="true"></i>
+            </a>
+            {{/isdirect}}
         </div>
         {{/isembed}}
     </section>
 
-    <dialog class="smu-player-dialog" data-region="modal-backdrop" aria-label="{{name}}">
-        <div class="card">
-            <div class="smu-modal-bar">
-                <span class="fw-semibold">{{name}}</span>
-                <div>
-                    <a class="btn btn-sm btn-outline-secondary" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{strings.openresource}}</a>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-action="close-modal">{{strings.closepreview}}</button>
-                </div>
-            </div>
-            <div class="smu-frame-wrap">
-                <div class="smu-player" data-region="modal-player"></div>
-            </div>
-        </div>
-    </dialog>
-
     {{#intro}}
-    <section class="card card-body smu-description">
+    <section class="smu-description">
         <h2 class="h5">{{strings.description}}</h2>
         <div class="description">{{{intro}}}</div>
     </section>
@@ -77,11 +68,10 @@
                            data-action="search"
                            aria-label="{{strings.metadatasearch}}"
                            placeholder="{{strings.metadatasearchplaceholder}}">
-                    <div class="dd-segmented" role="group" aria-label="View mode">
-                        <button type="button" class="is-active" data-action="view-mode" data-mode="cards">{{strings.viewcards}}</button>
-                        <button type="button" data-action="view-mode" data-mode="table">{{strings.viewtable}}</button>
+                    <div class="btn-group" role="group" aria-label="{{strings.metadataheading}}">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-action="view-mode" data-mode="cards">{{strings.viewcards}}</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-action="view-mode" data-mode="table">{{strings.viewtable}}</button>
                     </div>
-                    {{#strings.copyjson}}<button type="button" class="btn btn-outline-secondary btn-sm" data-action="copy-json">{{strings.copyjson}}</button>{{/strings.copyjson}}
                 </div>
             </div>
             <div class="dd-chips" data-region="group-chips"></div>

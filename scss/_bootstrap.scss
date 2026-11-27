@@ -1,0 +1,59 @@
+// This file is part of Moodle - https://moodle.org/
+//
+// Bootstrap 5 names used by Smart URL on the Bootstrap 4 maintenance line.
+.mod-smarturl {
+    .gap-2 {
+        gap: .5rem;
+    }
+
+    .gap-3 {
+        gap: 1rem;
+    }
+
+    .text-body-secondary {
+        color: var(--secondary);
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .form-select {
+        display: inline-block;
+        padding: .375rem .75rem;
+        border: 1px solid var(--gray, currentColor);
+        border-radius: .5rem;
+        background-color: var(--white);
+        color: var(--body-color, var(--dark));
+        line-height: 1.5;
+    }
+
+    .form-select-sm {
+        padding-block: .25rem;
+        font-size: .875rem;
+    }
+
+    .form-label {
+        margin-bottom: .5rem;
+    }
+
+    .me-2 {
+        margin-inline-end: .5rem;
+    }
+
+    .ms-2 {
+        margin-inline-start: .5rem;
+    }
+
+    .rounded-pill {
+        border-radius: 50rem;
+    }
+}

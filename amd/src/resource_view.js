@@ -22,6 +22,7 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import Ajax from 'core/ajax';
+import Modal from 'core/modal';
 
 
 
@@ -92,16 +93,8 @@ export const init = (rootId) => {
 
     const chipsHost = root.querySelector('[data-region="group-chips"]');
     const resultsHost = root.querySelector('[data-region="results-host"]');
-    const modalBackdrop = root.querySelector('[data-region="modal-backdrop"]');
-    const modalIframe = root.querySelector('[data-region="modal-player"]');
     const track = () => Ajax.call([{methodname: 'mod_smarturl_track_view',
         args: {cmid: Number(payload.cmid), fromviewer: true}}])[0].catch(() => null);
-    let opener = null;
-    modalBackdrop?.addEventListener('close', () => {
-        modalIframe.replaceChildren();
-        opener?.focus();
-    });
-
 
     const groupsMap = {};
     items.forEach((item) => {
@@ -220,31 +213,30 @@ export const init = (rootId) => {
         if (action === 'view-mode') {
             viewMode = actionEl.dataset.mode === 'table' ? 'table' : 'cards';
             root.querySelectorAll('[data-action="view-mode"]').forEach((b) => {
-                b.classList.toggle('is-active', b.dataset.mode === viewMode);
+                b.classList.toggle('active', b.dataset.mode === viewMode);
             });
             renderResults();
         } else if (action === 'toggle-more') {
             showAll = !showAll;
             renderResults();
-        } else if (action === 'copy-json' && navigator.clipboard) {
-            navigator.clipboard.writeText(JSON.stringify(items, null, 2));
-            actionEl.textContent = strings.copied || 'Copied';
-            window.setTimeout(() => {
-                actionEl.textContent = strings.copyjson || 'Copy JSON';
-            }, 1800);
         } else if (action === 'launch-inline') {
             const stage = root.querySelector('.smu-stage');
             if (stage) {
                 stage.innerHTML = '<div class="smu-player">' + (payload.playerHtml || '') + '</div>';
                 track();
             }
-        } else if (action === 'open-modal' && modalBackdrop && modalIframe) {
-            modalIframe.innerHTML = payload.playerHtml || '';
-            opener = actionEl;
-            modalBackdrop.showModal();
+        } else if (action === 'open-modal') {
+            Modal.create({title: payload.name, large: true, removeOnClose: true, returnElement: actionEl})
+                .then(modal => {
+                    const player = document.createElement('div');
+                    player.className = 'mod-smarturl';
+                    player.innerHTML = '<div class="smu-player">' + (payload.playerHtml || '') + '</div>';
+                    modal.getBody()[0].replaceChildren(player);
+                    modal.getRoot().find('.modal-footer').addClass('d-none');
+                    modal.show();
+                    return null;
+                }).catch(() => null);
             track();
-        } else if (action === 'close-modal' && modalBackdrop && modalIframe) {
-            modalBackdrop.close();
         }
     });
 

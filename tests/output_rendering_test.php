@@ -56,7 +56,7 @@ final class output_rendering_test extends \advanced_testcase {
 
         $PAGE->set_url('/mod/smarturl/view.php', ['id' => $cm->id]);
         $PAGE->set_context($context);
-        $renderer = $PAGE->get_renderer('core');
+        $renderer = $PAGE->get_renderer('mod_smarturl');
 
         $html = $renderer->render(new resource_page($record, $course, $cm, $context, $user));
         $this->assertStringContainsString('smu-resource-bar', $html);
@@ -75,12 +75,12 @@ final class output_rendering_test extends \advanced_testcase {
 
         $PAGE->set_url('/mod/smarturl/admin.php');
         $PAGE->set_context(\context_system::instance());
-        $renderer = $PAGE->get_renderer('core');
+        $renderer = $PAGE->get_renderer('mod_smarturl');
 
-        $adminhtml = $renderer->render(new admin_config_page());
-        $this->assertStringContainsString('dd-page-header', $adminhtml);
-        $this->assertStringContainsString('dd-segmented', $adminhtml);
-        $this->assertStringContainsString('metaTypes', $adminhtml);
+        $adminhtml = $renderer->render(new admin_config_page('categories'));
+        $this->assertStringContainsString('smu-schema', $adminhtml);
+        $this->assertStringContainsString('nav nav-tabs', $adminhtml);
+        $this->assertStringContainsString('Categories', $adminhtml);
 
         $builderhtml = $renderer->render(new \mod_smarturl\output\form_builder_widget('params', [], [], false, []));
         $this->assertStringContainsString('smu-form-builder', $builderhtml);

@@ -7,11 +7,9 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-const presets = {
-    video: ['CARD', 'VIEWERTAB', 'POSTER'],
-    document: ['CARD', 'ACTIVITY', 'EMBED'],
-    weblink: ['LINK', 'EXTERNAL', 'LINK'],
-};
+import Modal from 'core/modal';
+import ModalEvents from 'core/modal_events';
+import {installSelectMenus} from './select_menus';
 
 /**
  * Mounts the appearance controls.
@@ -40,9 +38,12 @@ export const init = (id) => {
         const course = field('smu_course')?.value;
         const launch = field('smu_launch')?.value || '';
         const useCard = course === 'CARD' || course === 'IMAGE';
-        const showCover = useCard || (!launch.startsWith('EXTERNAL') && field('smu_viewer')?.value === 'POSTER');
+        const viewer = field('smu_viewer')?.value || 'AUTO';
         const href = field('externalurl')?.value || '';
         const media = /(?:youtube\.com|youtu\.be|vimeo\.com|\.(?:mp4|webm|mp3|wav|ogg)(?:[?#]|$))/i.test(href);
+        const showCover = useCard || (!launch.startsWith('EXTERNAL') && (viewer !== 'AUTO' || !media) && viewer !== 'EMBED');
+        const popup = ['VIEWERWINDOW', 'EXTERNALWINDOW'].includes(launch);
+        ['popup_width', 'popup_height'].forEach(name => field(name)?.closest('.fitem')?.classList.toggle('d-none', !popup));
         ['smu_poster', 'thumbnail_url', 'poster_filemanager'].forEach(name => {
             field(name)?.closest('.fitem')?.classList.toggle('d-none', !showCover);
         });
@@ -52,12 +53,8 @@ export const init = (id) => {
     editor.addEventListener('input', refreshControls);
     refreshControls();
     const trigger = root.querySelector('[data-open]');
-    const dialog = root.querySelector('dialog');
-    const frame = dialog.querySelector('iframe');
-    const surface = dialog.querySelector('[data-surface]');
-    const language = dialog.querySelector('[data-language]');
-
-    const refresh = () => {
+    installSelectMenus(editor);
+    const refresh = (frame, surface, language) => {
         window.tinymce?.triggerSave();
         const draft = {};
         for (const [name, value] of new FormData(editor)) {
@@ -88,30 +85,24 @@ export const init = (id) => {
         form.remove();
     };
 
-    root.querySelector('[data-preset]').addEventListener('change', ({target}) => {
-        const preset = presets[target.value];
-        if (preset) {
-            ['course', 'launch', 'viewer'].forEach((option, index) => {
-                const field = editor.elements['smu_' + option];
-                if (field && !field.disabled) {
-                    field.value = preset[index];
-                    field.dispatchEvent(new Event('change', {bubbles: true}));
-                }
-            });
-            target.value = '';
-        }
+    trigger.addEventListener('click', async() => {
+        const content = root.querySelector('template').content.cloneNode(true);
+        const modal = await Modal.create({title: trigger.textContent.trim(), large: true, removeOnClose: true,
+            returnElement: trigger});
+        const body = modal.getBody()[0];
+        body.replaceChildren(content);
+        const clear = installSelectMenus(body);
+        const frame = body.querySelector('iframe');
+        const surface = body.querySelector('[data-surface]');
+        const language = body.querySelector('[data-language]');
+        const update = () => refresh(frame, surface, language);
+        surface.addEventListener('change', update);
+        language.addEventListener('change', update);
+        body.querySelector('[data-mobile]').addEventListener('change', ({target}) =>
+            frame.classList.toggle('smu-preview-mobile', target.checked));
+        modal.getRoot().on(ModalEvents.hidden, clear);
+        modal.getRoot().find('.modal-footer').addClass('d-none');
+        modal.show();
+        update();
     });
-    trigger.addEventListener('click', () => {
-        dialog.showModal();
-        refresh();
-    });
-    dialog.querySelector('[data-close]').addEventListener('click', () => dialog.close());
-    dialog.addEventListener('close', () => {
-        frame.removeAttribute('src');
-        trigger.focus();
-    });
-    surface.addEventListener('change', refresh);
-    language.addEventListener('change', refresh);
-    dialog.querySelector('[data-mobile]').addEventListener('change', ({target}) =>
-        frame.classList.toggle('smu-preview-mobile', target.checked));
 };

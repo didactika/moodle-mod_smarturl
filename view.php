@@ -61,18 +61,20 @@ smarturl_view($smarturl, $course, $cm, $context);
 
 $PAGE->set_url('/mod/smarturl/view.php', ['id' => $cm->id] + ($auxiliary ? ['aux' => 1] : []));
 if ($auxiliary) {
-    $PAGE->set_pagelayout('popup');
+    $PAGE->set_pagelayout('embedded');
+    $PAGE->activityheader->disable();
 }
 $name = format_string(activity_content::title($smarturl), true, ['context' => $context]);
+$PAGE->activityheader->set_description('');
 $PAGE->set_title($name);
 $PAGE->set_heading($auxiliary ? $name : format_string($course->fullname));
 
 $page = new \mod_smarturl\output\resource_page($smarturl, $course, $cm, $context, $USER);
-$body = $OUTPUT->render($page);
+$body = $PAGE->get_renderer('mod_smarturl')->render($page);
 
 echo $OUTPUT->header();
 if ($auxiliary) {
-    echo $OUTPUT->heading($name);
+    echo html_writer::div($OUTPUT->heading($name, 1, 'h3'), 'container py-3 pb-0');
 }
-echo html_writer::div($body, 'mod-smarturl' . ($auxiliary ? ' smu-auxiliary-viewer' : ''));
+echo html_writer::div($body, 'mod-smarturl' . ($auxiliary ? ' smu-auxiliary-viewer container pb-4' : ''));
 echo $OUTPUT->footer();
