@@ -66,15 +66,23 @@ if ($auxiliary) {
 }
 $name = format_string(activity_content::title($smarturl), true, ['context' => $context]);
 $PAGE->activityheader->set_description('');
+$PAGE->activityheader->set_hidecompletion(true);
 $PAGE->set_title($name);
 $PAGE->set_heading($auxiliary ? $name : format_string($course->fullname));
 
 $page = new \mod_smarturl\output\resource_page($smarturl, $course, $cm, $context, $USER);
-$body = $PAGE->get_renderer('mod_smarturl')->render($page);
+$renderer = $PAGE->get_renderer('mod_smarturl');
+$body = $renderer->render($page);
+$fields = presentation::select_fields(
+    \mod_smarturl\local\metadata\metadata_repository::for_instance((int)$smarturl->id),
+    $profile['viewerfields'],
+);
+$tools = $renderer->resource_tools($fields, false, $renderer->completion_tools($PAGE->cm, $USER->id));
 
 echo $OUTPUT->header();
 if ($auxiliary) {
     echo html_writer::div($OUTPUT->heading($name, 1, 'h3'), 'container py-3 pb-0');
 }
-echo html_writer::div($body, 'mod-smarturl' . ($auxiliary ? ' smu-auxiliary-viewer container pb-4' : ''));
+$classes = 'mod-smarturl smu-viewer-layout' . ($auxiliary ? ' smu-auxiliary-viewer container pb-4' : '');
+echo html_writer::div($tools . $body, $classes);
 echo $OUTPUT->footer();

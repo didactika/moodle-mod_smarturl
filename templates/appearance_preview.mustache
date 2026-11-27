@@ -18,7 +18,8 @@
                 <option value="">{{previewcurrentlanguage}}</option>
                 {{#languages}}<option value="{{code}}">{{name}}</option>{{/languages}}
             </select>
-            <label class="mb-0"><input type="checkbox" data-mobile> {{previewmobile}}</label>
+            <div class="form-check"><input id="smu-mobile-{{uniqid}}" class="form-check-input" type="checkbox" data-mobile>
+            <label for="smu-mobile-{{uniqid}}" class="form-check-label">{{previewmobile}}</label></div>
         </div>
         <iframe class="smu-preview-frame" name="smu-preview-frame-{{uniqid}}" title="{{previewresource}}"></iframe>
         </div>

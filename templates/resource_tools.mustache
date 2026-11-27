@@ -1,0 +1,37 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+    @template mod_smarturl/resource_tools
+    Example context (json):
+    {"hasfields":true,"details":"Resource details","groups":[{"name":"General","items":[{"label":"Type","value":"Web"}]}]}
+}}
+<div class="smu-resource-tools" id="smu-tools-{{uniqid}}" data-smarturl-tools>
+    {{#hasfields}}
+    <button class="btn btn-outline-secondary smu-iconpill smu-info-trigger" type="button"
+        data-smarturl-details data-title="{{details}}" title="{{details}}" aria-label="{{details}}">
+        <i class="fa fa-info" aria-hidden="true"></i>
+    </button>
+    <template>
+        <div class="mod-smarturl smu-detail-groups">
+            {{#groups}}
+            <section class="card">
+                <div class="card-body">
+                    <h3 class="h6 mb-3">{{name}}</h3>
+                    <dl class="smu-detail-values mb-0">
+                    {{#items}}
+                        <div><dt>{{label}}</dt><dd>{{#url}}<a href="{{url}}" target="_blank" rel="noopener noreferrer">{{value}}</a>{{/url}}{{^url}}{{value}}{{/url}}</dd></div>
+                    {{/items}}
+                    </dl>
+                </div>
+            </section>
+            {{/groups}}
+        </div>
+    </template>
+    {{/hasfields}}
+    {{#completion}}<div class="smu-inline-completion">{{{completion}}}</div>{{/completion}}
+    {{#course}}<div data-smarturl-completion-slot></div>{{/course}}
+</div>
+{{#js}}
+require(['mod_smarturl/resource_tools'], function(Tools) {
+    Tools.init('smu-tools-{{uniqid}}');
+});
+{{/js}}

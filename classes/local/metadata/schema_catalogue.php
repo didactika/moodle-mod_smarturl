@@ -138,6 +138,7 @@ final class schema_catalogue {
      * @return array
      */
     public static function props(string $tab): array {
+        global $OUTPUT;
         $sections = [];
         foreach (
             [
@@ -173,6 +174,9 @@ final class schema_catalogue {
             'settingsUrl' => (new \moodle_url('/admin/settings.php', ['section' => 'modsettingsmarturl']))->out(false),
             'adminUrl' => (new \moodle_url('/mod/smarturl/admin.php'))->out(false),
             'strings' => $strings,
+            'previousIcon' => $OUTPUT->pix_icon('i/previous', ''),
+            'nextIcon' => $OUTPUT->pix_icon('i/next', ''),
+            'clearIcon' => $OUTPUT->pix_icon('e/cancel', ''),
         ];
     }
 }

@@ -24,227 +24,43 @@
 import Ajax from 'core/ajax';
 import Modal from 'core/modal';
 
-
-
-const COLLAPSE_THRESHOLD = 18;
-
 /**
- * Escapes HTML special characters safely.
+ * Mounts the resource player after an intentional launch.
  *
- * @param {string} value Raw string.
- * @returns {string}
+ * @param {string} rootId Viewer container ID.
  */
-const esc = (value) => String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-
-/**
- * Tracks completion view event via external web service.
- *
- * @param {number} cmid Course module ID.
- */
-
-/**
- * Renders formatted metadata value markup based on datatype.
- *
- * @param {Object} item Metadata entry.
- * @returns {string}
- */
-const renderValueHtml = (item) => {
-    const val = String(item.value ?? '');
-    if (item.datatype === 'URL' && /^https?:\/\//i.test(val)) {
-        return `<a href="${esc(val)}" target="_blank" rel="noopener noreferrer">${esc(val)}</a>`;
-    }
-    if (item.datatype === 'TAGS') {
-        const parts = val.split(',').map((s) => s.trim()).filter(Boolean);
-        return `<div class="dd-tags">${parts.map((p) => `<span class="dd-tag">${esc(p)}</span>`).join('')}</div>`;
-    }
-    if (item.datatype === 'BADGE') {
-        return `<span class="dd-tag dd-tag-primary">${esc(val)}</span>`;
-    }
-    if (item.datatype === 'BOOLEAN') {
-        const truthy = ['1', 'true', 'yes', 'si'].includes(val.toLowerCase());
-        return `<span class="dd-tag">${truthy ? 'Yes' : 'No'}</span>`;
-    }
-    return esc(val);
-};
-
-/**
- * Initializes the interactive viewer on a rendered resource_view root element.
- *
- * @param {string} rootId Root container ID.
- */
-export const init = (rootId) => {
+export const init = rootId => {
     const root = document.getElementById(rootId);
     if (!root) {
         return;
     }
+    const resource = JSON.parse(root.dataset.payload || '{}');
+    const track = () => Ajax.call([{
+        methodname: 'mod_smarturl_track_view',
+        args: {cmid: Number(resource.cmid), fromviewer: true},
+    }])[0].catch(() => null);
 
-    const payload = JSON.parse(root.dataset.payload || '{}');
-    const items = Array.isArray(payload.metadata) ? payload.metadata : [];
-    const strings = payload.strings || {};
-
-    let activeGroup = 'ALL';
-    let searchQuery = '';
-    let viewMode = 'cards';
-    let showAll = false;
-
-    const chipsHost = root.querySelector('[data-region="group-chips"]');
-    const resultsHost = root.querySelector('[data-region="results-host"]');
-    const track = () => Ajax.call([{methodname: 'mod_smarturl_track_view',
-        args: {cmid: Number(payload.cmid), fromviewer: true}}])[0].catch(() => null);
-
-    const groupsMap = {};
-    items.forEach((item) => {
-        if (item.displaypriority === 'HIDDEN') {
+    root.addEventListener('click', async event => {
+        const trigger = event.target.closest('[data-action="launch-inline"], [data-action="open-modal"]');
+        if (!trigger) {
             return;
         }
-        const g = item.group || 'General';
-        groupsMap[g] = (groupsMap[g] || 0) + 1;
-    });
-    const groups = Object.keys(groupsMap);
-
-    const renderChips = () => {
-        if (!chipsHost) {
-            return;
-        }
-        let html = `<button type="button" class="${activeGroup === 'ALL' ? 'dd-chip-applied' : ''}" data-group="ALL">` +
-            `${esc(strings.allgroups || 'All groups')} (${items.length})</button>`;
-        groups.forEach((g) => {
-            const cls = activeGroup === g ? 'dd-chip-applied' : '';
-            html += `<button type="button" class="${cls}" data-group="${esc(g)}">${esc(g)} (${groupsMap[g]})</button>`;
-        });
-        chipsHost.innerHTML = html;
-    };
-
-    const filterItems = () => {
-        const needle = searchQuery.trim().toLowerCase();
-        return items.filter((item) => {
-            if (item.displaypriority === 'HIDDEN') {
-                return false;
-            }
-            if (activeGroup !== 'ALL' && (item.group || 'General') !== activeGroup) {
-                return false;
-            }
-            if (!needle) {
-                return true;
-            }
-            return (
-                String(item.label || '').toLowerCase().includes(needle) ||
-                String(item.key || '').toLowerCase().includes(needle) ||
-                String(item.value || '').toLowerCase().includes(needle) ||
-                String(item.group || '').toLowerCase().includes(needle)
-            );
-        });
-    };
-
-    const renderResults = () => {
-        if (!resultsHost) {
-            return;
-        }
-        const filtered = filterItems();
-        if (filtered.length === 0) {
-            resultsHost.innerHTML = `<div class="dd-empty">` +
-                `<p class="dd-empty-title">${esc(strings.emptymetadata || 'No metadata')}</p>` +
-                `<p class="dd-empty-hint">${esc(strings.emptymetadata_hint || '')}</p>` +
-                `</div>`;
-            return;
-        }
-
-        const slice = (!showAll && !searchQuery.trim() && filtered.length > COLLAPSE_THRESHOLD)
-            ? filtered.slice(0, COLLAPSE_THRESHOLD)
-            : filtered;
-
-        let html = '';
-        if (viewMode === 'table') {
-            const rows = slice.map((item) =>
-                `<tr><td><code>${esc(item.group || 'General')}</code></td>` +
-                `<td><strong>${esc(item.label || item.key)}</strong></td>` +
-                `<td>${renderValueHtml(item)}</td></tr>`
-            ).join('');
-            html = `<div class="smu-table-wrap"><table class="table smu-table"><tbody>${rows}</tbody></table></div>`;
+        const player = document.createElement('div');
+        player.className = 'smu-player';
+        player.innerHTML = resource.playerHtml || '';
+        if (trigger.dataset.action === 'launch-inline') {
+            root.querySelector('.smu-stage')?.replaceChildren(player);
         } else {
-            const byGroup = {};
-            slice.forEach((item) => {
-                const g = item.group || 'General';
-                if (!byGroup[g]) {
-                    byGroup[g] = [];
-                }
-                byGroup[g].push(item);
-            });
-            html = '<div class="smu-cards-grid">' + Object.keys(byGroup).map((g) => {
-                const entries = byGroup[g].map((item) =>
-                    `<div class="dd-dl-item"><dt>${esc(item.label || item.key)}</dt><dd>${renderValueHtml(item)}</dd></div>`
-                ).join('');
-                return `<section class="smu-group-card"><h4 class="smu-group-title">${esc(g)}</h4>` +
-                    `<dl class="dd-dl smu-dl-card">${entries}</dl></section>`;
-            }).join('') + '</div>';
+            const title = document.createElement('span');
+            title.textContent = resource.name;
+            const modal = await Modal.create({title: title.innerHTML, large: true, removeOnClose: true, returnElement: trigger});
+            const wrapper = document.createElement('div');
+            wrapper.className = 'mod-smarturl';
+            wrapper.append(player);
+            modal.getBody()[0].replaceChildren(wrapper);
+            modal.getRoot().find('.modal-footer').addClass('d-none');
+            modal.show();
         }
-
-        if (!searchQuery.trim() && filtered.length > COLLAPSE_THRESHOLD) {
-            const label = showAll
-                ? (strings.showless || 'Show fewer')
-                : `${strings.showmore || 'Show all'} (${filtered.length})`;
-            html += `<div class="smu-showmore-row">` +
-                `<button type="button" class="btn btn-outline-secondary btn-sm" data-action="toggle-more">${esc(label)}</button>` +
-                `</div>`;
-        }
-        resultsHost.innerHTML = html;
-    };
-
-    renderChips();
-    renderResults();
-
-    root.addEventListener('click', (e) => {
-        const groupBtn = e.target.closest('[data-group]');
-        if (groupBtn) {
-            activeGroup = groupBtn.dataset.group;
-            renderChips();
-            renderResults();
-            return;
-        }
-        const actionEl = e.target.closest('[data-action]');
-        if (!actionEl) {
-            return;
-        }
-        const action = actionEl.dataset.action;
-        if (action === 'view-mode') {
-            viewMode = actionEl.dataset.mode === 'table' ? 'table' : 'cards';
-            root.querySelectorAll('[data-action="view-mode"]').forEach((b) => {
-                b.classList.toggle('active', b.dataset.mode === viewMode);
-            });
-            renderResults();
-        } else if (action === 'toggle-more') {
-            showAll = !showAll;
-            renderResults();
-        } else if (action === 'launch-inline') {
-            const stage = root.querySelector('.smu-stage');
-            if (stage) {
-                stage.innerHTML = '<div class="smu-player">' + (payload.playerHtml || '') + '</div>';
-                track();
-            }
-        } else if (action === 'open-modal') {
-            Modal.create({title: payload.name, large: true, removeOnClose: true, returnElement: actionEl})
-                .then(modal => {
-                    const player = document.createElement('div');
-                    player.className = 'mod-smarturl';
-                    player.innerHTML = '<div class="smu-player">' + (payload.playerHtml || '') + '</div>';
-                    modal.getBody()[0].replaceChildren(player);
-                    modal.getRoot().find('.modal-footer').addClass('d-none');
-                    modal.show();
-                    return null;
-                }).catch(() => null);
-            track();
-        }
+        await track();
     });
-
-    const searchInput = root.querySelector('[data-action="search"]');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderResults();
-        });
-    }
 };

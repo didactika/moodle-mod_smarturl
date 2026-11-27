@@ -72,7 +72,6 @@ class resource_page implements named_templatable, \renderable {
         $view = viewer_data::prepare($this->smarturl, $this->course, $this->user, $this->context);
         $canedit = has_capability('moodle/course:manageactivities', $this->context);
         $policy = $canedit ? policy_manager::get_by_cmid((int)$this->cm->id) : null;
-        $metadata = $view['metadata'];
         $displaymode = $view['mode'];
         $poster = $view['poster'];
         $locked = policy_manager::locked_fields($policy);
@@ -103,7 +102,6 @@ class resource_page implements named_templatable, \renderable {
             'aspectRatio' => (string)($this->smarturl->aspect_ratio ?: '16:9'),
             'popupWidth' => (int)($this->smarturl->popup_width ?: 1200),
             'popupHeight' => (int)($this->smarturl->popup_height ?: 800),
-            'metadata' => $metadata,
             'strings' => [
                 'playresource' => get_string('playresource', 'smarturl'),
                 'openresource' => get_string('openexternal', 'smarturl'),
@@ -159,9 +157,6 @@ class resource_page implements named_templatable, \renderable {
             'lockedcount' => count($locked),
             'haslocked' => count($locked) > 0,
             'lockedbadge' => get_string('lockedbadge', 'smarturl'),
-            'hasmetadata' => count($metadata) > 0,
-            'showfilter' => count($metadata) > 6,
-            'metadatacount' => count($metadata),
             'strings' => $payload['strings'],
             'payloadjson' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ];

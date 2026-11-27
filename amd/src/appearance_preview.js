@@ -22,17 +22,6 @@ export const init = (id) => {
     if (!editor) {
         return;
     }
-    const catalogue = editor.elements.smu_catalogue;
-    catalogue?.addEventListener('change', () => {
-        if (catalogue.value) {
-            const link = editor.elements.externalurl;
-            link.value = catalogue.value;
-            link.dispatchEvent(new Event('input', {bubbles: true}));
-            if (!editor.elements.name.value) {
-                editor.elements.name.value = catalogue.selectedOptions[0]?.textContent?.trim() || '';
-            }
-        }
-    });
     const field = name => editor.querySelector('[name="' + name + '"]');
     const refreshControls = () => {
         const course = field('smu_course')?.value;
@@ -44,6 +33,7 @@ export const init = (id) => {
         const showCover = useCard || (!launch.startsWith('EXTERNAL') && (viewer !== 'AUTO' || !media) && viewer !== 'EMBED');
         const popup = ['VIEWERWINDOW', 'EXTERNALWINDOW'].includes(launch);
         ['popup_width', 'popup_height'].forEach(name => field(name)?.closest('.fitem')?.classList.toggle('d-none', !popup));
+        editor.querySelector('[data-smu-cover-heading]')?.classList.toggle('d-none', !showCover);
         ['smu_poster', 'thumbnail_url', 'poster_filemanager'].forEach(name => {
             field(name)?.closest('.fitem')?.classList.toggle('d-none', !showCover);
         });
@@ -95,11 +85,20 @@ export const init = (id) => {
         const frame = body.querySelector('iframe');
         const surface = body.querySelector('[data-surface]');
         const language = body.querySelector('[data-language]');
+        const resize = () => {
+            const preview = frame.contentDocument?.querySelector('.smu-draft-preview');
+            if (preview) {
+                frame.style.height = Math.min(preview.scrollHeight + 4, window.innerHeight * 0.6) + 'px';
+            }
+        };
+        frame.addEventListener('load', resize);
         const update = () => refresh(frame, surface, language);
         surface.addEventListener('change', update);
         language.addEventListener('change', update);
-        body.querySelector('[data-mobile]').addEventListener('change', ({target}) =>
-            frame.classList.toggle('smu-preview-mobile', target.checked));
+        body.querySelector('[data-mobile]').addEventListener('change', ({target}) => {
+            frame.classList.toggle('smu-preview-mobile', target.checked);
+            window.requestAnimationFrame(resize);
+        });
         modal.getRoot().on(ModalEvents.hidden, clear);
         modal.getRoot().find('.modal-footer').addClass('d-none');
         modal.show();

@@ -71,7 +71,9 @@ $name = format_string(activity_content::title($data), true, ['context' => $conte
 $target = null;
 $message = '';
 try {
-    if ($profile['protected']) {
+    if ($profile['gateway']) {
+        $message = get_string('deliverypreview', 'smarturl');
+    } else if ($profile['protected']) {
         $file = protected_resource::draft((int)($data->smu_resourcefile ?? 0));
         if ($file) {
             $url = moodle_url::make_draftfile_url(
@@ -112,7 +114,8 @@ if ($profile['poster'] === 'AUTO' || $profile['poster'] === 'UPLOAD') {
         $poster = moodle_url::make_draftfile_url($draft, $file->get_filepath(), $file->get_filename())->out(false);
     }
 }
-if (!$profile['protected'] && !$poster && !empty($data->thumbnail_url) && in_array($profile['poster'], ['AUTO', 'URL'], true)) {
+$remoteimage = !$profile['protected'] && !$profile['gateway'] && in_array($profile['poster'], ['AUTO', 'URL'], true);
+if ($remoteimage && !$poster && !empty($data->thumbnail_url)) {
     try {
         $poster = resource_target::normalise($data->thumbnail_url);
     } catch (invalid_parameter_exception) {
@@ -160,11 +163,8 @@ $payload = [
     'icon' => $playable ? 'fa-play' : 'fa-external-link',
     'description' => trim($description),
     'descriptionlabel' => get_string('description'),
-    'metadata' => $incourse ? [] : $metadata,
     'metadataheading' => get_string('metadataheading', 'smarturl'),
-    'hasmetadata' => !$incourse && !empty($metadata),
-    'badges' => $incourse ? $metadata : [],
-    'hasbadges' => $incourse && !empty($metadata),
+    'hasdetails' => !empty($metadata),
 ];
 
 echo $OUTPUT->header();

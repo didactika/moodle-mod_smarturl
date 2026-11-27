@@ -156,15 +156,6 @@ export const init = (rootId) => {
         const dis = locked ? ' disabled' : '';
         let html = '';
 
-        if (kind === 'params' && catalog.length > 0) {
-            const chips = catalog.map((c) =>
-                `<button type="button" class="btn btn-sm btn-outline-secondary" data-token="${esc(c.shortname)}"${dis}>` +
-                `+ {{${esc(c.shortname)}}}</button>`
-            ).join('');
-            html += `<div class="smu-token-bar">` +
-                `<span class="smu-token-label">${esc(strings.inserttokens || 'Quick tokens:')}</span>` +
-                `<div class="smu-token-chips">${chips}</div></div>`;
-        }
 
         const groups = kind === 'metadata' ? groupedMeta() : [];
         const rowsHtml = rows.map((row, idx) => {
@@ -269,16 +260,6 @@ export const init = (rootId) => {
 
     root.addEventListener('click', (e) => {
         if (locked) {
-            return;
-        }
-        const tok = e.target.closest('[data-token]');
-        if (tok && urlInput) {
-            const token = `{{${tok.dataset.token}}}`;
-            const start = urlInput.selectionStart ?? urlInput.value.length;
-            const end = urlInput.selectionEnd ?? urlInput.value.length;
-            urlInput.value = `${urlInput.value.slice(0, start)}${token}${urlInput.value.slice(end)}`;
-            urlInput.focus();
-            updatePreviewDom();
             return;
         }
         const addBtn = e.target.closest('[data-add]');

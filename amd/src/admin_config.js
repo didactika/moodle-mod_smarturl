@@ -20,7 +20,6 @@ export const init = id => {
     const t = data.strings;
     const tabs = [...root.querySelectorAll('[data-tab]')];
     const table = root.querySelector('table');
-    const filter = root.querySelector('details');
     const search = root.querySelector('[data-search]');
     const status = root.querySelector('[data-status]');
     const pager = root.querySelector('[data-size]');
@@ -99,7 +98,7 @@ export const init = id => {
         next.disabled = offset + span >= count;
         root.querySelector('[data-range]').textContent = t.pagerange.replace('{$a->from}', count ? offset + 1 : 0)
             .replace('{$a->to}', Math.min(offset + span, count)).replace('{$a->total}', count);
-        root.querySelector('[data-filter-count]').hidden = !status.value;
+        root.querySelector('[data-clear-status]').hidden = !status.value;
         add.querySelector('span').textContent = section.add;
         table.caption.textContent = section.title;
         const heading = document.createElement('tr');
@@ -193,24 +192,17 @@ export const init = id => {
     previous.addEventListener('click', () => { page--; render(); });
     next.addEventListener('click', () => { page++; render(); });
     add.addEventListener('click', () => open(add));
-    root.querySelector('[data-clear]').addEventListener('click', clear);
+    root.querySelector('[data-clear-status]').addEventListener('click', () => {
+        status.value = '';
+        page = 0;
+        render();
+    });
     const emptyAction = empty.querySelector('button');
     emptyAction.addEventListener('click', () => {
         if (query || status.value) {
             clear();
         } else {
             open(emptyAction);
-        }
-    });
-    document.addEventListener('pointerdown', event => {
-        if (!filter.contains(event.target) && !event.target.closest?.('.smu-select-menu')) {
-            filter.open = false;
-        }
-    });
-    filter.addEventListener('keydown', event => {
-        if (event.key === 'Escape') {
-            filter.open = false;
-            filter.querySelector('summary').focus();
         }
     });
     installSelectMenus(root);

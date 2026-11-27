@@ -60,7 +60,7 @@ final class output_rendering_test extends \advanced_testcase {
 
         $html = $renderer->render(new resource_page($record, $course, $cm, $context, $user));
         $this->assertStringContainsString('smu-resource-bar', $html);
-        $this->assertStringContainsString('smu-explorer', $html);
+        $this->assertStringContainsString('smu-stage', $html);
         $this->assertStringContainsString('https://media.example.org/DD-MUSTACHE?u=mstudent', $html);
         $this->assertStringContainsString('Mustache Stage Demo', $html);
     }

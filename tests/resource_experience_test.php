@@ -232,4 +232,18 @@ final class resource_experience_test extends \advanced_testcase {
         $this->expectException(\moodle_exception::class);
         \mod_smarturl\local\viewer_data::prepare($record, $course, $USER, $context);
     }
+
+    /**
+     * Rejects unapproved origins and gives the player only a campus URL.
+     */
+    public function test_remote_delivery_requires_an_approved_binary_origin(): void {
+        $this->resetAfterTest();
+        set_config('deliveryhosts', 'files.example.org', 'mod_smarturl');
+        $delivery = \mod_smarturl\local\remote_delivery::target('https://files.example.org/example.pdf?key=123', 42);
+        $this->assertSame('frame', $delivery['kind']);
+        $this->assertStringContainsString('/mod/smarturl/delivery.php?id=42', $delivery['url']);
+        $this->assertStringNotContainsString('files.example.org', json_encode($delivery));
+        $this->expectException(\moodle_exception::class);
+        \mod_smarturl\local\remote_delivery::target('https://unapproved.example.org/example.pdf', 42);
+    }
 }

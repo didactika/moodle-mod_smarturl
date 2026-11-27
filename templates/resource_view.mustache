@@ -9,17 +9,6 @@
     @template mod_smarturl/resource_view
 }}
 <div class="dd-smarturl-app smu-resource-shell" id="smu-viewer-{{uniqid}}" data-payload="{{payloadjson}}">
-    <div class="smu-resource-bar">
-        <div class="dd-tags">
-            {{#hasduration}}<span class="dd-tag">{{durationlabel}}</span>{{/hasduration}}
-            {{#hasmanagedby}}<span class="dd-tag dd-tag-primary">{{managedbadge}}: {{managedby}}</span>{{/hasmanagedby}}
-            {{#haslocked}}<span class="dd-tag">{{lockedbadge}}: {{lockedcount}}</span>{{/haslocked}}
-        </div>
-        {{#isembed}}
-        <a class="btn btn-outline-secondary btn-sm" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{strings.openresource}}</a>
-        {{/isembed}}
-    </div>
-
     <section class="smu-stage">
         {{#isembed}}
         <div class="smu-player">{{{playerhtml}}}</div>
@@ -50,6 +39,17 @@
         {{/isembed}}
     </section>
 
+    <div class="smu-resource-bar">
+        <div class="dd-tags">
+            {{#hasduration}}<span class="dd-tag">{{durationlabel}}</span>{{/hasduration}}
+            {{#hasmanagedby}}<span class="dd-tag dd-tag-primary">{{managedbadge}}: {{managedby}}</span>{{/hasmanagedby}}
+            {{#haslocked}}<span class="dd-tag">{{lockedbadge}}: {{lockedcount}}</span>{{/haslocked}}
+        </div>
+        {{#isembed}}
+        <a class="btn btn-outline-secondary btn-sm" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{strings.openresource}}</a>
+        {{/isembed}}
+    </div>
+
     {{#intro}}
     <section class="smu-description">
         <h2 class="h5">{{strings.description}}</h2>
@@ -57,31 +57,6 @@
     </section>
     {{/intro}}
 
-    {{#hasmetadata}}
-    <section class="smu-explorer" aria-label="{{strings.metadataheading}}">
-        {{^showfilter}}<h2 class="h5 mb-3">{{strings.metadataheading}}</h2>{{/showfilter}}
-        {{#showfilter}}
-        <div class="smu-meta-toolbar">
-            <div class="smu-meta-toprow">
-                <h3 class="smu-section-title mb-0">{{strings.metadataheading}} ({{metadatacount}})</h3>
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <input type="search"
-                           class="form-control smu-meta-search"
-                           data-action="search"
-                           aria-label="{{strings.metadatasearch}}"
-                           placeholder="{{strings.metadatasearchplaceholder}}">
-                    <div class="btn-group" role="group" aria-label="{{strings.metadataheading}}">
-                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-action="view-mode" data-mode="cards">{{strings.viewcards}}</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-action="view-mode" data-mode="table">{{strings.viewtable}}</button>
-                    </div>
-                </div>
-            </div>
-            <div class="dd-chips" data-region="group-chips"></div>
-        </div>
-        {{/showfilter}}
-        <div data-region="results-host"></div>
-    </section>
-    {{/hasmetadata}}
 </div>
 {{#js}}
 require(['mod_smarturl/resource_view'], function(ResourceView) {

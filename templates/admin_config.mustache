@@ -15,25 +15,13 @@
     <div class="alert alert-danger" role="alert" data-error hidden></div>
     <div class="smu-list-toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
         <input type="search" class="form-control" data-search aria-label="{{strings.search}}" placeholder="{{strings.search}}">
-        <details class="dropdown smu-filter">
-            <summary class="btn btn-outline-secondary">
-                <i class="fa fa-filter" aria-hidden="true"></i> {{strings.filters}}
-                <span class="badge rounded-pill smu-state ms-2" data-filter-count hidden>1</span>
-            </summary>
-            <div class="dropdown-menu show p-3">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <strong>{{strings.filters}}</strong>
-                    <button type="button" class="btn btn-link btn-sm" data-clear aria-label="{{strings.clearfilters}}"
-                        title="{{strings.clearfilters}}"><i class="fa fa-rotate-left" aria-hidden="true"></i></button>
-                </div>
-                <label class="form-label small text-uppercase" for="smu-status-{{uniqid}}">{{strings.status}}</label>
-                <select class="form-select" id="smu-status-{{uniqid}}" data-status>
-                    <option value="">{{strings.all}}</option>
-                    <option value="active">{{strings.enabled}}</option>
-                    <option value="inactive">{{strings.disabled}}</option>
-                </select>
-            </div>
-        </details>
+        <select class="form-select smu-status-filter" aria-label="{{strings.status}}" data-status>
+            <option value="">{{strings.status}}</option>
+            <option value="active">{{strings.enabled}}</option>
+            <option value="inactive">{{strings.disabled}}</option>
+        </select>
+        <button type="button" class="btn btn-outline-secondary smu-iconpill" data-clear-status hidden
+            aria-label="{{strings.clearfilters}}" title="{{strings.clearfilters}}">{{{clearIcon}}}</button>
         <div class="smu-list-actions d-flex flex-wrap gap-2">
             <a href="{{settingsUrl}}" class="btn btn-outline-secondary"><i class="fa fa-gear" aria-hidden="true"></i> {{strings.settings}}</a>
             <button type="button" class="btn btn-primary" data-add><i class="fa fa-plus" aria-hidden="true"></i> <span></span></button>
@@ -57,10 +45,10 @@
             <div class="d-flex align-items-center gap-2">
                 <span class="small text-body-secondary" role="status" data-range></span>
                 <button type="button" class="btn btn-link btn-sm" aria-label="{{strings.previous}}" title="{{strings.previous}}" data-prev>
-                    <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                    {{{previousIcon}}}
                 </button>
                 <button type="button" class="btn btn-link btn-sm" aria-label="{{strings.next}}" title="{{strings.next}}" data-next>
-                    <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    {{{nextIcon}}}
                 </button>
             </div>
         </div>
