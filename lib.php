@@ -392,10 +392,6 @@ function smarturl_get_coursemodule_info(\stdClass $coursemodule) {
     $info->icon = !$profile['protected'] && !$profile['gateway'] && ($usemimeicons === false || $usemimeicons)
         ? smarturl_guess_icon((string)$smarturl->externalurl) : null;
 
-    if (empty($smarturl->presentation_json) && !empty($coursemodule->showdescription)) {
-        $info->content = format_module_intro('smarturl', $smarturl, $coursemodule->id, false);
-    }
-
     $custom = [
         'display_mode' => $smarturl->display_mode,
         'filtericon' => true,
@@ -493,6 +489,7 @@ function smarturl_cm_info_view(cm_info $cm): void {
     $actionlabel = in_array($launch, ['VIEWERTAB', 'VIEWERWINDOW', 'EXTERNALTAB', 'EXTERNALWINDOW'], true)
         ? get_string('launch_' . strtolower($launch), 'smarturl')
         : get_string('openactivity', 'smarturl');
+    $courseintro = activity_content::description($instance, $cm->context, (int)$cm->id);
     $parts = [];
     $renderer = $PAGE->get_renderer('mod_smarturl');
     if ($profile['course'] !== 'LINK' || $launch === 'INLINE') {
@@ -502,15 +499,16 @@ function smarturl_cm_info_view(cm_info $cm): void {
         } catch (\moodle_exception) {
             $target = ['kind' => 'link', 'poster' => null];
         }
-        $source = ($profile['protected'] || $profile['gateway']) ? 'UPLOAD' : $profile['poster'];
+        $source = ($profile['protected'] || $profile['deferred']) ? 'UPLOAD' : $profile['poster'];
         $poster = viewer_data::poster($instance, $cm->context, $source, $target['poster']);
         if ($profile['course'] !== 'LINK') {
             $picture = $poster ? html_writer::empty_tag('img', [
                 'src' => $poster, 'class' => 'smu-course-cover', 'alt' => '', 'loading' => 'lazy',
             ]) : '';
             $media = !empty($target['playable']) || in_array($target['kind'], ['media', 'video', 'audio'], true);
-            if ($picture && $profile['play'] && $media) {
-                $play = html_writer::tag('i', '', ['class' => 'fa fa-play', 'aria-hidden' => 'true']);
+            if ($picture && (!$media || $profile['play'])) {
+                $glyph = $media ? 'fa-play' : 'fa-arrow-up-right-from-square';
+                $play = html_writer::tag('i', '', ['class' => 'fa ' . $glyph, 'aria-hidden' => 'true']);
                 $picture = html_writer::div(
                     $picture . html_writer::span($play, 'btn btn-primary smu-launch-circle smu-play-overlay'),
                     'smu-cover-stage',
@@ -530,24 +528,18 @@ function smarturl_cm_info_view(cm_info $cm): void {
             $parts[] = $renderer->course_card([
                 'cover' => $cover,
                 'hasbody' => $actions !== '',
-                'tools' => $renderer->resource_tools($fields, true),
+                'tools' => $renderer->resource_tools($fields, true, '', $courseintro),
                 'actions' => $actions,
             ]);
         }
         if ($launch === 'INLINE' && $target['kind'] !== 'link') {
-            $embed = viewer_data::render_target(resource_target::with_markup($target, $name), $name);
+            $embed = viewer_data::player_markup($target, $name, (int)$cm->id, $profile['deferred']);
             $preview = new \mod_smarturl\output\course_preview((int)$cm->id, $embed);
             $parts[] = $PAGE->get_renderer('mod_smarturl')->render($preview);
         }
     }
-    if ($profile['course'] === 'LINK' && $fields) {
-        $parts[] = html_writer::div($renderer->resource_tools($fields), 'smu-course-inline-tools');
-    }
-    if ($profile['description'] && $profile['course'] !== 'IMAGE' && !empty($instance->presentation_json)) {
-        $intro = activity_content::description($instance, $cm->context, (int)$cm->id);
-        if ($intro !== '') {
-            $parts[] = html_writer::div($intro, 'smu-course-description');
-        }
+    if ($profile['course'] === 'LINK' && ($fields || trim($courseintro) !== '')) {
+        $parts[] = html_writer::div($renderer->resource_tools($fields, false, '', $courseintro), 'smu-course-inline-tools');
     }
     if ($parts) {
         $cm->set_after_link(html_writer::div(implode('', $parts), 'smu-course-presentation'));

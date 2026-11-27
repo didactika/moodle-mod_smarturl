@@ -34,15 +34,6 @@ const AppearancePreview = (props: PreviewProps) => {
     const [surface, setSurface] = useState('course');
     const [language, setLanguage] = useState('');
     const [mobile, setMobile] = useState(false);
-    const resize = () => {
-        const frame = iframe.current;
-        const content = frame?.contentDocument?.querySelector('.smu-draft-preview');
-        if (frame && content) {
-            frame.style.height = Math.min(content.scrollHeight + 4, window.innerHeight * 0.6) + 'px';
-        }
-    };
-
-    useEffect(() => { window.requestAnimationFrame(resize); }, [mobile]);
 
     const [previewPane, setPreviewPane] = useState<HTMLDivElement | null>(null);
     useEffect(() => previewPane ? installSelectMenus(previewPane) : undefined, [previewPane]);
@@ -123,7 +114,7 @@ const AppearancePreview = (props: PreviewProps) => {
             </button>
         </div>
         {open && <MoodleModal title={props.previewresource} large onClose={() => setOpen(false)}>
-            <div ref={setPreviewPane} className="mod-smarturl">
+            <div ref={setPreviewPane} className="mod-smarturl smu-preview-pane">
             <div className="smu-preview-toolbar d-flex flex-wrap align-items-center gap-2 pb-3 border-bottom">
                 <select className="form-select w-auto" aria-label={props.previewresource} value={surface}
                     onChange={e => setSurface(e.target.value)}>
@@ -136,13 +127,13 @@ const AppearancePreview = (props: PreviewProps) => {
                     <option value="">{props.previewcurrentlanguage}</option>
                     {props.languages.map(lang => <option key={lang.code} value={lang.code}>{lang.name}</option>)}
                 </select>
-                <div className="form-check">
+                <div className="form-check form-switch smu-preview-switch">
                     <input id={id + "-mobile"} type="checkbox" className="form-check-input"
                         checked={mobile} onChange={e => setMobile(e.target.checked)}/>
                     <label className="form-check-label" htmlFor={id + "-mobile"}>{props.previewmobile}</label>
                 </div>
             </div>
-            <iframe ref={iframe} onLoad={resize} name={'smu-preview' + id} title={props.previewresource}
+            <iframe ref={iframe} name={'smu-preview' + id} title={props.previewresource}
                 className={mobile ? 'smu-preview-frame smu-preview-mobile' : 'smu-preview-frame'}/>
             </div>
         </MoodleModal>}

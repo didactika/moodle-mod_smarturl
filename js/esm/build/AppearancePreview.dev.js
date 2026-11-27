@@ -19,16 +19,6 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
   const [surface, setSurface] = useState("course");
   const [language, setLanguage] = useState("");
   const [mobile, setMobile] = useState(false);
-  const resize = /* @__PURE__ */ __name(() => {
-    const frame = iframe.current;
-    const content = frame?.contentDocument?.querySelector(".smu-draft-preview");
-    if (frame && content) {
-      frame.style.height = Math.min(content.scrollHeight + 4, window.innerHeight * 0.6) + "px";
-    }
-  }, "resize");
-  useEffect(() => {
-    window.requestAnimationFrame(resize);
-  }, [mobile]);
   const [previewPane, setPreviewPane] = useState(null);
   useEffect(() => previewPane ? installSelectMenus(previewPane) : void 0, [previewPane]);
   useEffect(() => {
@@ -117,20 +107,20 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
     /* @__PURE__ */ jsxDEV("div", { className: "d-flex flex-wrap align-items-center gap-2", children: /* @__PURE__ */ jsxDEV("button", { ref: trigger, className: "btn btn-outline-secondary", type: "button", onClick: () => setOpen(true), children: [
       /* @__PURE__ */ jsxDEV("i", { className: "fa fa-eye me-2", "aria-hidden": "true" }, void 0, false, {
         fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-        lineNumber: 122,
+        lineNumber: 113,
         columnNumber: 17
       }),
       props.previewresource
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-      lineNumber: 121,
+      lineNumber: 112,
       columnNumber: 13
     }) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-      lineNumber: 120,
+      lineNumber: 111,
       columnNumber: 9
     }),
-    open && /* @__PURE__ */ jsxDEV(MoodleModal, { title: props.previewresource, large: true, onClose: () => setOpen(false), children: /* @__PURE__ */ jsxDEV("div", { ref: setPreviewPane, className: "mod-smarturl", children: [
+    open && /* @__PURE__ */ jsxDEV(MoodleModal, { title: props.previewresource, large: true, onClose: () => setOpen(false), children: /* @__PURE__ */ jsxDEV("div", { ref: setPreviewPane, className: "mod-smarturl smu-preview-pane", children: [
       /* @__PURE__ */ jsxDEV("div", { className: "smu-preview-toolbar d-flex flex-wrap align-items-center gap-2 pb-3 border-bottom", children: [
         /* @__PURE__ */ jsxDEV(
           "select",
@@ -142,17 +132,17 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
             children: [
               /* @__PURE__ */ jsxDEV("option", { value: "course", children: props.previewcourse }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-                lineNumber: 130,
+                lineNumber: 121,
                 columnNumber: 21
               }),
               /* @__PURE__ */ jsxDEV("option", { value: "activity", children: props.previewactivity }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-                lineNumber: 131,
+                lineNumber: 122,
                 columnNumber: 21
               }),
               /* @__PURE__ */ jsxDEV("option", { value: "auxiliary", children: props.previewauxiliary }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-                lineNumber: 132,
+                lineNumber: 123,
                 columnNumber: 21
               })
             ]
@@ -161,7 +151,7 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
           true,
           {
             fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-            lineNumber: 128,
+            lineNumber: 119,
             columnNumber: 17
           }
         ),
@@ -175,12 +165,12 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
             children: [
               /* @__PURE__ */ jsxDEV("option", { value: "", children: props.previewcurrentlanguage }, void 0, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-                lineNumber: 136,
+                lineNumber: 127,
                 columnNumber: 21
               }),
               props.languages.map((lang) => /* @__PURE__ */ jsxDEV("option", { value: lang.code, children: lang.name }, lang.code, false, {
                 fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-                lineNumber: 137,
+                lineNumber: 128,
                 columnNumber: 50
               }))
             ]
@@ -189,11 +179,11 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
           true,
           {
             fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-            lineNumber: 134,
+            lineNumber: 125,
             columnNumber: 17
           }
         ),
-        /* @__PURE__ */ jsxDEV("div", { className: "form-check", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "form-check form-switch smu-preview-switch", children: [
           /* @__PURE__ */ jsxDEV(
             "input",
             {
@@ -207,30 +197,29 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
             false,
             {
               fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-              lineNumber: 140,
+              lineNumber: 131,
               columnNumber: 21
             }
           ),
           /* @__PURE__ */ jsxDEV("label", { className: "form-check-label", htmlFor: id + "-mobile", children: props.previewmobile }, void 0, false, {
             fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-            lineNumber: 142,
+            lineNumber: 133,
             columnNumber: 21
           })
         ] }, void 0, true, {
           fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-          lineNumber: 139,
+          lineNumber: 130,
           columnNumber: 17
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-        lineNumber: 127,
+        lineNumber: 118,
         columnNumber: 13
       }),
       /* @__PURE__ */ jsxDEV(
         "iframe",
         {
           ref: iframe,
-          onLoad: resize,
           name: "smu-preview" + id,
           title: props.previewresource,
           className: mobile ? "smu-preview-frame smu-preview-mobile" : "smu-preview-frame"
@@ -239,22 +228,22 @@ const AppearancePreview = /* @__PURE__ */ __name((props) => {
         false,
         {
           fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-          lineNumber: 145,
+          lineNumber: 136,
           columnNumber: 13
         }
       )
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-      lineNumber: 126,
+      lineNumber: 117,
       columnNumber: 13
     }) }, void 0, false, {
       fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-      lineNumber: 125,
+      lineNumber: 116,
       columnNumber: 18
     })
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/AppearancePreview.tsx",
-    lineNumber: 119,
+    lineNumber: 110,
     columnNumber: 12
   });
 }, "AppearancePreview");

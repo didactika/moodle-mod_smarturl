@@ -27,7 +27,6 @@ use mod_smarturl\local\policy\availability_composer;
 use mod_smarturl\local\activity_content;
 use mod_smarturl\local\policy\policy_manager;
 use mod_smarturl\local\presentation;
-use mod_smarturl\local\remote_delivery;
 use mod_smarturl\local\url\resource_target;
 use mod_smarturl\local\url\url_resolver;
 use mod_smarturl\output\form_builder_widget;
@@ -81,11 +80,13 @@ class mod_smarturl_mod_form extends moodleform_mod {
         $mform->addHelpButton('externalurl', 'externalurl', 'smarturl');
         $mform->addRule('externalurl', null, 'required', null, 'client');
 
-        if (get_config('mod_smarturl', 'deliveryhosts') || presentation::for_instance((object)$this->current)['gateway']) {
-            $mform->addElement('advcheckbox', 'smu_gateway', get_string('presentation_gateway', 'smarturl'));
-            $mform->addHelpButton('smu_gateway', 'presentation_gateway', 'smarturl');
+        $mform->addElement('advcheckbox', 'smu_deferred', get_string('presentation_deferred', 'smarturl'));
+        $mform->addHelpButton('smu_deferred', 'presentation_deferred', 'smarturl');
+        if (presentation::for_instance((object)$this->current)['gateway']) {
+            $mform->addElement('html', html_writer::div(get_string('deliveryretired_edit', 'smarturl'), 'alert alert-info'));
         }
         $this->standard_intro_elements();
+        $mform->removeElement('showdescription', true);
 
         // Presentation controls use the Moodle form contract on both maintenance lines.
         $mform->addElement('header', 'appearancehdr', get_string('appearance', 'smarturl'));
@@ -122,7 +123,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
             $mform->setDefault($field, (int)get_config('mod_smarturl', 'defaultpopup' . $dimension) ?: $value);
         }
         foreach (presentation::FLAGS as $key) {
-            if ($key === 'protected' || $key === 'gateway') {
+            if (in_array($key, ['protected', 'gateway', 'deferred', 'description'], true)) {
                 if ($mform->elementExists('smu_' . $key)) {
                     $mform->setDefault('smu_' . $key, (int)$defaults[$key]);
                 }
@@ -132,7 +133,7 @@ class mod_smarturl_mod_form extends moodleform_mod {
             $mform->addHelpButton('smu_' . $key, 'presentation_' . $key, 'smarturl');
             $mform->setDefault('smu_' . $key, (int)$defaults[$key]);
         }
-        foreach (['title', 'icon', 'description'] as $key) {
+        foreach (['title', 'icon'] as $key) {
             $mform->hideIf('smu_' . $key, 'smu_course', 'neq', 'CARD');
         }
         $mform->hideIf('smu_play', 'smu_course', 'eq', 'LINK');
@@ -460,13 +461,6 @@ class mod_smarturl_mod_form extends moodleform_mod {
      */
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
-        if (!empty($data['smu_gateway']) && !empty($data['externalurl'])) {
-            try {
-                remote_delivery::validate($data['externalurl']);
-            } catch (\moodle_exception $exception) {
-                $errors['externalurl'] = get_string('deliveryinvalid', 'smarturl');
-            }
-        }
         if (!empty($data['externalurl'])) {
             try {
                 resource_target::normalise($data['externalurl'], true);

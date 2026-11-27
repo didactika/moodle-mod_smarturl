@@ -13,7 +13,7 @@ interface CoreModal {
     getRoot: () => {
         on: (event: string, action: () => void) => void;
         off: (event: string) => void;
-        find: (selector: string) => {0?: HTMLElement};
+        find: (selector: string) => {0?: HTMLElement; addClass: (classes: string) => void};
     };
     getBody: () => {0: HTMLElement};
     show: () => void;
@@ -51,6 +51,7 @@ export default function MoodleModal({title, large, children, footer, onClose}: P
             }
             instance = modal;
             const root = modal.getRoot();
+            root.find('.modal-dialog').addClass('smu-fixed-modal');
             root.on('modal:hidden', () => close.current());
             const body = modal.getBody()[0] as HTMLElement;
             const bottom = root.find('.modal-footer')[0] as HTMLElement | undefined;

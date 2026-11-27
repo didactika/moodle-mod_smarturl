@@ -86,7 +86,7 @@ class resource_page implements react_component_renderable, \renderable {
             'name' => $view['name'],
             'intro' => $view['intro'],
             'playable' => !empty($view['target']['playable']) || in_array($view['target']['kind'], ['video', 'audio'], true),
-            'playerHtml' => viewer_data::render_target($view['target'], $view['name']),
+            'playerHtml' => $view['player'],
             'goUrl' => (new \moodle_url('/mod/smarturl/go.php', ['id' => $this->cm->id, 'fromviewer' => 1]))->out(false),
             'displayMode' => $view['mode'],
             'popupWidth' => (int)($this->smarturl->popup_width ?: 1200),

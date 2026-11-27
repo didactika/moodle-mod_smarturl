@@ -234,16 +234,20 @@ final class resource_experience_test extends \advanced_testcase {
     }
 
     /**
-     * Rejects unapproved origins and gives the player only a campus URL.
+     * Gives a deferred player a Moodle URL and preserves explicit publication settings.
      */
-    public function test_remote_delivery_requires_an_approved_binary_origin(): void {
+    public function test_deferred_player_omits_the_origin(): void {
         $this->resetAfterTest();
-        set_config('deliveryhosts', 'files.example.org', 'mod_smarturl');
-        $delivery = \mod_smarturl\local\remote_delivery::target('https://files.example.org/example.pdf?key=123', 42);
-        $this->assertSame('frame', $delivery['kind']);
-        $this->assertStringContainsString('/mod/smarturl/delivery.php?id=42', $delivery['url']);
-        $this->assertStringNotContainsString('files.example.org', json_encode($delivery));
-        $this->expectException(\moodle_exception::class);
-        \mod_smarturl\local\remote_delivery::target('https://unapproved.example.org/example.pdf', 42);
+        $origin = 'https://youtu.be/M7lc1UVf-VE';
+        $target = resource_target::describe($origin);
+        $markup = \mod_smarturl\local\viewer_data::player_markup($target, 'Video', 42, true);
+        $this->assertStringContainsString('/mod/smarturl/player.php?id=42', $markup);
+        $this->assertStringNotContainsString('M7lc1UVf-VE', $markup);
+        $legacy = (object)['presentation_json' => '{"gateway":true}'];
+        $unpublished = (object)['presentation_json' => presentation::from_submission((object)['smu_deferred' => 0], $legacy)];
+        $this->assertTrue(presentation::for_instance($unpublished)['gateway']);
+        $updated = (object)['presentation_json' => presentation::from_submission((object)['smu_deferred' => 1], $legacy)];
+        $this->assertTrue(presentation::for_instance($updated)['deferred']);
+        $this->assertFalse(presentation::for_instance($updated)['gateway']);
     }
 }

@@ -28,6 +28,7 @@ function MoodleModal({ title, large, children, footer, onClose }) {
       }
       instance = modal;
       const root = modal.getRoot();
+      root.find(".modal-dialog").addClass("smu-fixed-modal");
       root.on("modal:hidden", () => close.current());
       const body = modal.getBody()[0];
       const bottom = root.find(".modal-footer")[0];
@@ -55,7 +56,7 @@ function MoodleModal({ title, large, children, footer, onClose }) {
     footer && createPortal(footer, mount.footer)
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/components/common/MoodleModal.tsx",
-    lineNumber: 76,
+    lineNumber: 77,
     columnNumber: 20
   }, this) : null;
 }

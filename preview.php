@@ -71,8 +71,8 @@ $name = format_string(activity_content::title($data), true, ['context' => $conte
 $target = null;
 $message = '';
 try {
-    if ($profile['gateway']) {
-        $message = get_string('deliverypreview', 'smarturl');
+    if ($profile['deferred']) {
+        $message = get_string('deferred_preview', 'smarturl');
     } else if ($profile['protected']) {
         $file = protected_resource::draft((int)($data->smu_resourcefile ?? 0));
         if ($file) {
@@ -114,7 +114,7 @@ if ($profile['poster'] === 'AUTO' || $profile['poster'] === 'UPLOAD') {
         $poster = moodle_url::make_draftfile_url($draft, $file->get_filepath(), $file->get_filename())->out(false);
     }
 }
-$remoteimage = !$profile['protected'] && !$profile['gateway'] && in_array($profile['poster'], ['AUTO', 'URL'], true);
+$remoteimage = !$profile['protected'] && !$profile['deferred'] && in_array($profile['poster'], ['AUTO', 'URL'], true);
 if ($remoteimage && !$poster && !empty($data->thumbnail_url)) {
     try {
         $poster = resource_target::normalise($data->thumbnail_url);
@@ -143,7 +143,7 @@ $metadata = $imageonly ? [] : presentation::select_fields(
     $incourse ? $profile['coursefields'] : $profile['viewerfields'],
     $incourse
 );
-$description = (!$incourse || (!$imageonly && $profile['description']))
+$description = (!$incourse)
     ? activity_content::description($data, $context, 0) : '';
 
 $embed = $target && !$incourse && in_array($profile['viewer'], ['AUTO', 'EMBED'], true) && $target['kind'] !== 'link';

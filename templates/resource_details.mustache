@@ -1,0 +1,26 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+    @template mod_smarturl/resource_details
+    Example context (json):
+    {"description":"<p>About this resource.</p>","descriptionlabel":"Description","groups":[{"name":"General","items":[{"label":"Type","value":"Web"}]}]}
+}}
+{{#description}}
+<section class="smu-details-description">
+    <h3 class="h6">{{descriptionlabel}}</h3>
+    <div class="description">{{{description}}}</div>
+</section>
+{{/description}}
+{{#hasgroups}}
+<div class="smu-detail-groups">
+    {{#groups}}
+    <section class="card smu-detail-card">
+        <header class="card-header"><h3 class="h6 mb-0">{{name}}</h3></header>
+        <dl class="card-body smu-detail-values mb-0">
+            {{#items}}
+            <div><dt>{{label}}</dt><dd>{{#url}}<a href="{{url}}" target="_blank" rel="noopener noreferrer">{{value}}</a>{{/url}}{{^url}}{{value}}{{/url}}</dd></div>
+            {{/items}}
+        </dl>
+    </section>
+    {{/groups}}
+</div>
+{{/hasgroups}}

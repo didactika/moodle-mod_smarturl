@@ -27,6 +27,13 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
     $ADMIN->add('modsettings', new admin_externalpage(
+        'modsmarturlplugins',
+        get_string('manageplugins', 'smarturl'),
+        new moodle_url('/mod/smarturl/plugins.php'),
+    ));
+    \mod_smarturl\local\subplugins::register_settings($ADMIN);
+
+    $ADMIN->add('modsettings', new admin_externalpage(
         'modsmarturlschema',
         get_string('adminconfiglink', 'smarturl'),
         new moodle_url('/mod/smarturl/admin.php'),
@@ -39,6 +46,11 @@ if ($ADMIN->fulltree) {
         new moodle_url('/mod/smarturl/admin.php'),
         get_string('adminconfiglink', 'smarturl'),
         ['class' => 'btn btn-outline-secondary']
+    );
+    $link .= html_writer::link(
+        new moodle_url('/mod/smarturl/plugins.php'),
+        get_string('manageplugins', 'smarturl'),
+        ['class' => 'btn btn-outline-secondary ms-2'],
     );
     $settings->add(new \mod_smarturl\local\settings_heading(
         'mod_smarturl/schema_nav',
@@ -113,16 +125,5 @@ if ($ADMIN->fulltree) {
             $value,
             PARAM_INT,
         ));
-    }
-    $settings->add(new admin_setting_configtextarea(
-        'mod_smarturl/deliveryhosts',
-        get_string('deliveryhosts', 'smarturl'),
-        get_string('deliveryhosts_desc', 'smarturl'),
-        '',
-    ));
-    foreach (\core_component::get_plugin_list('smarturlplayer') as $directory) {
-        if (is_readable($directory . '/settings.php')) {
-            require($directory . '/settings.php');
-        }
     }
 }

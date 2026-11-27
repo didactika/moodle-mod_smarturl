@@ -13,6 +13,7 @@ const openSchemaModal = /* @__PURE__ */ __name((options, update, failed) => {
   void requireAsync("core_form/modalform").then((Modal) => {
     const form = new Modal(options);
     form.addEventListener(form.events.LOADED, () => {
+      form.modal.getRoot().find(".modal-dialog").addClass("smu-fixed-modal");
       const clickMenu = installSelectMenus(form.modal.getRoot()[0]);
       form.modal.getRoot().on("modal:hidden", clickMenu);
     });
