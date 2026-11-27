@@ -71,12 +71,13 @@ $string['datatype_tags'] = 'Tags';
 $string['datatype_text'] = 'Text';
 $string['datatype_url'] = 'Web address';
 $string['defaultappearance'] = 'Display defaults';
+$string['defaultappearance_desc'] = 'Preselected for new activities. Teachers can change them, and existing activities keep their values.';
 $string['defaultcategory'] = 'General';
-$string['defaultcoursestyle_desc'] = 'Initially selected for new activities.';
-$string['defaultpopupheight'] = 'Default pop-up height (px)';
-$string['defaultpopupwidth'] = 'Default pop-up width (px)';
+$string['defaultpopupheight'] = 'Default pop-up window height (px)';
+$string['defaultpopupwidth'] = 'Default pop-up window width (px)';
 $string['defaultqueryparam'] = 'Suggested parameter';
 $string['defaultwindowsize'] = 'Window size';
+$string['defaultwindowsize_desc'] = 'Used by **Viewer window** and **External window**.';
 $string['deferred_preview'] = 'The resource loads when someone opens it.';
 $string['delete_fields'] = 'Existing values are kept. Values from hidden fields remain hidden.';
 $string['delete_variables'] = 'Links that reference this variable will stop receiving its value.';
@@ -185,7 +186,12 @@ $string['poster_upload'] = 'Uploaded image';
 $string['poster_url'] = 'Image URL';
 $string['posterimage'] = 'Upload image';
 $string['presentation_course'] = 'Course layout';
-$string['presentation_course_help'] = 'Choose a link, a card or just the cover on the course page.';
+$string['presentation_course_desc'] = 'How the activity appears on the course page.';
+$string['presentation_course_help'] = 'How the activity appears on the course page.
+
+* **Link**: the standard activity link.
+* **Card**: cover image with details below.
+* **Image only**: just the cover, without name or icon.';
 $string['presentation_deferred'] = 'Load on click';
 $string['presentation_deferred_help'] = 'The browser receives the resource address when someone opens it. Leave this off to load supported embeds immediately.';
 $string['presentation_description'] = 'Show the description';
@@ -195,17 +201,44 @@ $string['presentation_gateway_help'] = 'Moodle retrieves a supported file from a
 $string['presentation_icon'] = 'Show the activity icon';
 $string['presentation_icon_help'] = 'Show the type icon next to the activity title in the course.';
 $string['presentation_launch'] = 'Open in';
-$string['presentation_launch_help'] = 'Choose where the resource opens when someone selects it in the course.';
+$string['presentation_launch_desc'] = 'What happens when someone selects the activity.';
+$string['presentation_launch_help'] = 'What happens when someone selects the activity.
+
+* **Automatic**: the activity page if the resource can be shown there, otherwise the external site.
+* **Activity page**: the Smart URL page inside the course.
+* **Viewer tab**: the Smart URL viewer, without course navigation, in a new browser tab.
+* **Viewer window**: the Smart URL viewer in a pop-up window.
+* **External site**: the resource address in the same tab, replacing the course page.
+* **External tab**: the resource address in a new browser tab.
+* **External window**: the resource address in a pop-up window.
+* **In the course**: below the activity on the course page.';
 $string['presentation_play'] = 'Show a play button over the image';
 $string['presentation_play_help'] = 'Put the play button on the course cover for audio and video.';
 $string['presentation_poster'] = 'Cover source';
-$string['presentation_poster_help'] = 'Use the provider image, an uploaded file, an image URL or no cover.';
+$string['presentation_poster_desc'] = 'Image used as the cover on the course page and in the viewer.';
+$string['presentation_poster_help'] = 'Image used as the cover.
+
+* **Automatic**: uploaded image, then image URL, then provider image.
+* **Uploaded image** or **Image URL**: set in each activity.
+* **Provider image**: the video thumbnail, for example from YouTube.
+* **No image**: no cover.
+
+Private copies and load on click use only an uploaded image.';
 $string['presentation_protected'] = 'Serve a private copy';
 $string['presentation_protected_help'] = 'Upload a PDF, image, audio or video to serve it through Moodle. The source address stays in the activity settings. You can also upload a cover.';
 $string['presentation_title'] = 'Show the title';
 $string['presentation_title_help'] = 'Show the activity title above its card in the course.';
 $string['presentation_viewer'] = 'Viewer layout';
-$string['presentation_viewer_help'] = 'Choose how Smart URL shows the resource inside its viewer.';
+$string['presentation_viewer_desc'] = 'How the Smart URL page shows the resource.';
+$string['presentation_viewer_help'] = 'How the Smart URL page shows the resource.
+
+* **Automatic**: embeds media, images and PDFs; links to other web pages.
+* **Embedded**: embeds everything, including web pages. Some sites block this.
+* **Cover with button**: the resource loads when the cover is selected.
+* **External link**: only a button to open the resource.
+* **Dialog**: the resource opens in a dialog.
+
+Not used when **Open in** goes to the external site.';
 $string['preset'] = 'Apply a preset';
 $string['preset_document'] = 'Document';
 $string['preset_video'] = 'Video';
@@ -313,4 +346,4 @@ $string['visibility_hidden'] = 'Hidden';
 $string['visibility_primary'] = 'Highlighted';
 $string['visibility_secondary'] = 'Standard';
 $string['windowdimensions'] = 'Window dimensions';
-$string['windowdimensions_help'] = 'Set the initial size of a separate window in pixels.';
+$string['windowdimensions_help'] = 'Initial pop-up size in pixels for **Viewer window** and **External window**.';

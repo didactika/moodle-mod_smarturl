@@ -63,9 +63,12 @@ $string['datatype_tags'] = 'Etiquetas';
 $string['datatype_text'] = 'Texto';
 $string['datatype_url'] = 'Dirección web';
 $string['defaultappearance'] = 'Valores de presentación';
+$string['defaultappearance_desc'] = 'Preseleccionados en las actividades nuevas. El profesor puede cambiarlos y las actividades existentes conservan sus valores.';
 $string['defaultcategory'] = 'General';
-$string['defaultcoursestyle_desc'] = 'Presentación inicial de las actividades nuevas.';
+$string['defaultpopupheight'] = 'Alto predeterminado de la ventana emergente (px)';
+$string['defaultpopupwidth'] = 'Ancho predeterminado de la ventana emergente (px)';
 $string['defaultwindowsize'] = 'Tamaño de la ventana';
+$string['defaultwindowsize_desc'] = 'Se usa con **Ventana del visor** y **Ventana externa**.';
 $string['deferred_preview'] = 'El recurso se carga cuando alguien lo abre.';
 $string['delete_fields'] = 'Se conservan los valores. Los de los campos ocultos siguen ocultos.';
 $string['delete_variables'] = 'Los enlaces que usan esta variable dejarán de recibir su valor.';
@@ -156,7 +159,12 @@ $string['poster_upload'] = 'Imagen subida';
 $string['poster_url'] = 'URL de imagen';
 $string['posterimage'] = 'Subir imagen';
 $string['presentation_course'] = 'Vista en el curso';
-$string['presentation_course_help'] = 'Elige un enlace, una tarjeta o solo la portada en el curso.';
+$string['presentation_course_desc'] = 'Cómo aparece la actividad en la página del curso.';
+$string['presentation_course_help'] = 'Cómo aparece la actividad en la página del curso.
+
+* **Enlace**: el enlace estándar de la actividad.
+* **Tarjeta**: portada con los detalles debajo.
+* **Solo imagen**: solo la portada, sin nombre ni icono.';
 $string['presentation_deferred'] = 'Cargar al hacer clic';
 $string['presentation_deferred_help'] = 'El navegador recibe la dirección cuando alguien abre el recurso. Desactiva esta opción para cargar los recursos incrustados al entrar.';
 $string['presentation_description'] = 'Mostrar la descripción';
@@ -166,17 +174,44 @@ $string['presentation_gateway_help'] = 'Moodle obtiene un archivo compatible des
 $string['presentation_icon'] = 'Mostrar el icono';
 $string['presentation_icon_help'] = 'Muestra el icono del tipo junto al título en el curso.';
 $string['presentation_launch'] = 'Abrir en';
-$string['presentation_launch_help'] = 'Elige dónde se abre el recurso al seleccionarlo en el curso.';
+$string['presentation_launch_desc'] = 'Qué ocurre al seleccionar la actividad.';
+$string['presentation_launch_help'] = 'Qué ocurre al seleccionar la actividad.
+
+* **Automático**: la página de la actividad si puede mostrar el recurso; si no, el sitio externo.
+* **Página de la actividad**: la página de Smart URL dentro del curso.
+* **Pestaña del visor**: el visor de Smart URL, sin la navegación del curso, en una pestaña nueva del navegador.
+* **Ventana del visor**: el visor de Smart URL en una ventana emergente.
+* **Sitio externo**: la dirección del recurso en la misma pestaña, en lugar de la página del curso.
+* **Pestaña externa**: la dirección del recurso en una pestaña nueva del navegador.
+* **Ventana externa**: la dirección del recurso en una ventana emergente.
+* **Dentro del curso**: debajo de la actividad en la página del curso.';
 $string['presentation_play'] = 'Mostrar un botón de reproducción sobre la imagen';
 $string['presentation_play_help'] = 'Muestra el botón de reproducción sobre la portada de audios y vídeos.';
 $string['presentation_poster'] = 'Origen de la portada';
-$string['presentation_poster_help'] = 'Usa la imagen del proveedor, un archivo, una URL de imagen o ninguna portada.';
+$string['presentation_poster_desc'] = 'Imagen de portada en la página del curso y en el visor.';
+$string['presentation_poster_help'] = 'Imagen de portada.
+
+* **Automática**: imagen subida, después URL de imagen, después imagen del proveedor.
+* **Imagen subida** o **URL de imagen**: se indican en cada actividad.
+* **Imagen del proveedor**: la miniatura del vídeo, por ejemplo de YouTube.
+* **Sin imagen**: sin portada.
+
+Las copias privadas y la carga al hacer clic solo usan una imagen subida.';
 $string['presentation_protected'] = 'Servir una copia privada';
 $string['presentation_protected_help'] = 'Sube un PDF, imagen, audio o vídeo para servirlo desde Moodle. La dirección de origen queda en la configuración de la actividad. También puedes subir una portada.';
 $string['presentation_title'] = 'Mostrar el título';
 $string['presentation_title_help'] = 'Muestra el título sobre la tarjeta en el curso.';
 $string['presentation_viewer'] = 'Vista del visor';
-$string['presentation_viewer_help'] = 'Elige cómo se muestra el recurso dentro del visor de Smart URL.';
+$string['presentation_viewer_desc'] = 'Cómo muestra el recurso la página de Smart URL.';
+$string['presentation_viewer_help'] = 'Cómo muestra el recurso la página de Smart URL.
+
+* **Automático**: incrusta multimedia, imágenes y PDF; enlaza las demás páginas web.
+* **Incrustado**: lo incrusta todo, también páginas web. Algunos sitios lo bloquean.
+* **Portada con botón**: el recurso se carga al seleccionar la portada.
+* **Enlace externo**: solo un botón para abrir el recurso.
+* **Ventana de diálogo**: el recurso se abre en un diálogo.
+
+No se usa cuando **Abrir en** va al sitio externo.';
 $string['preset'] = 'Aplicar un preajuste';
 $string['preset_document'] = 'Documento';
 $string['preset_video'] = 'Vídeo';
@@ -252,4 +287,4 @@ $string['visibility_hidden'] = 'Oculto';
 $string['visibility_primary'] = 'Destacado';
 $string['visibility_secondary'] = 'Normal';
 $string['windowdimensions'] = 'Tamaño de la ventana';
-$string['windowdimensions_help'] = 'Ajusta el tamaño inicial de una ventana independiente en píxeles.';
+$string['windowdimensions_help'] = 'Tamaño inicial en píxeles para **Ventana del visor** y **Ventana externa**.';
