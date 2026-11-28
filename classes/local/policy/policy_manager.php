@@ -210,4 +210,32 @@ final class policy_manager {
         $record->id = $DB->insert_record('smarturl_policy', $record);
         return $record;
     }
+
+    /**
+     * Raises the local revision of the policy of a Smart URL to at least the one given.
+     *
+     * Another plugin that counts the changes of the same course module (the management page of Ekko, for one) keeps
+     * the two counts in step with it. Nothing else of the policy changes, and a revision lower than the one held
+     * changes nothing, in one statement, so two callers at once cannot lower it.
+     *
+     * @param int $cmid Course module ID.
+     * @param int $revision The revision the policy has to reach.
+     * @return int The local revision after the call, or 0 when the module has no policy.
+     */
+    public static function raise_local_revision(int $cmid, int $revision): int {
+        global $DB;
+
+        $policy = self::get_by_cmid($cmid);
+        if (!$policy) {
+            return 0;
+        }
+
+        $DB->execute(
+            'UPDATE {smarturl_policy} SET local_revision = :revision, timemodified = :now'
+                . ' WHERE id = :id AND local_revision < :floor',
+            ['revision' => $revision, 'now' => time(), 'id' => $policy->id, 'floor' => $revision]
+        );
+
+        return (int)$DB->get_field('smarturl_policy', 'local_revision', ['id' => $policy->id], MUST_EXIST);
+    }
 }

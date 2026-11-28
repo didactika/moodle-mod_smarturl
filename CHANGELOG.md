@@ -18,4 +18,5 @@ All notable changes to this project will be documented in this file.
 - Manage installed player, metadata, catalogue and completion extensions from site administration.
 - Consolidate editor reads and batch resource writes while preserving existing integration calls.
 - Load external resources on click after Moodle checks access.
+- Add `policy_manager::raise_local_revision()`, so another plugin that counts the changes of the same course module raises the local revision of its policy, never lowering it.
 - Show the description in the course information dialog and group metadata on the resource page.
