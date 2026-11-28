@@ -4,494 +4,287 @@ import { jsxDEV } from "react/jsx-dev-runtime";
 /**
  * This file is part of Moodle - https://moodle.org/
  *
+ * The catalogue of the site, drawn as the working list of the Didactika design system: the header with what the page manages
+ * and its actions, a tab for each section with its count, and a card with the toolbar (the search, the status chips with their
+ * counts and the button that clears them), the table of the section, its empty state and the pager. The section, the search,
+ * the status and the page are kept in the address; items are added, edited and deleted in the modal forms of Moodle.
+ *
  * @module     mod_smarturl/AdminConfig
  * @copyright  2026 Didactika.org
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import { useEffect, useRef, useState } from "react";
-import { installSelectMenus } from "./lib/selectMenus";
-import { openSchemaModal } from "./lib/schemaModal";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import CatalogueEmpty from "./components/admin/CatalogueEmpty";
+import CatalogueFilters from "./components/admin/CatalogueFilters";
+import CatalogueHeader from "./components/admin/CatalogueHeader";
+import CataloguePager from "./components/admin/CataloguePager";
+import CatalogueSkeleton from "./components/admin/CatalogueSkeleton";
+import CatalogueTable from "./components/admin/CatalogueTable";
 import { useDebouncedValue } from "./hooks/useDebouncedValue";
-const Icon = /* @__PURE__ */ __name(({ name }) => /* @__PURE__ */ jsxDEV("i", { className: "fa fa-" + name, "aria-hidden": "true" }, void 0, false, {
-  fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-  lineNumber: 28,
-  columnNumber: 42
-}), "Icon");
+import { hasStatus, pageOf, PAGE_SIZES, searched } from "./lib/catalogue";
+import { openSchemaModal } from "./lib/schemaModal";
+import { installSelectMenus } from "./lib/selectMenus";
+const SEARCH_DELAY = 300;
+const fromAddress = /* @__PURE__ */ __name(() => {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get("status");
+  return {
+    query: (params.get("q") ?? "").trim(),
+    status: status === "active" || status === "inactive" ? status : "",
+    page: Math.max(0, Number(params.get("page") ?? 1) - 1) || 0
+  };
+}, "fromAddress");
 const AdminConfig = /* @__PURE__ */ __name((props) => {
-  const { strings: t } = props;
-  const [tab, setTab] = useState(props.tab);
+  const { strings: t, icons } = props;
+  const initial = useMemo(fromAddress, []);
+  const [sectionKey, setSectionKey] = useState(props.tab);
   const [rows, setRows] = useState(props.rows);
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("");
-  const [perPage, setPerPage] = useState(12);
-  const [page, setPage] = useState(0);
-  const [failure, setFailure] = useState("");
+  const [typed, setTyped] = useState(initial.query);
+  const [status, setStatus] = useState(initial.status);
+  const [page, setPage] = useState(initial.page);
+  const [perPage, setPerPage] = useState(PAGE_SIZES[0]);
+  const [failure, setFailure] = useState(null);
+  const [pending, startTransition] = useTransition();
   const root = useRef(null);
-  const queryApplied = useDebouncedValue(query.trim().toLocaleLowerCase(), 400);
-  const section = props.sections.find((candidate) => candidate.key === tab) ?? props.sections[0];
+  const debounced = useDebouncedValue(typed.trim(), SEARCH_DELAY);
+  const query = typed.trim() ? debounced : "";
+  const section = props.sections.find((item) => item.key === sectionKey) ?? props.sections[0];
+  const found = useMemo(() => searched(rows[section.key], query), [rows, section.key, query]);
+  const matching = useMemo(() => found.filter((row) => hasStatus(row, status)), [found, status]);
+  const count = matching.length;
+  const view = pageOf(count, perPage, page);
+  const narrowed = Boolean(query || status);
+  const range = t.pagerange.replace("{$a->from}", String(count ? view.offset + 1 : 0)).replace("{$a->to}", String(Math.min(view.offset + view.span, count))).replace("{$a->total}", String(count));
   useEffect(() => root.current ? installSelectMenus(root.current) : void 0, []);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", section.key);
+    const kept = [["q", query], ["status", status], ["page", view.current ? String(view.current + 1) : ""]];
+    kept.forEach(([key, value]) => {
+      if (value) {
+        url.searchParams.set(key, value);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+    window.history.replaceState(null, "", url);
+  }, [section.key, query, status, view.current]);
+  const update = /* @__PURE__ */ __name((change) => startTransition(change), "update");
+  const clearFilters = /* @__PURE__ */ __name(() => update(() => {
+    setTyped("");
+    setStatus("");
+    setPage(0);
+  }), "clearFilters");
   const open = /* @__PURE__ */ __name((opener, row, remove = false) => {
-    setFailure("");
+    setFailure(null);
     const title = document.createElement("span");
-    title.textContent = row ? remove ? t.deletecategoryheading.replace("{$a}", row.name) : t.edit : section.add;
+    title.textContent = section.add;
+    if (row) {
+      title.textContent = remove ? t.deletecategoryheading.replace("{$a}", row.name) : t.edit;
+    }
     openSchemaModal({
       formClass: "mod_smarturl\\form\\schema_item",
-      args: { section: tab, id: row?.id ?? 0, remove: Number(remove) },
+      args: { section: section.key, id: row?.id ?? 0, remove: Number(remove) },
       modalConfig: { title: title.innerHTML, large: false, scrollable: true },
       saveButtonText: remove ? t.delete : t.savechanges,
       saveButtonClasses: remove ? "btn-danger" : void 0,
       returnFocus: opener
-    }, setRows, setFailure);
+    }, setRows, (message) => setFailure({ message, retry: /* @__PURE__ */ __name(() => open(opener, row, remove), "retry") }));
   }, "open");
-  const matches = rows[tab].filter((row) => (!status || row.enabled === (status === "active")) && [row.name, row.detail, ...row.columns].some((text) => text.toLocaleLowerCase().includes(queryApplied)));
-  const total = matches.length;
-  const options = [12, 24, 48, 96].filter((size2) => size2 < total);
-  if (total <= 500) {
-    options.push(0);
-  }
-  const size = options.includes(perPage) ? perPage : options.at(-1) ?? 12;
-  const span = size || Math.max(1, total);
-  const current = Math.min(page, Math.max(0, Math.ceil(total / span) - 1));
-  const offset = current * span;
-  const range = t.pagerange.replace("{$a->from}", String(total ? offset + 1 : 0)).replace("{$a->to}", String(Math.min(offset + span, total))).replace("{$a->total}", String(total));
-  const clear = /* @__PURE__ */ __name(() => {
-    setQuery("");
-    setStatus("");
-    setPage(0);
-  }, "clear");
-  return /* @__PURE__ */ jsxDEV("div", { className: "smu-schema", ref: root, children: [
-    /* @__PURE__ */ jsxDEV("p", { className: "text-body-secondary", children: t.adminconfigsubtitle }, void 0, false, {
-      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 74,
-      columnNumber: 9
-    }),
-    /* @__PURE__ */ jsxDEV("nav", { className: "nav nav-tabs mb-3", "aria-label": t.settings, children: props.sections.map((item) => /* @__PURE__ */ jsxDEV(
-      "a",
+  return /* @__PURE__ */ jsxDEV("div", { className: "mod-smarturl", "data-region": "catalogue", ref: root, children: /* @__PURE__ */ jsxDEV("div", { className: "d-grid gap-3", children: [
+    /* @__PURE__ */ jsxDEV(
+      CatalogueHeader,
       {
-        href: props.adminUrl + "?tab=" + item.key,
-        className: "nav-link" + (item.key === tab ? " active" : ""),
-        "aria-current": item.key === tab ? "page" : void 0,
-        onClick: (event) => {
-          if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
-            event.preventDefault();
-            setTab(item.key);
-            clear();
-            window.history.replaceState(null, "", event.currentTarget.href);
-          }
-        },
-        children: [
-          item.title,
-          " ",
-          /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill smu-state", children: rows[item.key].length }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 85,
-            columnNumber: 33
-          })
-        ]
+        sections: props.sections,
+        current: section,
+        rows,
+        adminUrl: props.adminUrl,
+        settingsUrl: props.settingsUrl,
+        icons,
+        strings: t,
+        onAdd: open,
+        onSection: (key) => update(() => {
+          setSectionKey(key);
+          setTyped("");
+          setStatus("");
+          setPage(0);
+        })
       },
-      item.key,
-      true,
+      void 0,
+      false,
       {
         fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 76,
-        columnNumber: 41
+        lineNumber: 129,
+        columnNumber: 13
       }
-    )) }, void 0, false, {
-      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 75,
-      columnNumber: 9
-    }),
-    failure && /* @__PURE__ */ jsxDEV("div", { className: "alert alert-danger", role: "alert", children: failure }, void 0, false, {
-      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 87,
-      columnNumber: 21
-    }),
-    /* @__PURE__ */ jsxDEV("div", { className: "smu-list-toolbar d-flex align-items-center flex-wrap gap-2 mb-3", children: [
+    ),
+    /* @__PURE__ */ jsxDEV("div", { className: "d-grid gap-3 mt-2", "data-region": "list", children: [
       /* @__PURE__ */ jsxDEV(
-        "input",
+        CatalogueFilters,
         {
-          className: "form-control",
-          type: "search",
-          "aria-label": t.search,
-          placeholder: t.search,
-          value: query,
-          onChange: (event) => {
-            setQuery(event.target.value);
+          search: typed,
+          status,
+          narrowed,
+          icons,
+          strings: t,
+          counts: {
+            "": found.length,
+            active: found.filter((row) => hasStatus(row, "active")).length,
+            inactive: found.filter((row) => hasStatus(row, "inactive")).length
+          },
+          onSearch: (text) => {
+            setTyped(text);
+            update(() => setPage(0));
+          },
+          onStatus: (value) => update(() => {
+            setStatus(value);
             setPage(0);
+          }),
+          onClear: clearFilters
+        },
+        void 0,
+        false,
+        {
+          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+          lineNumber: 138,
+          columnNumber: 17
+        }
+      ),
+      /* @__PURE__ */ jsxDEV("div", { className: "card", children: [
+        failure && /* @__PURE__ */ jsxDEV("div", { className: "alert alert-danger", role: "alert", "data-region": "error", children: /* @__PURE__ */ jsxDEV("div", { className: "d-flex flex-wrap align-items-center justify-content-between gap-2", children: [
+          /* @__PURE__ */ jsxDEV("span", { children: failure.message }, void 0, false, {
+            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+            lineNumber: 156,
+            columnNumber: 29
+          }),
+          /* @__PURE__ */ jsxDEV(
+            "button",
+            {
+              type: "button",
+              className: "btn btn-outline-danger btn-sm",
+              "data-action": "retry",
+              onClick: () => failure.retry(),
+              children: t.retry
+            },
+            void 0,
+            false,
+            {
+              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+              lineNumber: 157,
+              columnNumber: 29
+            }
+          )
+        ] }, void 0, true, {
+          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+          lineNumber: 155,
+          columnNumber: 25
+        }) }, void 0, false, {
+          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+          lineNumber: 154,
+          columnNumber: 33
+        }),
+        (count > 0 || pending) && /* @__PURE__ */ jsxDEV("div", { className: "table-responsive", "data-region": "tablewrap", "aria-busy": pending, children: pending ? /* @__PURE__ */ jsxDEV(
+          CatalogueSkeleton,
+          {
+            section,
+            strings: t,
+            detailed: rows[section.key].some((row) => row.detail)
+          },
+          void 0,
+          false,
+          {
+            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+            lineNumber: 163,
+            columnNumber: 31
           }
-        },
-        void 0,
-        false,
-        {
-          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 89,
-          columnNumber: 13
-        }
-      ),
-      /* @__PURE__ */ jsxDEV(
-        "select",
-        {
-          className: "form-select smu-status-filter",
-          value: status,
-          "aria-label": t.status,
-          onChange: (event) => {
-            setStatus(event.target.value);
-            setPage(0);
+        ) : /* @__PURE__ */ jsxDEV(
+          CatalogueTable,
+          {
+            section,
+            rows: matching.slice(view.offset, view.offset + view.span),
+            icons,
+            strings: t,
+            onOpen: open
           },
-          children: [
-            /* @__PURE__ */ jsxDEV("option", { value: "", children: t.status }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 93,
-              columnNumber: 17
-            }),
-            /* @__PURE__ */ jsxDEV("option", { value: "active", children: t.enabled }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 93,
-              columnNumber: 53
-            }),
-            /* @__PURE__ */ jsxDEV("option", { value: "inactive", children: t.disabled }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 94,
-              columnNumber: 17
-            })
-          ]
-        },
-        void 0,
-        true,
-        {
-          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 91,
-          columnNumber: 13
-        }
-      ),
-      status && /* @__PURE__ */ jsxDEV(
-        "button",
-        {
-          type: "button",
-          className: "btn btn-outline-secondary smu-iconpill",
-          onClick: () => {
-            setStatus("");
-            setPage(0);
-          },
-          title: t.clearfilters,
-          "aria-label": t.clearfilters,
-          dangerouslySetInnerHTML: { __html: props.clearIcon }
-        },
-        void 0,
-        false,
-        {
-          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 96,
-          columnNumber: 24
-        }
-      ),
-      /* @__PURE__ */ jsxDEV("div", { className: "smu-list-actions d-flex flex-wrap gap-2", children: [
-        /* @__PURE__ */ jsxDEV("a", { href: props.settingsUrl, className: "btn btn-outline-secondary", children: [
-          /* @__PURE__ */ jsxDEV(Icon, { name: "gear" }, void 0, false, {
+          void 0,
+          false,
+          {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 100,
-            columnNumber: 83
-          }),
-          " ",
-          t.settings
-        ] }, void 0, true, {
+            lineNumber: 165,
+            columnNumber: 31
+          }
+        ) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 100,
-          columnNumber: 17
+          lineNumber: 161,
+          columnNumber: 48
         }),
-        /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-primary", onClick: (event) => open(event.currentTarget), children: [
-          /* @__PURE__ */ jsxDEV(Icon, { name: "plus" }, void 0, false, {
+        !count && !pending && /* @__PURE__ */ jsxDEV("div", { "data-region": "empty", children: /* @__PURE__ */ jsxDEV(
+          CatalogueEmpty,
+          {
+            section,
+            filtered: narrowed,
+            icons,
+            strings: t,
+            onAdd: (opener) => open(opener),
+            onClear: clearFilters
+          },
+          void 0,
+          false,
+          {
             fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 102,
-            columnNumber: 21
-          }),
-          " ",
-          section.add
-        ] }, void 0, true, {
+            lineNumber: 169,
+            columnNumber: 25
+          }
+        ) }, void 0, false, {
           fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 101,
-          columnNumber: 17
+          lineNumber: 168,
+          columnNumber: 44
+        }),
+        count > 0 && !pending && /* @__PURE__ */ jsxDEV("div", { className: "px-3 py-2", "data-region": "foot", children: /* @__PURE__ */ jsxDEV(
+          CataloguePager,
+          {
+            sizes: view.sizes,
+            size: view.size,
+            range,
+            first: view.first,
+            last: view.last,
+            icons,
+            strings: t,
+            onSize: (size) => update(() => {
+              setPerPage(size);
+              setPage(0);
+            }),
+            onPage: (step) => update(() => setPage(view.current + step))
+          },
+          void 0,
+          false,
+          {
+            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+            lineNumber: 174,
+            columnNumber: 25
+          }
+        ) }, void 0, false, {
+          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+          lineNumber: 173,
+          columnNumber: 47
         })
       ] }, void 0, true, {
         fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 99,
-        columnNumber: 13
+        lineNumber: 153,
+        columnNumber: 17
       })
     ] }, void 0, true, {
       fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 88,
-      columnNumber: 9
-    }),
-    /* @__PURE__ */ jsxDEV("div", { className: "card", children: [
-      /* @__PURE__ */ jsxDEV("div", { className: "table-responsive smu-list-table", "data-region": "tablewrap", children: [
-        /* @__PURE__ */ jsxDEV("table", { className: "table table-hover align-middle mb-0", children: [
-          /* @__PURE__ */ jsxDEV("caption", { className: "visually-hidden", children: section.title }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 109,
-            columnNumber: 21
-          }),
-          /* @__PURE__ */ jsxDEV("thead", { children: /* @__PURE__ */ jsxDEV("tr", { children: [
-            /* @__PURE__ */ jsxDEV("th", { scope: "col", children: t.name }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 111,
-              columnNumber: 25
-            }),
-            section.columns.map((column) => /* @__PURE__ */ jsxDEV("th", { scope: "col", children: column }, column, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 112,
-              columnNumber: 56
-            })),
-            /* @__PURE__ */ jsxDEV("th", { scope: "col", className: "smu-fit", children: t.status }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 113,
-              columnNumber: 25
-            }),
-            /* @__PURE__ */ jsxDEV("th", { scope: "col", className: "smu-fit", children: /* @__PURE__ */ jsxDEV("span", { className: "visually-hidden", children: t.actions }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 114,
-              columnNumber: 61
-            }) }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 114,
-              columnNumber: 25
-            })
-          ] }, void 0, true, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 110,
-            columnNumber: 28
-          }) }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 110,
-            columnNumber: 21
-          }),
-          /* @__PURE__ */ jsxDEV("tbody", { children: matches.slice(offset, offset + span).map((row) => /* @__PURE__ */ jsxDEV("tr", { children: [
-            /* @__PURE__ */ jsxDEV("th", { scope: "row", children: [
-              /* @__PURE__ */ jsxDEV("a", { href: "#item-" + row.id, onClick: (event) => {
-                event.preventDefault();
-                open(event.currentTarget, row);
-              }, children: row.name }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 118,
-                columnNumber: 29
-              }),
-              row.detail && /* @__PURE__ */ jsxDEV("div", { className: "small text-body-secondary", children: /* @__PURE__ */ jsxDEV("code", { children: row.detail }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 121,
-                columnNumber: 87
-              }) }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 121,
-                columnNumber: 44
-              })
-            ] }, void 0, true, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 117,
-              columnNumber: 25
-            }),
-            row.columns.map((column, index) => /* @__PURE__ */ jsxDEV("td", { children: column }, index, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 123,
-              columnNumber: 61
-            })),
-            /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("span", { className: "badge rounded-pill smu-state" + (row.enabled ? " smu-state-on" : ""), children: row.enabled ? t.enabled : t.disabled }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 124,
-              columnNumber: 29
-            }) }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 124,
-              columnNumber: 25
-            }),
-            /* @__PURE__ */ jsxDEV("td", { children: /* @__PURE__ */ jsxDEV("div", { className: "smu-row-actions", children: [
-              /* @__PURE__ */ jsxDEV(
-                "button",
-                {
-                  type: "button",
-                  className: "btn btn-outline-secondary smu-iconpill tone-primary",
-                  "aria-label": t.edit + " " + row.name,
-                  title: t.edit,
-                  onClick: (event) => open(event.currentTarget, row),
-                  children: /* @__PURE__ */ jsxDEV(Icon, { name: "pen" }, void 0, false, {
-                    fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                    lineNumber: 130,
-                    columnNumber: 33
-                  })
-                },
-                void 0,
-                false,
-                {
-                  fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                  lineNumber: 128,
-                  columnNumber: 29
-                }
-              ),
-              /* @__PURE__ */ jsxDEV(
-                "button",
-                {
-                  type: "button",
-                  className: "btn btn-outline-secondary smu-iconpill tone-danger",
-                  "aria-label": t.delete + " " + row.name,
-                  title: t.delete,
-                  onClick: (event) => open(event.currentTarget, row, true),
-                  children: /* @__PURE__ */ jsxDEV(Icon, { name: "trash" }, void 0, false, {
-                    fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                    lineNumber: 134,
-                    columnNumber: 33
-                  })
-                },
-                void 0,
-                false,
-                {
-                  fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                  lineNumber: 132,
-                  columnNumber: 29
-                }
-              )
-            ] }, void 0, true, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 127,
-              columnNumber: 29
-            }) }, void 0, false, {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 127,
-              columnNumber: 25
-            })
-          ] }, row.id, true, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 116,
-            columnNumber: 77
-          })) }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 116,
-            columnNumber: 21
-          })
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 108,
-          columnNumber: 17
-        }),
-        !total && /* @__PURE__ */ jsxDEV("div", { className: "p-4 text-center text-body-secondary", "data-region": "empty", children: [
-          /* @__PURE__ */ jsxDEV("p", { children: query || status ? t.emptyresults : t.listempty }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 140,
-            columnNumber: 21
-          }),
-          /* @__PURE__ */ jsxDEV("button", { type: "button", className: "btn btn-outline-secondary", onClick: (event) => query || status ? clear() : open(event.currentTarget), children: query || status ? t.clearfilters : section.add }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 141,
-            columnNumber: 21
-          })
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 139,
-          columnNumber: 28
-        })
-      ] }, void 0, true, {
-        fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 107,
-        columnNumber: 13
-      }),
-      /* @__PURE__ */ jsxDEV("div", { className: "smu-list-pager border-top px-3 py-2 d-flex align-items-center justify-content-between gap-2 flex-wrap", children: [
-        /* @__PURE__ */ jsxDEV("label", { className: "d-flex align-items-center gap-2 small", children: [
-          t.pagerlabel,
-          /* @__PURE__ */ jsxDEV(
-            "select",
-            {
-              className: "form-select form-select-sm w-auto",
-              value: size,
-              onChange: (event) => {
-                setPerPage(Number(event.target.value));
-                setPage(0);
-              },
-              children: options.map((option) => /* @__PURE__ */ jsxDEV("option", { value: option, children: option || t.all }, option, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 149,
-                columnNumber: 48
-              }))
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 147,
-              columnNumber: 21
-            }
-          )
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 146,
-          columnNumber: 17
-        }),
-        /* @__PURE__ */ jsxDEV("div", { className: "d-flex align-items-center gap-2", children: [
-          /* @__PURE__ */ jsxDEV("span", { className: "small text-body-secondary", role: "status", children: range }, void 0, false, {
-            fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-            lineNumber: 153,
-            columnNumber: 21
-          }),
-          /* @__PURE__ */ jsxDEV(
-            "button",
-            {
-              type: "button",
-              className: "btn btn-link btn-sm",
-              "aria-label": t.previous,
-              title: t.previous,
-              disabled: offset === 0,
-              onClick: () => setPage(current - 1),
-              children: /* @__PURE__ */ jsxDEV("span", { dangerouslySetInnerHTML: { __html: props.previousIcon } }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 155,
-                columnNumber: 86
-              })
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 154,
-              columnNumber: 21
-            }
-          ),
-          /* @__PURE__ */ jsxDEV(
-            "button",
-            {
-              type: "button",
-              className: "btn btn-link btn-sm",
-              "aria-label": t.next,
-              title: t.next,
-              disabled: offset + span >= total,
-              onClick: () => setPage(current + 1),
-              children: /* @__PURE__ */ jsxDEV("span", { dangerouslySetInnerHTML: { __html: props.nextIcon } }, void 0, false, {
-                fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-                lineNumber: 157,
-                columnNumber: 96
-              })
-            },
-            void 0,
-            false,
-            {
-              fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-              lineNumber: 156,
-              columnNumber: 21
-            }
-          )
-        ] }, void 0, true, {
-          fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-          lineNumber: 152,
-          columnNumber: 17
-        })
-      ] }, void 0, true, {
-        fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-        lineNumber: 145,
-        columnNumber: 13
-      })
-    ] }, void 0, true, {
-      fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-      lineNumber: 106,
-      columnNumber: 9
+      lineNumber: 137,
+      columnNumber: 13
     })
   ] }, void 0, true, {
     fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
-    lineNumber: 73,
+    lineNumber: 128,
+    columnNumber: 9
+  }) }, void 0, false, {
+    fileName: "public/mod/smarturl/js/esm/src/AdminConfig.tsx",
+    lineNumber: 127,
     columnNumber: 12
   });
 }, "AdminConfig");

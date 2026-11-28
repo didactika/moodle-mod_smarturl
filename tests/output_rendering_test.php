@@ -67,5 +67,15 @@ final class output_rendering_test extends \advanced_testcase {
         $adminprops = $adminpage->get_react_component_props($renderer);
         $this->assertNotEmpty($adminprops->rows['fields']);
         $this->assertNotEmpty($adminprops->rows['variables']);
+        $this->assertSame(['categories', 'fields', 'variables'], array_column($adminprops->sections, 'key'));
+        $this->assertSame('No categories yet', $adminprops->sections[0]['emptytitle']);
+        $icons = array_merge(
+            ['monologo', 't/edit', 't/delete', 'i/previous', 'i/next'],
+            array_column($adminprops->sections, 'icon')
+        );
+        foreach ($icons as $icon) {
+            $this->assertStringContainsString('icon', $adminprops->icons[$icon]);
+        }
+        $this->assertSame('Retry', $adminprops->strings['retry']);
     }
 }

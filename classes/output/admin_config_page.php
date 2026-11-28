@@ -26,6 +26,9 @@ use mod_smarturl\local\metadata\schema_catalogue;
  * @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class admin_config_page implements \core\output\react_component_renderable, \renderable {
+    /** @var string[] The Moodle icons the catalogue draws, besides the icon of each section. */
+    private const ICONS = ['i/settings', 't/add', 'a/search', 'e/cancel', 'i/reload', 'i/previous', 'i/next', 't/edit', 't/delete'];
+
     /**
      * Selects the initial catalogue tab.
      *
@@ -53,6 +56,16 @@ final class admin_config_page implements \core\output\react_component_renderable
      * @return \stdClass
      */
     public function get_react_component_props(\renderer_base $renderer): \stdClass {
-        return (object)schema_catalogue::props($this->tab);
+        $props = schema_catalogue::props($this->tab);
+        $icons = ['monologo' => $renderer->pix_icon('monologo', '', 'mod_smarturl')];
+        foreach (self::ICONS as $icon) {
+            $icons[$icon] = $renderer->pix_icon($icon, '');
+        }
+        foreach ($props['sections'] as $section) {
+            $icons[$section['icon']] ??= $renderer->pix_icon($section['icon'], '');
+        }
+        $props['icons'] = $icons;
+        $props['strings'] += ['retry' => get_string('retry'), 'clear' => get_string('clear')];
+        return (object)$props;
     }
 }

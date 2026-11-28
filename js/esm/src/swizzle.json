@@ -17,6 +17,38 @@
     "components/common/MoodleModal.tsx",
     "ResourceTools.tsx"
   ],
+  "components/admin/CatalogueEmpty": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/admin/CatalogueFilters": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/admin/CatalogueHeader": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/admin/CataloguePager": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/admin/CatalogueSkeleton": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/admin/CatalogueTable": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/common/MoodleModal": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
+  "components/common/Pix": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "components/viewer/PlayerStage": {
     "eject": "risky",
     "wrap": "risky"
@@ -29,19 +61,15 @@
     "eject": "risky",
     "wrap": "risky"
   },
+  "ResourceTools": {
+    "eject": "risky",
+    "wrap": "risky"
+  },
   "ResourceView": {
     "eject": "risky",
     "wrap": "risky"
   },
   "SettingsControls": {
-    "eject": "risky",
-    "wrap": "risky"
-  },
-  "components/common/MoodleModal": {
-    "eject": "risky",
-    "wrap": "risky"
-  },
-  "ResourceTools": {
     "eject": "risky",
     "wrap": "risky"
   }

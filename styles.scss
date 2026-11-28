@@ -5,10 +5,27 @@
 // @author Hector Arrechea <hectorlazaroarrechea@gmail.com>
 // @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
+// Every rule is written once for the pages of the plugin and its dialogs, so Sass joins long lines of selectors in styles.css;
+// their length says nothing about how the rules read, so the generated file does not count it.
+/* stylelint-disable max-line-length */
+
+// The dialogs of the pages drawn with the Didactika design system (https://moodle-design.didactika.org/): Moodle puts them at the
+// end of the page, outside the screen, so they are reached by the id Moodle gives the body of each page.
+$smu-modal: "#page-mod-smarturl-admin .modal, #page-mod-smarturl-plugins .modal";
+
+@import 'scss/tabs';
+@import 'scss/states';
 @import 'scss/tokens';
+@import 'scss/chrome';
+@import 'scss/feedback';
+@import 'scss/moodle';
 @import 'scss/components';
 @import 'scss/viewer';
 @import 'scss/admin';
 @import 'scss/form';
-
 @import 'scss/presentation';
+
+.mod-smarturl,
+#{$smu-modal} {
+    @include dd-states;
+}

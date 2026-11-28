@@ -1,0 +1,429 @@
+// This file is part of Moodle - https://moodle.org/
+// Moodle is free software under the GNU General Public License, version 3 or later.
+
+// What the design system adds to Bootstrap for feedback and actions: the search field, the selects that filter a list, round
+// icon buttons, the quick actions of a row, icon tiles and soft badges. They are scoped to the screens of the plugin and to its
+// dialogs.
+// @copyright 2026 Didactika.org
+// @license https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+.mod-smarturl,
+#{$smu-modal} {
+    // Search field: the magnifier is a decoration inside the field.
+    & [role="search"] {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 1 1 auto;
+        max-width: 22rem;
+
+        &.mw-100 {
+            max-width: 100%;
+        }
+
+        & .icon {
+            position: absolute;
+            left: 0.75rem;
+            margin: 0;
+            color: var(--dd-muted);
+            pointer-events: none;
+        }
+
+        & .form-control {
+            flex: 1 1 auto;
+            width: 100%;
+            min-width: 0;
+            min-height: var(--dd-h);
+            padding-left: 2.25rem;
+            border-color: var(--dd-line);
+            border-radius: 999px;
+        }
+
+        // The browser draws a cross of its own in a search field, which is not a button and does not follow the theme; the
+        // plugin puts a round icon button in its place.
+        & input[type="search"]::-webkit-search-cancel-button {
+            display: none;
+            appearance: none;
+        }
+
+        & input[type="search"]:has(~ [data-action="clear-search"]:not([hidden])) {
+            padding-right: 2.5rem;
+        }
+
+        // Small and quiet as the cross of the browser was, and a button all the same: the pointer, and a tint under it on hover.
+        & > [data-action="clear-search"].btn-link.btn-icon {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0.375rem;
+            margin-block: auto;
+            width: 1.5rem;
+            min-width: 0;
+            height: 1.5rem;
+            padding: 0;
+            border-radius: 50%;
+            background-color: transparent;
+            color: var(--dd-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            // Centred with auto margins, not with a transform: the theme lifts a button on hover with a transform
+            // of its own, which would move this one.
+            transform: none;
+
+            &:hover,
+            &:focus,
+            &:active {
+                transform: none;
+            }
+
+            &:hover {
+                background-color: color-mix(in srgb, var(--dd-ink) 10%, transparent);
+                color: var(--dd-ink);
+            }
+
+            &:focus-visible {
+                box-shadow: 0 0 0 2px var(--dd-ring);
+            }
+
+            & .icon {
+                position: static;
+                margin: 0;
+                color: inherit;
+                pointer-events: none;
+            }
+        }
+    }
+
+    // A select in the chrome of a list: the shape and height of the search beside it, and the ring of the system on focus.
+    & :is([data-region="filters"], [data-region="foot"]) :is(.form-select, .custom-select) {
+        width: auto;
+        min-width: 0;
+        max-width: 20rem;
+        min-height: var(--dd-h);
+        padding-left: 1rem;
+        border-color: var(--dd-line);
+        border-radius: 999px;
+        background-color: var(--dd-surface);
+        color: var(--dd-ink);
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: border-color var(--dd-ease), box-shadow var(--dd-ease);
+
+        // A select keeps room for its options; a button that opens a menu is as wide as what it says.
+        &:is(select):not(.form-select-sm) {
+            min-width: 12rem;
+        }
+
+        &:hover {
+            border-color: var(--dd-line-hover);
+        }
+
+        &:focus {
+            border-color: var(--dd-primary);
+            outline: 0;
+            box-shadow: 0 0 0 3px var(--dd-ring);
+        }
+
+        &.border-primary {
+            border-color: var(--dd-primary);
+            background-color: var(--dd-primary-soft);
+            color: var(--dd-primary-ink);
+            font-weight: 600;
+        }
+
+        // A filter that is set has no arrow: the cross that clears it takes its place.
+        &.border-primary {
+            padding-right: 2.5rem;
+            background-image: none;
+        }
+
+        // A menu drawn as a button cuts a long value with an ellipsis where its text ends, so it never runs under the cross.
+        &:is(button) {
+            display: block;
+            overflow: hidden;
+            text-align: start;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    // A select that filters a list, and the cross that takes it back to its base state.
+    & .dropdown {
+        position: relative;
+        display: inline-flex;
+        max-width: 100%;
+    }
+
+    & [data-menu-clear] {
+        position: absolute;
+        top: 50%;
+        right: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background-color: transparent;
+        color: var(--dd-primary-ink);
+        transform: translateY(-50%);
+        transition: background-color var(--dd-ease);
+
+        & .icon {
+            width: 0.875rem;
+            height: 0.875rem;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--dd-primary) 14%, transparent);
+        }
+
+        &:focus-visible {
+            outline: 0;
+            box-shadow: 0 0 0 3px var(--dd-ring);
+        }
+    }
+
+    // A button that holds only an icon is a circle as wide as it is tall.
+    & .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        width: var(--dd-h);
+        height: var(--dd-h);
+        padding: 0;
+        border-radius: 50%;
+
+        &.btn-sm {
+            width: var(--dd-h-sm);
+            height: var(--dd-h-sm);
+        }
+
+        & .icon {
+            margin: 0;
+        }
+    }
+
+    // The quick actions of a row: each in the colour of what it does, on a soft tint of it, so they are told apart at a
+    // glance. They keep their place in every row; the ones a row does not allow are there, faded, and do nothing.
+    & .btn-link.btn-icon {
+        --dd-c: var(--dd-muted);
+        background-color: transparent;
+        color: var(--dd-c);
+        text-decoration: none;
+        transition: background-color var(--dd-ease), color var(--dd-ease), opacity var(--dd-ease), transform var(--dd-ease);
+
+        &.text-primary {
+            --dd-c: var(--dd-primary);
+        }
+
+        &.text-info {
+            --dd-c: var(--dd-info);
+        }
+
+        &.text-success {
+            --dd-c: var(--dd-success);
+        }
+
+        &.text-warning {
+            --dd-c: color-mix(in srgb, var(--dd-warning) 70%, var(--dd-ink));
+        }
+
+        &.text-danger {
+            --dd-c: var(--dd-danger);
+        }
+
+        &:not(.disabled, :disabled) {
+            background-color: color-mix(in srgb, var(--dd-c) 9%, var(--dd-surface));
+        }
+
+        &:not(.disabled, :disabled):hover,
+        &:not(.disabled, :disabled):focus-visible {
+            outline: 0;
+            background-color: color-mix(in srgb, var(--dd-c) 18%, var(--dd-surface));
+            color: color-mix(in srgb, var(--dd-c) 80%, var(--dd-ink));
+            transform: translateY(-1px);
+        }
+
+        &:focus-visible {
+            box-shadow: 0 0 0 3px var(--dd-ring);
+        }
+
+        &.disabled,
+        &:disabled {
+            color: var(--dd-muted);
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: auto;
+        }
+    }
+
+    & [data-column="actions"] {
+        white-space: nowrap;
+
+        & .btn-icon + .btn-icon {
+            margin-left: 0.25rem;
+        }
+    }
+
+    // The icon box of Moodle (icon-box): a rounded square that holds an icon, here on a tint of its role and in its colour (the
+    // primary one, or the one of a text-* class beside it).
+    & .icon-box {
+        flex: none;
+        width: 3rem;
+        height: 3rem;
+        padding: 0;
+        border-radius: 1rem;
+        background-color: var(--dd-c-soft-2);
+        color: var(--dd-c-ink);
+        font-size: 1.375rem;
+        line-height: 1;
+
+        & .icon {
+            width: auto;
+            height: auto;
+            margin: 0;
+            color: inherit;
+            font-size: inherit;
+        }
+    }
+}
+
+// The small select of a pager: the shape of the others, the height of the small buttons beside it.
+.mod-smarturl :is(.form-select, .custom-select).form-select-sm {
+    min-width: 4.75rem;
+    min-height: var(--dd-h-sm);
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    font-size: 0.875rem;
+}
+
+// The badges of Bootstrap, soft: the status of a row, in the colour of its meaning and in words, on a tint of it; a badge with a
+// border (the utility of Bootstrap) is outlined instead. The markup names the role with text-bg-*; Bootstrap 5 paints those with
+// !important, so the tint has to say it as well.
+/* stylelint-disable declaration-no-important */
+.mod-smarturl,
+#{$smu-modal} {
+    & .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.35em 0.8em;
+        border-radius: 999px;
+        background-color: var(--dd-c-soft-2) !important;
+        color: var(--dd-c-ink) !important;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    & .badge.border {
+        border-color: var(--dd-c) !important;
+        background-color: transparent !important;
+    }
+}
+/* stylelint-enable declaration-no-important */
+
+// Filter chips, as the Didactika layer of the design system draws them (didactika/filter-chips): a small outlined pill with its
+// count, in the toolbar of the list beside the button that clears the filters. The count is a primary light badge. The chosen
+// chip is primary light, as the icon box is, with a heavier label, and its count takes the grey of the counts of the tabs, so
+// it does not rely on colour alone. The chosen chip sets the role of its colour, so every rule that paints a pressed or active
+// button paints it the same.
+.mod-smarturl [data-region="chips"] {
+    flex-wrap: nowrap;
+
+    & > .btn.rounded-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        min-height: var(--dd-h-sm);
+        padding: 0.1875rem 0.75rem;
+        border-color: var(--dd-c);
+        border-radius: 999px;
+        background-color: transparent;
+        color: var(--dd-c-ink);
+        font-size: 0.8125rem;
+        white-space: nowrap;
+        transition: background-color var(--dd-ease), border-color var(--dd-ease), color var(--dd-ease);
+
+        &:hover {
+            border-color: var(--dd-c);
+            background-color: var(--dd-c-soft);
+            color: var(--dd-c-ink);
+        }
+
+        & .badge {
+            padding: 0.2em 0.55em;
+        }
+
+        // Doubled, with its mark, to weigh more than the pressed state of a button, which comes later.
+        &.btn.btn[data-status].active,
+        &.btn.btn[data-status][aria-pressed="true"] {
+            --dd-c: var(--dd-primary);
+            --dd-c-soft: var(--dd-primary-soft);
+            --dd-c-soft-2: var(--dd-primary-soft-2);
+            --dd-c-ink: color-mix(in srgb, var(--dd-primary) 55%, var(--dd-ink));
+            border-color: var(--dd-c-soft-2);
+            background-color: var(--dd-c-soft-2);
+            box-shadow: none;
+            color: var(--dd-c-ink);
+            font-weight: 700;
+
+            // The count of the chosen chip is the grey of the counts of the tabs (a secondary badge).
+            & .badge {
+                --dd-c: var(--dd-secondary);
+                --dd-c-soft-2: color-mix(in srgb, var(--dd-c) 36%, var(--dd-surface));
+                --dd-c-ink: color-mix(in srgb, var(--dd-c) 18%, var(--dd-ink));
+            }
+        }
+    }
+}
+
+// On a narrow screen the toolbar gives the search its own row. Under it the chips take the room left and wrap to a new line
+// when they do not fit, so none is hidden, and the button that clears the filters keeps its place at the end, always in view.
+@media (max-width: 575.98px) {
+    .mod-smarturl [data-region="filters"] {
+        flex-wrap: wrap;
+
+        & > :first-child {
+            flex-basis: 100%;
+        }
+
+        & > :last-child:not(:first-child) {
+            flex: 1 1 100%;
+            justify-content: space-between;
+            min-width: 0;
+        }
+
+        & > :last-child:not(:first-child) > [data-action="clearfilters"] {
+            align-self: flex-start;
+        }
+
+        & [data-region="chips"] {
+            flex: 1 1 auto;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+    }
+}
+
+// On Moodle 5.3 the icon of a search comes wrapped in a span; it sits in the field as the icon itself does.
+.mod-smarturl,
+#{$smu-modal} {
+    & [role="search"] > span[aria-hidden="true"] {
+        position: absolute;
+        left: 0.75rem;
+        color: var(--dd-muted);
+        pointer-events: none;
+
+        & .icon {
+            position: static;
+            margin: 0;
+        }
+    }
+}
