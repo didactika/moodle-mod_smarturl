@@ -17,7 +17,7 @@
 {{!
     @template mod_smarturl/admin_config_table
 
-    The inside of the table of a catalogue section: its caption, its columns, the header and one row for each item on the page.
+    The table of a catalogue section: its caption, its columns, the header and one row for each item on the page.
     The columns are the same the placeholders of a loading section have, so the table does not move when the rows arrive. The
     name of a row opens it; the actions keep one slot each, in one order (edit, delete), so each action is always in the same
     column.
@@ -40,6 +40,7 @@
       ]
     }
 }}
+<table class="table w-100">
 <caption class="sr-only visually-hidden">{{caption}}</caption>
 <colgroup>
     <col data-column="name">
@@ -77,3 +78,4 @@
     </tr>
     {{/rows}}
 </tbody>
+</table>

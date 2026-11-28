@@ -27,7 +27,8 @@ export const init = id => {
     const region = name => root.querySelector(`[data-region="${name}"]`);
     const action = name => root.querySelector(`[data-action="${name}"]`);
     const tabs = [...root.querySelectorAll('[data-tab]')];
-    const table = root.querySelector('table');
+    /** The table of the section on show; its template renders it whole, so it is looked up each time. */
+    const table = () => tablewrap.querySelector('table');
     const tablewrap = region('tablewrap');
     const search = region('search');
     const chips = [...root.querySelectorAll('[data-region="chips"] [data-status]')];
@@ -148,7 +149,7 @@ export const init = id => {
         }
         const thead = document.createElement('thead');
         thead.append(head);
-        table.replaceChildren(columns, thead, body);
+        table().replaceChildren(columns, thead, body);
         tablewrap.hidden = false;
         empty.hidden = true;
         foot.hidden = true;
@@ -247,7 +248,7 @@ export const init = id => {
         if (ticket !== pending) {
             return;
         }
-        Templates.replaceNodeContents(table, list.html, list.js);
+        Templates.replaceNodeContents(tablewrap, list.html, list.js);
         if (blank) {
             Templates.replaceNodeContents(empty, blank.html, blank.js);
         }
@@ -321,7 +322,7 @@ export const init = id => {
         error.hidden = true;
         retry?.();
     });
-    table.addEventListener('click', event => {
+    tablewrap.addEventListener('click', event => {
         const button = event.target.closest('[data-action="edit"], [data-action="delete"]');
         const row = button ? rowById(button.dataset.id) : null;
         if (row) {
