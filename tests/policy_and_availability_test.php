@@ -85,6 +85,35 @@ final class policy_and_availability_test extends \advanced_testcase {
     }
 
     /**
+     * Another plugin raises the local revision of a policy; it never goes down and nothing else changes.
+     */
+    public function test_raise_local_revision(): void {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $course = $this->getDataGenerator()->create_course();
+        $smarturl = $this->getDataGenerator()->create_module('smarturl', ['course' => $course->id]);
+        $plain = $this->getDataGenerator()->create_module('smarturl', ['course' => $course->id]);
+        $policy = policy_manager::upsert_external((int)$smarturl->id, (int)$smarturl->cmid, [
+            'managedby' => 'ekko',
+            'externalkey' => 'ext-raise',
+            'lockedfields' => ['externalurl'],
+        ]);
+
+        $this->assertSame(0, policy_manager::raise_local_revision((int)$plain->cmid, 5));
+        $this->assertSame(5, policy_manager::raise_local_revision((int)$smarturl->cmid, 5));
+        $this->assertSame(5, policy_manager::raise_local_revision((int)$smarturl->cmid, 3));
+        $this->assertSame(6, policy_manager::raise_local_revision((int)$smarturl->cmid, 6));
+
+        $after = $DB->get_record('smarturl_policy', ['id' => $policy->id], '*', MUST_EXIST);
+        $this->assertSame(6, (int)$after->local_revision);
+        $this->assertSame((int)$policy->acked_revision, (int)$after->acked_revision);
+        $this->assertSame($policy->locked_fields_json, $after->locked_fields_json);
+        $override = policy_manager::record_local_override((int)$smarturl->id, (int)$smarturl->cmid, 2);
+        $this->assertSame(7, (int)$override->local_revision);
+    }
+
+    /**
      * Tests MIME file icon guessing (.pdf, .mp4) and course-page launch behaviors for NEW and POPUP modes.
      */
     public function test_coursemodule_mime_icon_and_launch_behavior(): void {
