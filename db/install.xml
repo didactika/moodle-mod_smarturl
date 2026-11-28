@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/smarturl/db" VERSION="2026112602" COMMENT="XMLDB file for Moodle mod_smarturl"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="smarturl" COMMENT="Smart URL activity instances">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="externalurl" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="display_mode" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="AUTO" SEQUENCE="false"/>
+        <FIELD NAME="popup_width" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1200" SEQUENCE="false"/>
+        <FIELD NAME="popup_height" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="800" SEQUENCE="false"/>
+        <FIELD NAME="aspect_ratio" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="16:9" SEQUENCE="false"/>
+        <FIELD NAME="show_description" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="thumbnail_url" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="duration_seconds" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="presentation_json" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="translations_json" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="parameters_json" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="completion_custom_json" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="smarturl_param_def" COMMENT="Configurable dynamic URL parameter definitions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="shortname" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="source_type" TYPE="char" LENGTH="32" NOTNULL="true" DEFAULT="BUILTIN" SEQUENCE="false"/>
+        <FIELD NAME="source_key" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="default_query_param" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="shortname" TYPE="unique" FIELDS="shortname"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="enabled_sortorder" UNIQUE="false" FIELDS="enabled, sortorder"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="smarturl_meta_category" COMMENT="Site-wide metadata categories">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="name" TYPE="unique" FIELDS="name"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="smarturl_meta_type" COMMENT="Configurable metadata schema definitions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="shortname" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="group_name" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="General" SEQUENCE="false"/>
+        <FIELD NAME="datatype" TYPE="char" LENGTH="24" NOTNULL="true" DEFAULT="TEXT" SEQUENCE="false"/>
+        <FIELD NAME="icon" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="display_priority" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="SECONDARY" SEQUENCE="false"/>
+        <FIELD NAME="searchable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="filterable" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="shortname" TYPE="unique" FIELDS="shortname"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="group_enabled_sort" UNIQUE="false" FIELDS="group_name, enabled, sortorder"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="smarturl_meta_value" COMMENT="Normalized metadata values per smarturl instance">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="smarturlid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="typeid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="custom_key" TYPE="char" LENGTH="128" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="archived" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="value_text" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="smarturlid_fk" TYPE="foreign" FIELDS="smarturlid" REFTABLE="smarturl" REFFIELDS="id"/>
+        <KEY NAME="typeid_fk" TYPE="foreign" FIELDS="typeid" REFTABLE="smarturl_meta_type" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="smarturl_sort" UNIQUE="false" FIELDS="smarturlid, sortorder"/>
+        <INDEX NAME="smarturl_customkey" UNIQUE="false" FIELDS="smarturlid, custom_key"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="smarturl_policy" COMMENT="Generic external management policy locks and revision watermark">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="smarturlid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="managed_by" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="external_key" TYPE="char" LENGTH="128" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="mandatory" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="locked_fields_json" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="managed_availability_json" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="custom_availability_json" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="local_revision" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="acked_revision" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="last_modified_by" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="smarturlid_uniq" TYPE="foreign-unique" FIELDS="smarturlid" REFTABLE="smarturl" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="cmid_uniq" UNIQUE="true" FIELDS="cmid"/>
+        <INDEX NAME="managed_extkey" UNIQUE="false" FIELDS="managed_by, external_key"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

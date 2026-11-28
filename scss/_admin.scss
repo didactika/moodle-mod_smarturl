@@ -1,0 +1,29 @@
+// This file is part of Moodle - https://moodle.org/
+// Moodle is free software under the GNU General Public License, version 3 or later.
+
+// Pieces of the activity form and the viewer that have not moved to the design system yet. The catalogue and the extensions
+// pages are drawn by the design system layer (tokens, chrome, feedback, states, tabs and dialogs).
+.mod-smarturl {
+    .smu-row-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: .4rem;
+    }
+
+    .smu-iconpill {
+        display: inline-grid;
+        place-items: center;
+        width: 2.125rem;
+        height: 2.125rem;
+        padding: 0;
+        border-radius: 50%;
+    }
+
+    .smu-iconpill:hover {
+        background: var(--bs-tertiary-bg, var(--light));
+    }
+
+    .smu-form-builder .smu-builder-row {
+        align-items: start;
+    }
+}

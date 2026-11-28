@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "sources": ["../../src/services/api.ts"],
+  "sourceRoot": "../../../../../../sources/public/mod/smarturl/js/esm/build",
+  "sourcesContent": ["/**\n * This file is part of Moodle - https://moodle.org/\n * Moodle is free software under the GNU General Public License, version 3 or later.\n *\n * Web service clients for mod_smarturl.\n *\n * @module     mod_smarturl/services/api\n * @copyright  2026 Didactika.org\n * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>\n * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later\n */\nimport {fetchOne} from '@moodle/lms/core/ajax';\n\nconst call = <T>(methodname: string, args: Record<string, unknown>): Promise<T> => fetchOne<T>({methodname, args});\n\nexport const trackView = (cmid: number, fromviewer = true): Promise<{cmid: number; tracked: boolean}> =>\n    call('mod_smarturl_track_view', {cmid, fromviewer});\n"],
+  "mappings": ";;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAWA,SAAQ,gBAAe;AAEvB,MAAM,OAAO,wBAAI,YAAoB,SAA8C,SAAY,EAAC,YAAY,KAAI,CAAC,GAApG;AAEN,MAAM,YAAY,wBAAC,MAAc,aAAa,SACjD,KAAK,2BAA2B,EAAC,MAAM,WAAU,CAAC,GAD7B;",
+  "names": []
+}

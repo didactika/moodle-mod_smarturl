@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "sources": ["../../../src/components/common/Pix.tsx"],
+  "sourceRoot": "../../../../../../sources/public/mod/smarturl/js/esm/build",
+  "sourcesContent": ["/**\n * This file is part of Moodle - https://moodle.org/\n * Moodle is free software under the GNU General Public License, version 3 or later.\n *\n * A Moodle icon the page rendered with the pix helper, so the theme draws it as it draws its own.\n *\n * @module     mod_smarturl/components/common/Pix\n * @copyright  2026 Didactika.org\n * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later\n */\n\n/**\n * Draws a Moodle icon.\n *\n * @param props The markup Moodle rendered for the icon.\n * @returns The icon.\n */\nconst Pix = ({html}: {html?: string}) => <span dangerouslySetInnerHTML={{__html: html ?? ''}}/>;\n\nexport default Pix;\n"],
+  "mappings": ";;AAiByC;AAjBzC;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAiBA,MAAM,MAAM,wBAAC,EAAC,KAAI,MAAuB,uBAAC,UAAK,yBAAyB,EAAC,QAAQ,QAAQ,GAAE,KAAlD;AAAA;AAAA;AAAA;AAAA,CAAoD,GAAjF;AAEZ,IAAO,cAAQ;",
+  "names": []
+}

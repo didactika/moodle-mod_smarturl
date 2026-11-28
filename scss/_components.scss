@@ -1,0 +1,288 @@
+// This file is part of Moodle - https://moodle.org/
+// Moodle is free software under the GNU General Public License, version 3 or later.
+
+// Core Didactika UI building blocks used in ResourceView and AdminConfig.
+.mod-smarturl {
+    .dd-page-header {
+        display: grid;
+        gap: 0.75rem;
+        padding-bottom: 1rem;
+        margin-bottom: 1.25rem;
+        border-bottom: 1px solid var(--dd-hairline);
+
+        .dd-page-header-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem 1.5rem;
+        }
+
+        .dd-page-header-main {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            min-width: 0;
+        }
+
+        .dd-page-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.015em;
+            color: var(--dd-ink);
+        }
+
+        .dd-page-subtitle {
+            margin: 0.25rem 0 0;
+            color: var(--dd-muted);
+            font-size: 0.9375rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .dd-page-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+    }
+
+    .dd-tile {
+        display: inline-grid;
+        place-items: center;
+        flex: none;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: var(--dd-radius);
+        background-color: var(--dd-primary-soft);
+        color: var(--dd-primary-ink);
+        font-weight: 700;
+
+        &.dd-tile-lg {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--dd-radius-lg);
+            font-size: 1.25rem;
+        }
+    }
+
+    .dd-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .dd-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4375rem;
+        min-height: 2rem;
+        padding: 0.1875rem 0.75rem;
+        border: 1px solid var(--dd-line);
+        border-radius: 999px;
+        background: var(--dd-surface);
+        color: var(--dd-ink);
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.4;
+        cursor: pointer;
+        transition: background-color var(--dd-ease), border-color var(--dd-ease), color var(--dd-ease), box-shadow var(--dd-ease);
+
+        &:hover {
+            border-color: var(--dd-line-hover);
+            background: var(--dd-surface-2);
+        }
+
+        &:focus-visible {
+            outline: 0;
+            box-shadow: 0 0 0 3px var(--dd-ring);
+        }
+
+        &[aria-pressed="true"],
+        &.active {
+            border-color: var(--dd-primary);
+            background: var(--dd-primary-soft);
+            color: var(--dd-primary-ink);
+            font-weight: 600;
+
+            .dd-chip-count {
+                background: var(--dd-primary);
+                color: #fff;
+            }
+        }
+    }
+
+    .dd-chip-count {
+        padding: 0 0.4rem;
+        border-radius: 999px;
+        background: var(--dd-surface-3);
+        color: var(--dd-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dd-chip-applied {
+        border-color: var(--dd-primary);
+        background: var(--dd-primary-soft);
+        color: var(--dd-primary-ink);
+        cursor: default;
+    }
+
+    .dd-chip-remove {
+        position: relative;
+        flex: none;
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0 -0.25rem 0 0;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: none;
+        color: inherit;
+        cursor: pointer;
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0.5625rem;
+            height: 2px;
+            border-radius: 2px;
+            background: currentColor;
+        }
+
+        &::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        &::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+    }
+
+    .dd-segmented {
+        display: inline-flex;
+        gap: 0.125rem;
+        padding: 0.1875rem;
+        border-radius: var(--dd-radius-sm);
+        background-color: var(--dd-surface-3);
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 2rem;
+            padding: 0.25rem 0.75rem;
+            border: 0;
+            border-radius: calc(var(--dd-radius-sm) - 2px);
+            background: none;
+            color: var(--dd-muted);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+
+            &[aria-pressed="true"] {
+                background-color: var(--dd-surface);
+                box-shadow: var(--dd-shadow-sm);
+                color: var(--dd-ink);
+            }
+        }
+    }
+
+    .dd-dl {
+        display: grid;
+        grid-template-columns: minmax(8rem, 12rem) 1fr;
+        margin: 0;
+
+        dt,
+        dd {
+            margin: 0;
+            padding: 0.625rem 0;
+            border-bottom: 1px solid var(--dd-hairline);
+        }
+
+        dt {
+            padding-right: 1rem;
+            color: var(--dd-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        dd {
+            color: var(--dd-ink);
+            font-size: 0.9375rem;
+            overflow-wrap: anywhere;
+        }
+
+        dt:last-of-type,
+        dd:last-of-type {
+            border-bottom: 0;
+        }
+    }
+
+    .dd-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+    }
+
+    .dd-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5625rem;
+        border-radius: 999px;
+        border: 1px solid var(--dd-hairline);
+        background: var(--dd-surface-2);
+        color: var(--dd-ink);
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .dd-empty {
+        display: grid;
+        justify-items: center;
+        gap: 0.5rem;
+        padding: 2rem 1.25rem;
+        text-align: center;
+        border: 1.5px dashed var(--dd-line);
+        border-radius: var(--dd-radius-lg);
+
+        .dd-empty-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .dd-empty-text {
+            margin: 0;
+            color: var(--dd-muted);
+            font-size: 0.9rem;
+        }
+    }
+}
+
+.mod-smarturl-course-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+
+    .dd-course-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.1rem 0.5rem;
+        border-radius: 999px;
+        background: var(--bs-secondary-bg, #e9ecef);
+        color: var(--bs-secondary-color, #495057);
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+}

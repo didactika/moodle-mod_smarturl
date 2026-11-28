@@ -1,0 +1,20 @@
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+/**
+ * This file is part of Moodle - https://moodle.org/
+ * Moodle is free software under the GNU General Public License, version 3 or later.
+ *
+ * Web service clients for mod_smarturl.
+ *
+ * @module     mod_smarturl/services/api
+ * @copyright  2026 Didactika.org
+ * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+import { fetchOne } from "@moodle/lms/core/ajax";
+const call = /* @__PURE__ */ __name((methodname, args) => fetchOne({ methodname, args }), "call");
+const trackView = /* @__PURE__ */ __name((cmid, fromviewer = true) => call("mod_smarturl_track_view", { cmid, fromviewer }), "trackView");
+export {
+  trackView
+};
+//# sourceMappingURL=api.dev.js.map

@@ -1,0 +1,109 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_smarturl/subplugins
+
+    The installed extensions of Smart URL, drawn with the Didactika design system: a card for each type with a table of its
+    extensions, their status and their actions (enable or disable, and settings) in one slot each, so each action is always in
+    the same column. With no extension installed, the empty state says what an extension is.
+
+    @copyright  2026 Didactika.org
+    @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+    Example context (json):
+    {
+      "hasgroups": true,
+      "action": "/mod/smarturl/plugins.php",
+      "sesskey": "abc123",
+      "groups": [
+        {
+          "name": "Players",
+          "plugins": [
+            {
+              "name": "YouTube player", "component": "smarturlplayer_youtube", "status": "Enabled", "active": true,
+              "enabled": 0, "togglelabel": "Disable YouTube player", "settingslabel": "Settings YouTube player",
+              "settingsurl": "/admin/settings.php?section=modsmarturl_smarturlplayer_youtube"
+            }
+          ]
+        }
+      ]
+    }
+}}
+<div class="mod-smarturl" data-region="extensions">
+    <div class="d-grid gap-3">
+        <p class="text-muted mb-0">{{#str}}manageplugins_help, mod_smarturl{{/str}}</p>
+        {{^hasgroups}}
+        <div class="card">
+            <div class="d-flex flex-column align-items-center gap-2 px-4 py-5 text-center" data-region="empty">
+                <span class="icon-box">{{#pix}}i/settings, core{{/pix}}</span>
+                <p class="h6 fw-bold mb-0">{{#str}}nopluginsinstalled, mod_smarturl{{/str}}</p>
+                <p class="text-muted mb-0">{{#str}}nopluginsinstalled_text, mod_smarturl{{/str}}</p>
+            </div>
+        </div>
+        {{/hasgroups}}
+        {{#groups}}
+        <section class="card">
+            <div class="px-3 py-2 border-bottom">
+                <h3 class="h6 fw-bold mb-0">{{name}}</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table w-100">
+                    <caption class="visually-hidden">{{name}}</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" data-column="name">{{#str}}plugin{{/str}}</th>
+                            <th scope="col" data-column="status">{{#str}}status{{/str}}</th>
+                            <th scope="col" class="text-end text-nowrap" data-column="actions"><span class="visually-hidden">{{#str}}actions{{/str}}</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#plugins}}
+                        <tr>
+                            <th scope="row" data-column="name">
+                                <span class="d-flex flex-column overflow-hidden">
+                                    <span class="fw-bold text-truncate">{{name}}</span>
+                                    <span class="small text-muted text-truncate"><code>{{component}}</code></span>
+                                </span>
+                            </th>
+                            <td data-column="status">
+                                <span class="badge rounded-pill {{#active}}text-bg-success{{/active}}{{^active}}text-bg-secondary{{/active}}">{{status}}</span>
+                            </td>
+                            <td class="text-end" data-column="actions">
+                                <form method="post" action="{{action}}" class="d-inline">
+                                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                                    <input type="hidden" name="component" value="{{component}}">
+                                    <input type="hidden" name="enabled" value="{{enabled}}">
+                                    <button type="submit" class="btn btn-link btn-icon btn-sm" title="{{togglelabel}}" aria-label="{{togglelabel}}">
+                                        {{#active}}{{#pix}}t/hide, core{{/pix}}{{/active}}{{^active}}{{#pix}}t/show, core{{/pix}}{{/active}}
+                                    </button>
+                                </form>
+                                {{#settingsurl}}
+                                <a href="{{settingsurl}}" class="btn btn-link btn-icon btn-sm text-primary" title="{{settingslabel}}" aria-label="{{settingslabel}}">{{#pix}}i/settings, core{{/pix}}</a>
+                                {{/settingsurl}}
+                                {{^settingsurl}}
+                                <button type="button" class="btn btn-link btn-icon btn-sm text-primary" disabled aria-label="{{settingslabel}}">{{#pix}}i/settings, core{{/pix}}</button>
+                                {{/settingsurl}}
+                            </td>
+                        </tr>
+                        {{/plugins}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {{/groups}}
+    </div>
+</div>
