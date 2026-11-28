@@ -1,0 +1,45 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+    @template mod_smarturl/draft_preview
+    Example context (json):
+    {"name":"Reference document","launchlabel":"Open","description":"About this document","descriptionlabel":"Description"}
+}}
+<div class="mod-smarturl smu-draft-preview">
+    {{#name}}<h2 class="h5">{{{name}}}</h2>{{/name}}
+    {{#message}}<p class="alert alert-info" role="status">{{message}}</p>{{/message}}
+    <div class="smu-preview-capture mb-3 {{#covercard}}card overflow-hidden{{/covercard}}">
+        {{#player}}<div class="smu-player">{{{player}}}</div>{{/player}}
+        {{#poster}}
+        <div class="smu-cover-stage">
+            {{#hasdetails}}
+            <div class="smu-resource-tools smu-preview-info">
+                <button class="btn btn-outline-secondary smu-iconpill smu-info-trigger" type="button" disabled aria-label="{{metadataheading}}">
+                    <i class="fa fa-info" aria-hidden="true"></i>
+                </button>
+            </div>
+            {{/hasdetails}}
+            <img class="smu-viewer-cover" src="{{poster}}" alt="">
+            {{#circle}}
+            <button type="button" class="btn btn-primary smu-launch-circle smu-play-overlay" disabled aria-label="{{launchlabel}}">
+                <i class="fa {{icon}}" aria-hidden="true"></i>
+            </button>
+            {{/circle}}
+        </div>
+        {{/poster}}
+        {{^poster}}{{#circle}}
+        <div class="smu-empty-stage">
+            <button type="button" class="btn btn-primary smu-launch-circle" disabled aria-label="{{launchlabel}}">
+                <i class="fa {{icon}}" aria-hidden="true"></i>
+            </button>
+        </div>
+        {{/circle}}{{/poster}}
+        {{#plainbutton}}<button type="button" class="btn btn-outline-secondary" disabled>{{launchlabel}}</button>{{/plainbutton}}
+    </div>
+    {{#description}}
+    <section class="smu-description">
+        <h2 class="h5">{{descriptionlabel}}</h2>
+        <div class="description">{{{description}}}</div>
+    </section>
+    {{/description}}
+    {{#details}}<section class="smu-view-details"><h2 class="h5">{{metadataheading}}</h2>{{{details}}}</section>{{/details}}
+</div>

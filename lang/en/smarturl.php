@@ -1,0 +1,356 @@
+<?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
+/**
+ * English language strings for mod_smarturl.
+ *
+ * @package    mod_smarturl
+ * @copyright  2026 Didactika.org
+ * @author     Hector Arrechea <hectorlazaroarrechea@gmail.com>
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+$string['addmetatype'] = 'Save field';
+$string['addparamdef'] = 'Save variable';
+$string['adminconfiglink'] = 'Smart URL configuration';
+$string['adminconfigsubtitle'] = 'Manage categories, resource fields and URL variables for this site.';
+$string['adminconfigtitle'] = 'Smart URL configuration';
+$string['allgroups'] = 'All';
+$string['appearance'] = 'Appearance';
+$string['archivecategoryfields'] = 'Keep fields inactive';
+$string['aspectratio'] = 'Frame aspect ratio';
+$string['aspectratio_help'] = 'Sets the shape of the frame around embedded content.';
+$string['categories'] = 'Categories';
+$string['category'] = 'Category';
+$string['category_deleted'] = 'Category deleted.';
+$string['category_name'] = 'Category name';
+$string['categorysort'] = 'Display order';
+$string['choose'] = 'Choose a field';
+$string['clear_search'] = 'Clear search';
+$string['clearfilters'] = 'Clear filters';
+$string['closepreview'] = 'Close';
+$string['completioncompact'] = 'Completion requirements';
+$string['completioncustom_group'] = 'Custom completion rules';
+$string['completionstatus'] = 'Completion';
+$string['confirmdelete'] = 'Delete “{$a}”? You can disable it to keep its configuration.';
+$string['constantvalue'] = 'Constant value';
+$string['copied'] = 'Copied';
+$string['copyjson'] = 'Copy JSON';
+$string['course_card'] = 'Card';
+$string['course_image'] = 'Image only';
+$string['course_link'] = 'Link';
+$string['courseappearance'] = 'Course appearance';
+$string['coursefieldsmode'] = 'Details on the course page';
+$string['createcategory'] = 'Add category';
+$string['customavailabilitynote'] = 'Externally managed access restrictions remain active alongside any restrictions added here.';
+$string['datatype'] = 'Field type';
+$string['datatype_badge'] = 'Badge';
+$string['datatype_boolean'] = 'Yes or no';
+$string['datatype_date'] = 'Date';
+$string['datatype_duration'] = 'Duration';
+$string['datatype_json'] = 'Structured data';
+$string['datatype_list'] = 'List';
+$string['datatype_multiline'] = 'Long text';
+$string['datatype_number'] = 'Number';
+$string['datatype_tags'] = 'Tags';
+$string['datatype_text'] = 'Text';
+$string['datatype_url'] = 'Web address';
+$string['defaultappearance'] = 'Display defaults';
+$string['defaultappearance_desc'] = 'Preselected for new activities. Teachers can change them, and existing activities keep their values.';
+$string['defaultcategory'] = 'General';
+$string['defaultpopupheight'] = 'Default pop-up window height (px)';
+$string['defaultpopupwidth'] = 'Default pop-up window width (px)';
+$string['defaultqueryparam'] = 'Suggested parameter';
+$string['defaultwindowsize'] = 'Window size';
+$string['defaultwindowsize_desc'] = 'Used by **Viewer window** and **External window**.';
+$string['deferred_preview'] = 'The resource loads when someone opens it.';
+$string['delete_fields'] = 'Existing values are kept. Values from hidden fields remain hidden.';
+$string['delete_variables'] = 'Links that reference this variable will stop receiving its value.';
+$string['deletecategoryheading'] = 'Delete {$a}?';
+$string['deletecategoryinfo'] = 'This category contains {$a} fields. Choose what to do with them.';
+$string['deliveryfailed'] = 'The remote file could not be delivered.';
+$string['deliveryhosts'] = 'Approved file hosts';
+$string['deliveryhosts_desc'] = 'List exact HTTPS hostnames on separate lines. Approve only sources you control or trust to serve binary files.';
+$string['deliveryinvalid'] = 'Use a supported file URL on an approved HTTPS host.';
+$string['deliverypreview'] = 'Moodle loads the protected file after you save the activity.';
+$string['deliveryretired'] = 'This publication mode has been retired. Ask an editor to update the activity.';
+$string['deliveryretired_edit'] = 'This activity used server delivery. Select Load on click and save to publish it with the new mode.';
+$string['disabled'] = 'Disabled';
+$string['displaymode'] = 'Open as';
+$string['duplicatecategory'] = 'A category already uses this name.';
+$string['duplicateschemaitem'] = 'This name is already in use.';
+$string['durationseconds'] = 'Duration (seconds)';
+$string['durationseconds_help'] = 'Duration of the resource in seconds, when appropriate.';
+$string['dynamicparams'] = 'URL variables';
+$string['dynamicparams_help'] = 'Insert a variable in the link or pass a value as a URL parameter.';
+$string['emptycategories'] = 'No categories yet';
+$string['emptycategories_text'] = 'Categories group the resource fields in the activity form and on the resource page.';
+$string['emptyfields'] = 'No resource fields yet';
+$string['emptyfields_text'] = 'Fields describe each resource, such as its author or its level.';
+$string['emptymetadata'] = 'No results';
+$string['emptymetadata_hint'] = 'Change the search or clear the filters.';
+$string['emptyresults'] = 'No results';
+$string['emptyresults_text'] = 'Try other words or clear the filters.';
+$string['emptyvariables'] = 'No URL variables yet';
+$string['emptyvariables_text'] = 'Variables add course, user or site values to the links of the activities.';
+$string['enabled'] = 'Enabled';
+$string['eventresourcemoved'] = 'Smart URL resource moved';
+$string['eventresourceopened'] = 'Smart URL resource opened';
+$string['eventresourceoverridden'] = 'Smart URL resource overridden';
+$string['eventsectionreordered'] = 'Smart URL section reordered';
+$string['externalurl'] = 'Link';
+$string['externalurl_help'] = 'Enter the resource address. You can insert variables in the link or add URL parameters below.';
+$string['fieldmode_default'] = 'Use defaults';
+$string['fieldmode_none'] = 'Hide details';
+$string['fieldmode_select'] = 'Choose fields';
+$string['fieldselection'] = 'Fields in display order';
+$string['fieldselection_help'] = 'Enter the field keys separated by commas, in the order to show them.';
+$string['fieldsmode'] = 'Metadata display';
+$string['fieldsmode_help'] = 'Show the default fields, hide details or select which fields are available.';
+$string['filterable'] = 'Filterable';
+$string['groupname'] = 'Category';
+$string['invalidmetadata'] = 'Enter a value for the {$a} field type.';
+$string['invalidplugin'] = 'This Smart URL extension is not installed.';
+$string['invalidurl'] = 'Please enter a valid web address (e.g. https://example.org/...).';
+$string['launch_activity'] = 'Activity page';
+$string['launch_auto'] = 'Automatic';
+$string['launch_external'] = 'External site';
+$string['launch_externaltab'] = 'External tab';
+$string['launch_externalwindow'] = 'External window';
+$string['launch_inline'] = 'In the course';
+$string['launch_viewertab'] = 'Viewer tab';
+$string['launch_viewerwindow'] = 'Viewer window';
+$string['launchiframe'] = 'Preview resource';
+$string['launchmodal'] = 'Open preview';
+$string['launchpopup'] = 'Open pop-up window';
+$string['lockedbadge'] = 'Protected';
+$string['managedbadge'] = 'Managed externally';
+$string['manageplugins'] = 'Smart URL extensions';
+$string['manageplugins_help'] = 'Enable or disable installed extensions and open their settings.';
+$string['mediaheader'] = 'Cover image';
+$string['meta_addmore'] = 'Add field';
+$string['meta_customkey'] = 'Custom field';
+$string['meta_key'] = 'Metadata field';
+$string['meta_value'] = 'Value';
+$string['metadataheading'] = 'Resource details';
+$string['metadatasearch'] = 'Search metadata';
+$string['metadatasearchplaceholder'] = 'Filter details by field, value, or tag...';
+$string['metadatasection'] = 'Resource details';
+$string['metadatasection_help'] = 'Add details such as author, language or format. Choose where they appear under Appearance.';
+$string['metadatatypes'] = 'Resource fields';
+$string['modulename'] = 'Smart URL';
+$string['modulename_help'] = 'Add a link to a website, video, audio file or document. Choose how it opens and add details about the resource.';
+$string['modulenameplural'] = 'Smart URLs';
+$string['morepages'] = 'More Smart URL settings';
+$string['movecategoryfields'] = 'Move fields to';
+$string['nav_audio'] = 'Audio';
+$string['nav_image'] = 'Image';
+$string['nav_video'] = 'Video';
+$string['newfield'] = 'Add field';
+$string['newvariable'] = 'Add variable';
+$string['nopluginsinstalled'] = 'No Smart URL extensions are installed.';
+$string['nopluginsinstalled_text'] = 'Extensions are Moodle plugins installed inside Smart URL, such as players or metadata types.';
+$string['nosmarturls'] = 'There are no Smart URLs in this course.';
+$string['openactivity'] = 'Open resource';
+$string['openexternal'] = 'Open on the external site';
+$string['openresource'] = 'Open in another tab';
+$string['pagerange'] = '{$a->from}–{$a->to} of {$a->total}';
+$string['pagerlabel'] = 'Items per page';
+$string['param_addmore'] = 'Add parameter';
+$string['param_choose'] = 'Choose a variable';
+$string['param_insert_tokens'] = 'Insert variable';
+$string['param_preview'] = 'Link preview';
+$string['param_queryname'] = 'Parameter name';
+$string['param_remove'] = 'Remove row';
+$string['param_source'] = 'Value source';
+$string['param_staticvalue'] = 'Fixed value';
+$string['paramdefs'] = 'URL variables';
+$string['playresource'] = 'Play resource';
+$string['pluginadministration'] = 'Smart URL administration';
+$string['pluginname'] = 'Smart URL';
+$string['policylocknotice'] = 'Managed fields ({$a->managedby}) · {$a->fields}';
+$string['popupheight'] = 'Pop-up height (px)';
+$string['popupwidth'] = 'Pop-up width (px)';
+$string['poster_auto'] = 'Automatic';
+$string['poster_none'] = 'No image';
+$string['poster_provider'] = 'Provider image';
+$string['poster_upload'] = 'Uploaded image';
+$string['poster_url'] = 'Image URL';
+$string['posterimage'] = 'Upload image';
+$string['presentation_course'] = 'Course layout';
+$string['presentation_course_desc'] = 'How the activity appears on the course page.';
+$string['presentation_course_help'] = 'How the activity appears on the course page.
+
+* **Link**: the standard activity link.
+* **Card**: cover image with details below.
+* **Image only**: just the cover, without name or icon.';
+$string['presentation_deferred'] = 'Load on click';
+$string['presentation_deferred_help'] = 'The browser receives the resource address when someone opens it. Leave this off to load supported embeds immediately.';
+$string['presentation_description'] = 'Show the description';
+$string['presentation_description_help'] = 'Show a short description on the course page as well as in the viewer.';
+$string['presentation_gateway'] = 'Protect source address';
+$string['presentation_gateway_help'] = 'Moodle retrieves a supported file from an approved HTTPS host and serves it through the activity. The original address stays in settings.';
+$string['presentation_icon'] = 'Show the activity icon';
+$string['presentation_icon_help'] = 'Show the type icon next to the activity title in the course.';
+$string['presentation_launch'] = 'Open in';
+$string['presentation_launch_desc'] = 'What happens when someone selects the activity.';
+$string['presentation_launch_help'] = 'What happens when someone selects the activity.
+
+* **Automatic**: the activity page if the resource can be shown there, otherwise the external site.
+* **Activity page**: the Smart URL page inside the course.
+* **Viewer tab**: the Smart URL viewer, without course navigation, in a new browser tab.
+* **Viewer window**: the Smart URL viewer in a pop-up window.
+* **External site**: the resource address in the same tab, replacing the course page.
+* **External tab**: the resource address in a new browser tab.
+* **External window**: the resource address in a pop-up window.
+* **In the course**: below the activity on the course page.';
+$string['presentation_play'] = 'Show a play button over the image';
+$string['presentation_play_help'] = 'Put the play button on the course cover for audio and video.';
+$string['presentation_poster'] = 'Cover source';
+$string['presentation_poster_desc'] = 'Image used as the cover on the course page and in the viewer.';
+$string['presentation_poster_help'] = 'Image used as the cover.
+
+* **Automatic**: uploaded image, then image URL, then provider image.
+* **Uploaded image** or **Image URL**: set in each activity.
+* **Provider image**: the video thumbnail, for example from YouTube.
+* **No image**: no cover.
+
+Private copies and load on click use only an uploaded image.';
+$string['presentation_protected'] = 'Serve a private copy';
+$string['presentation_protected_help'] = 'Upload a PDF, image, audio or video to serve it through Moodle. The source address stays in the activity settings. You can also upload a cover.';
+$string['presentation_title'] = 'Show the title';
+$string['presentation_title_help'] = 'Show the activity title above its card in the course.';
+$string['presentation_viewer'] = 'Viewer layout';
+$string['presentation_viewer_desc'] = 'How the Smart URL page shows the resource.';
+$string['presentation_viewer_help'] = 'How the Smart URL page shows the resource.
+
+* **Automatic**: embeds media, images and PDFs; links to other web pages.
+* **Embedded**: embeds everything, including web pages. Some sites block this.
+* **Cover with button**: the resource loads when the cover is selected.
+* **External link**: only a button to open the resource.
+* **Dialog**: the resource opens in a dialog.
+
+Not used when **Open in** goes to the external site.';
+$string['preset'] = 'Apply a preset';
+$string['preset_document'] = 'Document';
+$string['preset_video'] = 'Video';
+$string['preset_weblink'] = 'Web link';
+$string['previewactivity'] = 'In the activity';
+$string['previewauxiliary'] = 'Auxiliary viewer';
+$string['previewcourse'] = 'On the course page';
+$string['previewcurrentlanguage'] = 'Current language';
+$string['previewmobile'] = 'Mobile view';
+$string['previewpending'] = 'Preparing preview…';
+$string['previewresource'] = 'Preview appearance';
+$string['priority'] = 'Display priority';
+$string['privacy:metadata:policy'] = 'Stores the user who last locally modified a policy-governed Smart URL.';
+$string['privacy:metadata:policy:last_modified_by'] = 'The user ID that saved local overrides.';
+$string['privacy:metadata:policy:timemodified'] = 'Timestamp of the local override.';
+$string['protectedfile'] = 'Resource file';
+$string['protectedmissing'] = 'Upload a supported file to serve a private copy.';
+$string['resourceinformation'] = 'Resource information';
+$string['results_count'] = '{$a} attributes';
+$string['savecategory'] = 'Save category';
+$string['savefailed'] = 'Could not save changes. Try again.';
+$string['schemaintro'] = 'Define the categories, fields and variables that teachers can use in Smart URL activities.';
+$string['searchable'] = 'Searchable';
+$string['searchfields'] = 'Find a field';
+$string['searchvariables'] = 'Find a variable';
+$string['select_empty'] = 'No matching options';
+$string['select_search'] = 'Search options';
+$string['selectcategory'] = 'Choose a category';
+$string['selectresource'] = 'Choose a resource';
+$string['settingscatalogue_help'] = 'Manage categories, metadata fields and URL variables.';
+$string['shortname'] = 'Key';
+$string['showdescription'] = 'Show description on course page';
+$string['showless'] = 'Show fewer';
+$string['showmore'] = 'Show all ({$a})';
+$string['smarturl:addinstance'] = 'Add a new Smart URL activity';
+$string['smarturl:bypasspolicy'] = 'Override protected external fields';
+$string['smarturl:delete'] = 'Delete Smart URL activities';
+$string['smarturl:editavailability'] = 'Edit course-level access restrictions';
+$string['smarturl:editcompletion'] = 'Edit completion requirements';
+$string['smarturl:editdisplay'] = 'Edit how the resource opens and displays';
+$string['smarturl:editgeneral'] = 'Edit title, description, and poster image';
+$string['smarturl:editmetadata'] = 'Edit metadata fields';
+$string['smarturl:editurl'] = 'Edit destination URL and dynamic parameters';
+$string['smarturl:manageexternal'] = 'Manage Smart URL instances through external APIs';
+$string['smarturl:manageschema'] = 'Configure metadata fields and dynamic URL variables';
+$string['smarturl:movesection'] = 'Move Smart URLs to another section';
+$string['smarturl:overrideavailability'] = 'Override externally managed access restrictions';
+$string['smarturl:reorder'] = 'Reorder Smart URLs inside a section';
+$string['smarturl:view'] = 'View Smart URL activity';
+$string['smarturlname'] = 'Title';
+$string['source_builtin'] = 'Moodle information';
+$string['source_course_custom_field'] = 'Custom course field';
+$string['source_static'] = 'Constant value';
+$string['source_user_profile_field'] = 'Custom profile field';
+$string['sourcekey'] = 'Source key or literal';
+$string['sourcetype'] = 'Source';
+$string['subplugintype_smarturlcomp'] = 'Smart URL completion rule';
+$string['subplugintype_smarturlcomp_plural'] = 'Smart URL completion rules';
+$string['subplugintype_smarturlmeta'] = 'Smart URL metadata type';
+$string['subplugintype_smarturlmeta_plural'] = 'Smart URL metadata types';
+$string['subplugintype_smarturlplayer'] = 'Smart URL player';
+$string['subplugintype_smarturlplayer_plural'] = 'Smart URL players';
+$string['subplugintype_smarturlsource'] = 'Smart URL resource catalogue';
+$string['subplugintype_smarturlsource_plural'] = 'Smart URL resource catalogues';
+$string['testresolution'] = 'Test link';
+$string['thumbnailurl'] = 'Image URL';
+$string['thumbnailurl_help'] = 'Enter an image address when the cover source is set to URL.';
+$string['translate'] = 'Translations';
+$string['translationdescription'] = 'Translated description';
+$string['translationhint'] = 'Leave a field empty to use the original text.';
+$string['translationlanguage'] = 'Language to edit';
+$string['translationtitle'] = 'Translated title';
+$string['usemimeicons'] = 'Use file type icons';
+$string['usemimeicons_desc'] = 'Show Moodle icons for recognised file extensions, such as PDF or audio.';
+$string['variable_cm_id'] = 'Activity ID';
+$string['variable_course_category'] = 'Course category ID';
+$string['variable_course_format'] = 'Course format';
+$string['variable_course_fullname'] = 'Course full name';
+$string['variable_course_id'] = 'Course ID';
+$string['variable_course_idnumber'] = 'Course ID number';
+$string['variable_course_lang'] = 'Course language';
+$string['variable_course_shortname'] = 'Course short name';
+$string['variable_site_shortname'] = 'Campus short name';
+$string['variable_site_url'] = 'Campus address';
+$string['variable_user_email'] = 'User email';
+$string['variable_user_firstname'] = 'First name';
+$string['variable_user_id'] = 'User ID';
+$string['variable_user_idnumber'] = 'User ID number';
+$string['variable_user_lang'] = 'User language';
+$string['variable_user_lastname'] = 'Last name';
+$string['variable_user_roles'] = 'User roles';
+$string['variable_user_username'] = 'Username';
+$string['viewcards'] = 'Cards';
+$string['viewdetails'] = 'View details';
+$string['viewer_auto'] = 'Automatic';
+$string['viewer_embed'] = 'Embedded';
+$string['viewer_link'] = 'External link';
+$string['viewer_modal'] = 'Dialog';
+$string['viewer_poster'] = 'Cover with button';
+$string['viewerappearance'] = 'Resource viewer';
+$string['viewerfieldsmode'] = 'Details in the viewer';
+$string['viewmetadata'] = 'Metadata ({$a})';
+$string['viewtable'] = 'Table';
+$string['visibility_hidden'] = 'Hidden';
+$string['visibility_primary'] = 'Highlighted';
+$string['visibility_secondary'] = 'Standard';
+$string['windowdimensions'] = 'Window dimensions';
+$string['windowdimensions_help'] = 'Initial pop-up size in pixels for **Viewer window** and **External window**.';

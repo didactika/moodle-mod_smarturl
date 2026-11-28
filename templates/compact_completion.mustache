@@ -1,0 +1,19 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+    @template mod_smarturl/compact_completion
+    Example context (json):
+    {"activityname":"Example","completiondetails":[]}
+}}
+<details class="smu-completion-popover">
+    <summary class="btn btn-outline-secondary smu-iconpill"
+        title="{{#str}}completioncompact, mod_smarturl{{/str}}"
+        aria-label="{{#str}}completioncompact, mod_smarturl{{/str}}">
+        <i class="fa fa-list-check" aria-hidden="true"></i><span>{{#str}}completionstatus, mod_smarturl{{/str}}</span>
+    </summary>
+    <div class="dropdown-menu show p-3">
+        <strong>{{#str}}completioncompact, mod_smarturl{{/str}}</strong>
+        <ul class="activity-completion-list mb-0 mt-2">
+            {{#completiondetails}}{{> core_course/completion_automatic }}{{/completiondetails}}
+        </ul>
+    </div>
+</details>

@@ -1,0 +1,77 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    @template mod_smarturl/resource_view
+
+    Example context (json):
+    {
+      "intro": "<p>About this resource.</p>",
+      "isdirect": true,
+      "gourl": "/mod/smarturl/go.php?id=3",
+      "primarylabel": "Open resource",
+      "strings": {
+        "description": "Description"
+      },
+      "payloadjson": "{}"
+    }
+}}
+<div class="dd-smarturl-app smu-resource-shell" id="smu-viewer-{{uniqid}}" data-payload="{{payloadjson}}">
+    <section class="smu-stage">
+        {{#isembed}}
+        <div class="smu-player">{{{playerhtml}}}</div>
+        {{/isembed}}
+
+        {{^isembed}}
+        <div class="{{#hasthumbnail}}smu-cover-stage{{/hasthumbnail}}{{^hasthumbnail}}smu-empty-stage{{/hasthumbnail}}">
+            {{#hasthumbnail}}<img class="smu-viewer-cover" src="{{thumbnailurl}}" alt="">{{/hasthumbnail}}
+            {{#ismodal}}
+            <button type="button" class="btn btn-primary smu-launch-circle {{#hasthumbnail}}smu-play-overlay{{/hasthumbnail}}"
+                aria-label="{{strings.launchmodal}}" title="{{strings.launchmodal}}" data-action="open-modal">
+                <i class="fa {{#playable}}fa-play{{/playable}}{{^playable}}fa-external-link{{/playable}}" aria-hidden="true"></i>
+            </button>
+            {{/ismodal}}
+            {{#isinline}}
+            <button type="button" class="btn btn-primary smu-launch-circle {{#hasthumbnail}}smu-play-overlay{{/hasthumbnail}}"
+                aria-label="{{strings.launchiframe}}" title="{{strings.launchiframe}}" data-action="launch-inline">
+                <i class="fa {{#playable}}fa-play{{/playable}}{{^playable}}fa-external-link{{/playable}}" aria-hidden="true"></i>
+            </button>
+            {{/isinline}}
+            {{#isdirect}}
+            <a class="btn btn-primary smu-launch-circle {{#hasthumbnail}}smu-play-overlay{{/hasthumbnail}}"
+                href="{{gourl}}" target="_blank" rel="noopener noreferrer" aria-label="{{primarylabel}}" title="{{primarylabel}}">
+                <i class="fa {{#playable}}fa-play{{/playable}}{{^playable}}fa-external-link{{/playable}}" aria-hidden="true"></i>
+            </a>
+            {{/isdirect}}
+        </div>
+        {{/isembed}}
+    </section>
+
+    <div class="smu-resource-bar">
+        <div class="dd-tags">
+            {{#hasduration}}<span class="dd-tag">{{durationlabel}}</span>{{/hasduration}}
+            {{#hasmanagedby}}<span class="dd-tag dd-tag-primary">{{managedbadge}}: {{managedby}}</span>{{/hasmanagedby}}
+            {{#haslocked}}<span class="dd-tag">{{lockedbadge}}: {{lockedcount}}</span>{{/haslocked}}
+        </div>
+        {{#isembed}}
+        <a class="btn btn-outline-secondary btn-sm" href="{{gourl}}" target="_blank" rel="noopener noreferrer">{{strings.openresource}}</a>
+        {{/isembed}}
+    </div>
+
+    {{#intro}}
+    <section class="smu-description">
+        <h2 class="h5">{{strings.description}}</h2>
+        <div class="description">{{{intro}}}</div>
+    </section>
+    {{/intro}}
+
+</div>
+{{#js}}
+require(['mod_smarturl/resource_view'], function(ResourceView) {
+    ResourceView.init('smu-viewer-{{uniqid}}');
+});
+{{/js}}

@@ -1,0 +1,14 @@
+{
+  "subplugintypes": {
+    "smarturlcomp": "completion/rule",
+    "smarturlmeta": "metadata/type",
+    "smarturlplayer": "media/player",
+    "smarturlsource": "catalogue/source"
+  },
+  "plugintypes": {
+    "smarturlcomp": "mod/smarturl/completion/rule",
+    "smarturlmeta": "mod/smarturl/metadata/type",
+    "smarturlplayer": "mod/smarturl/media/player",
+    "smarturlsource": "mod/smarturl/catalogue/source"
+  }
+}
